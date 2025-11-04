@@ -95,13 +95,74 @@
 
         .search-box {
             margin-bottom: 16px;
+            display: flex;
+            gap: 0;
+        }
+
+        .search-dropdown {
+            flex-shrink: 0;
+            position: relative;
+        }
+
+        .dropdown-toggle {
+            padding: 10px 12px;
+            background-color: #f1f3f4;
+            border: 1px solid #ddd;
+            border-right: none;
+            border-radius: 6px 0 0 6px;
+            font-size: 13px;
+            color: #5f6368;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            min-width: 90px;
+            text-align: center;
+        }
+
+        .dropdown-toggle:hover {
+            background-color: #e8eaed;
+        }
+
+        .dropdown-menu {
+            position: absolute;
+            top: 100%;
+            left: 0;
+            background-color: #fff;
+            border: 1px solid #ddd;
+            border-radius: 0 0 6px 6px;
+            min-width: 120px;
+            z-index: 10;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            display: none;
+            margin-top: -1px;
+        }
+
+        .dropdown-menu.active {
+            display: block;
+        }
+
+        .dropdown-item {
+            padding: 10px 12px;
+            cursor: pointer;
+            transition: background-color 0.2s ease;
+            font-size: 13px;
+            color: #5f6368;
+        }
+
+        .dropdown-item:hover {
+            background-color: #f1f3f4;
+        }
+
+        .dropdown-item.selected {
+            background-color: #e8f0fe;
+            color: #1a73e8;
+            font-weight: 600;
         }
 
         .search-input {
-            width: 100%;
+            flex: 1;
             padding: 10px 12px;
             border: 1px solid #ddd;
-            border-radius: 6px;
+            border-radius: 0 6px 6px 0;
             font-size: 14px;
             transition: border-color 0.2s ease;
         }
@@ -109,7 +170,48 @@
         .search-input:focus {
             outline: none;
             border-color: #1a73e8;
-            box-shadow: 0 0 0 2px rgba(26, 115, 232, 0.1);
+            box-shadow: inset 0 0 0 2px rgba(26, 115, 232, 0.1);
+        }
+
+        /* Filter Toggle */
+        .filter-toggle-btn {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 12px 16px;
+            background-color: #f9f9f9;
+            border: 1px solid #e0e0e0;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            margin-bottom: 12px;
+            font-weight: 600;
+            color: #333;
+        }
+
+        .filter-toggle-btn:hover {
+            background-color: #f5f5f5;
+        }
+
+        .filter-toggle-icon {
+            font-size: 12px;
+            transition: transform 0.3s ease;
+        }
+
+        .filter-toggle-icon.active {
+            transform: rotate(180deg);
+        }
+
+        .filter-content {
+            max-height: 1000px;
+            overflow: hidden;
+            transition: max-height 0.3s ease, margin-bottom 0.3s ease;
+            margin-bottom: 12px;
+        }
+
+        .filter-content.collapsed {
+            max-height: 0;
+            margin-bottom: 0;
         }
 
         .filter-group {
@@ -371,6 +473,23 @@
             .term-description {
                 font-size: 14px;
             }
+
+            .search-box {
+                flex-wrap: wrap;
+            }
+
+            .dropdown-toggle {
+                border-radius: 6px;
+                border-right: 1px solid #ddd;
+                margin-bottom: 8px;
+                width: 100%;
+            }
+
+            .search-input {
+                border-radius: 6px;
+                border: 1px solid #ddd;
+                width: 100%;
+            }
         }
 
         @media (max-width: 480px) {
@@ -390,6 +509,11 @@
             .filter-chip {
                 font-size: 12px;
                 padding: 5px 10px;
+            }
+
+            .dropdown-toggle {
+                min-width: 75px;
+                font-size: 12px;
             }
         }
 
@@ -429,23 +553,42 @@
     <!-- Sidebar -->
     <aside class="sidebar" id="sidebar">
         <div class="filter-section">
+            <!-- Search Box with Dropdown -->
             <div class="search-box">
-                <input type="text" class="search-input" id="searchInput" placeholder="용어 검색...">
+                <div class="search-dropdown">
+                    <button class="dropdown-toggle" id="dropdownToggle">용어</button>
+                    <div class="dropdown-menu" id="dropdownMenu">
+                        <div class="dropdown-item selected" data-value="all">용어 + 설명</div>
+                        <div class="dropdown-item" data-value="term">용어만</div>
+                        <div class="dropdown-item" data-value="description">설명만</div>
+                    </div>
+                </div>
+                <input type="text" class="search-input" id="searchInput" placeholder="검색...">
             </div>
 
-            <div class="filter-group">
-                <label class="filter-label">구분</label>
-                <div class="filter-chips" id="categoryFilters"></div>
-            </div>
+            <!-- Filter Toggle Button -->
+            <button class="filter-toggle-btn" id="filterToggleBtn">
+                <span>필터</span>
+                <span class="filter-toggle-icon active">▼</span>
+            </button>
 
-            <div class="filter-group">
-                <label class="filter-label">수정일</label>
-                <div class="filter-chips" id="dateFilters"></div>
-            </div>
+            <!-- Filter Content (Collapsible) -->
+            <div class="filter-content" id="filterContent">
+                <div class="filter-group">
+                    <label class="filter-label">구분</label>
+                    <div class="filter-chips" id="categoryFilters"></div>
+                </div>
 
-            <button class="clear-filters" id="clearFilters">필터 초기화</button>
-            <div class="filter-count" id="filterCount"></div>
+                <div class="filter-group">
+                    <label class="filter-label">수정일</label>
+                    <div class="filter-chips" id="dateFilters"></div>
+                </div>
+
+                <button class="clear-filters" id="clearFilters">필터 초기화</button>
+                <div class="filter-count" id="filterCount"></div>
+            </div>
         </div>
+
         <ul class="term-list" id="termList"></ul>
     </aside>
 
@@ -835,8 +978,11 @@
         let filters = {
             category: '전체',
             date: '전체',
-            searchQuery: ''
+            searchQuery: '',
+            searchType: 'all'  // 'all', 'term', 'description'
         };
+
+        let isFilterCollapsed = false;
 
         // Get unique values
         function getUniqueValues(key) {
@@ -847,7 +993,53 @@
         // Initialize
         function init() {
             renderFilterChips();
+            setupDropdown();
+            setupFilterToggle();
             applyFilters();
+        }
+
+        // Setup Dropdown
+        function setupDropdown() {
+            const toggle = document.getElementById('dropdownToggle');
+            const menu = document.getElementById('dropdownMenu');
+
+            toggle.addEventListener('click', () => {
+                menu.classList.toggle('active');
+            });
+
+            document.querySelectorAll('.dropdown-item').forEach(item => {
+                item.addEventListener('click', () => {
+                    filters.searchType = item.dataset.value;
+
+                    document.querySelectorAll('.dropdown-item').forEach(i => i.classList.remove('selected'));
+                    item.classList.add('selected');
+
+                    toggle.textContent = item.textContent;
+                    menu.classList.remove('active');
+
+                    applyFilters();
+                });
+            });
+
+            // Close dropdown when clicking outside
+            document.addEventListener('click', (e) => {
+                if (!e.target.closest('.search-dropdown')) {
+                    menu.classList.remove('active');
+                }
+            });
+        }
+
+        // Setup Filter Toggle
+        function setupFilterToggle() {
+            const btn = document.getElementById('filterToggleBtn');
+            const content = document.getElementById('filterContent');
+            const icon = btn.querySelector('.filter-toggle-icon');
+
+            btn.addEventListener('click', () => {
+                isFilterCollapsed = !isFilterCollapsed;
+                content.classList.toggle('collapsed');
+                icon.classList.toggle('active');
+            });
         }
 
         // Render filter chips
@@ -890,9 +1082,19 @@
             let filtered = terms.filter(term => {
                 const matchCategory = filters.category === '전체' || term.구분 === filters.category;
                 const matchDate = filters.date === '전체' || term.수정일 === filters.date;
-                const matchSearch = !filters.searchQuery || 
-                    term.용어.toLowerCase().includes(filters.searchQuery.toLowerCase()) ||
-                    term.설명.toLowerCase().includes(filters.searchQuery.toLowerCase());
+
+                let matchSearch = true;
+                if (filters.searchQuery) {
+                    const query = filters.searchQuery.toLowerCase();
+                    if (filters.searchType === 'all') {
+                        matchSearch = term.용어.toLowerCase().includes(query) || 
+                                    term.설명.toLowerCase().includes(query);
+                    } else if (filters.searchType === 'term') {
+                        matchSearch = term.용어.toLowerCase().includes(query);
+                    } else if (filters.searchType === 'description') {
+                        matchSearch = term.설명.toLowerCase().includes(query);
+                    }
+                }
 
                 return matchCategory && matchDate && matchSearch;
             });
@@ -987,7 +1189,8 @@
             filters = {
                 category: '전체',
                 date: '전체',
-                searchQuery: ''
+                searchQuery: '',
+                searchType: 'all'
             };
             document.getElementById('searchInput').value = '';
 
@@ -995,6 +1198,14 @@
                 chip.classList.remove('active');
                 if (chip.dataset.value === '전체') {
                     chip.classList.add('active');
+                }
+            });
+
+            document.getElementById('dropdownToggle').textContent = '용어 + 설명';
+            document.querySelectorAll('.dropdown-item').forEach(item => {
+                item.classList.remove('selected');
+                if (item.dataset.value === 'all') {
+                    item.classList.add('selected');
                 }
             });
 
