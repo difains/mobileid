@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>모바일 신분증 용어집</title>
+    <title>모바일 신분증</title>
     <style>
         * {
             margin: 0;
@@ -28,10 +28,17 @@
             border-bottom: 1px solid #e0e0e0;
             display: flex;
             align-items: center;
+            justify-content: space-between;
             height: 56px;
             padding: 0 16px;
             z-index: 100;
             box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+        }
+
+        .header-left {
+            display: flex;
+            align-items: center;
+            gap: 16px;
         }
 
         .hamburger {
@@ -39,7 +46,6 @@
             flex-direction: column;
             cursor: pointer;
             gap: 5px;
-            margin-right: 16px;
         }
 
         .hamburger span {
@@ -68,6 +74,34 @@
             color: #1a73e8;
         }
 
+        /* Tab Navigation */
+        .header-tabs {
+            display: flex;
+            gap: 4px;
+        }
+
+        .tab-button {
+            padding: 8px 16px;
+            background-color: transparent;
+            border: 1px solid #ddd;
+            border-radius: 4px 4px 0 0;
+            cursor: pointer;
+            font-size: 13px;
+            font-weight: 500;
+            color: #666;
+            transition: all 0.2s ease;
+        }
+
+        .tab-button:hover {
+            background-color: #f9f9f9;
+        }
+
+        .tab-button.active {
+            background-color: #1a73e8;
+            color: white;
+            border-color: #1a73e8;
+        }
+
         /* Sidebar */
         .sidebar {
             position: fixed;
@@ -92,7 +126,6 @@
             border-bottom: 1px solid #e0e0e0;
         }
 
-        /* Search Box */
         .search-box {
             margin-bottom: 12px;
             display: flex;
@@ -182,18 +215,12 @@
             border: none;
             font-size: 13px;
             outline: none;
-            transition: background-color 0.2s ease;
         }
 
         .search-input:focus {
             background-color: #f9f9f9;
         }
 
-        .search-input::placeholder {
-            color: #999;
-        }
-
-        /* Filter Toggle */
         .filter-toggle-btn {
             display: flex;
             align-items: center;
@@ -227,7 +254,7 @@
         .filter-content {
             max-height: 500px;
             overflow: hidden;
-            transition: max-height 0.3s ease, margin-bottom 0.3s ease;
+            transition: max-height 0.3s ease;
             margin-bottom: 12px;
         }
 
@@ -247,7 +274,6 @@
             color: #666;
             margin-bottom: 6px;
             text-transform: uppercase;
-            letter-spacing: 0.5px;
         }
 
         .filter-chips {
@@ -266,7 +292,6 @@
             cursor: pointer;
             transition: all 0.2s ease;
             user-select: none;
-            white-space: nowrap;
         }
 
         .filter-chip:hover {
@@ -379,8 +404,17 @@
             display: block;
         }
 
-        /* Content Cards */
-        .term-card {
+        /* View Sections */
+        .view-section {
+            display: none;
+        }
+
+        .view-section.active {
+            display: block;
+        }
+
+        /* Cards */
+        .item-card {
             background-color: #fff;
             border-radius: 8px;
             padding: 24px;
@@ -388,14 +422,13 @@
             box-shadow: 0 1px 3px rgba(0,0,0,0.08);
             border-left: 4px solid #1a73e8;
             transition: box-shadow 0.2s ease;
-            scroll-margin-top: 76px;
         }
 
-        .term-card:hover {
+        .item-card:hover {
             box-shadow: 0 4px 12px rgba(0,0,0,0.12);
         }
 
-        .term-title {
+        .item-title {
             font-size: 22px;
             font-weight: 600;
             color: #1a73e8;
@@ -403,18 +436,22 @@
             word-break: break-word;
         }
 
-        .term-meta {
+        .item-meta {
             display: flex;
-            gap: 16px;
+            gap: 12px;
             margin-bottom: 16px;
             flex-wrap: wrap;
-            font-size: 13px;
+            font-size: 12px;
         }
 
-        .meta-item {
-            display: flex;
+        .meta-badge {
+            display: inline-flex;
             align-items: center;
-            gap: 6px;
+            gap: 4px;
+            padding: 4px 10px;
+            background-color: #f0f0f0;
+            border-radius: 4px;
+            color: #666;
         }
 
         .meta-label {
@@ -424,13 +461,13 @@
 
         .meta-value {
             color: #999;
-            padding: 4px 8px;
+            padding: 2px 6px;
             background-color: #f5f5f5;
-            border-radius: 4px;
+            border-radius: 3px;
             font-family: 'Courier New', monospace;
         }
 
-        .term-description {
+        .item-description {
             font-size: 15px;
             line-height: 1.8;
             color: #444;
@@ -440,18 +477,6 @@
             word-break: break-word;
             white-space: pre-wrap;
             overflow-x: auto;
-        }
-
-        .code-block {
-            background-color: #f5f5f5;
-            border: 1px solid #e0e0e0;
-            border-radius: 4px;
-            padding: 12px;
-            margin: 8px 0;
-            font-family: 'Courier New', monospace;
-            font-size: 12px;
-            overflow-x: auto;
-            color: #333;
         }
 
         .empty-state {
@@ -467,7 +492,6 @@
 
         .empty-state-text {
             font-size: 16px;
-            color: #999;
         }
 
         .no-results {
@@ -477,7 +501,6 @@
             font-size: 14px;
         }
 
-        /* Responsive */
         @media (max-width: 767px) {
             .main-content {
                 margin-left: 0;
@@ -488,59 +511,21 @@
                 display: flex;
             }
 
-            .term-card {
+            .item-card {
                 padding: 16px;
                 margin-bottom: 16px;
             }
 
-            .term-title {
+            .item-title {
                 font-size: 18px;
             }
 
-            .term-description {
-                font-size: 14px;
-            }
-
-            .search-box {
-                flex-wrap: wrap;
-            }
-
-            .dropdown-toggle {
-                min-width: 65px;
-                font-size: 11px;
-            }
-
-            .search-input {
+            .tab-button {
                 font-size: 12px;
+                padding: 8px 12px;
             }
         }
 
-        @media (max-width: 480px) {
-            .term-meta {
-                flex-direction: column;
-                gap: 8px;
-            }
-
-            .term-title {
-                font-size: 16px;
-            }
-
-            .filter-chips {
-                gap: 3px;
-            }
-
-            .filter-chip {
-                font-size: 11px;
-                padding: 4px 8px;
-            }
-
-            .dropdown-toggle {
-                min-width: 60px;
-                font-size: 10px;
-            }
-        }
-
-        /* Scrollbar */
         .sidebar::-webkit-scrollbar {
             width: 6px;
         }
@@ -562,12 +547,18 @@
 <body>
     <!-- Header -->
     <div class="header">
-        <div class="hamburger" id="hamburger">
-            <span></span>
-            <span></span>
-            <span></span>
+        <div class="header-left">
+            <div class="hamburger" id="hamburger">
+                <span></span>
+                <span></span>
+                <span></span>
+            </div>
+            <h1>모바일 신분증</h1>
         </div>
-        <h1>모바일 신분증 용어집</h1>
+        <div class="header-tabs">
+            <button class="tab-button active" id="glossaryTab">용어집</button>
+            <button class="tab-button" id="codeTab">코드집</button>
+        </div>
     </div>
 
     <!-- Overlay -->
@@ -612,410 +603,89 @@
             </div>
         </div>
 
-        <ul class="term-list" id="termList"></ul>
+        <ul class="term-list" id="itemList"></ul>
     </aside>
 
     <!-- Main Content -->
     <main class="main-content">
-        <div id="contentArea"></div>
+        <!-- Glossary View -->
+        <div class="view-section active" id="glossaryView">
+            <div id="glossaryContent"></div>
+        </div>
+
+        <!-- Code View -->
+        <div class="view-section" id="codeView">
+            <div id="codeContent"></div>
+        </div>
     </main>
 
     <script>
         // Data
-        const terms = [
-{
-"수정일": "2025-10-16",
-"구분": "용어",
-"용어": "모바일신분증신원관리 플랫폼",
-"설명": "분산ID를 활용하여 모바일신분증 발급, 제출 등 주체의 신원을 증명하기 위해 운영하는 소프트웨어, 하드웨어, 서비스를 포함한 체계를 말한다."
-},
-{
-"수정일": "2025-10-16",
-"구분": "용어",
-"용어": "모바일신분증서버",
-"설명": "모바일신분증서버는 모바일신분증 발급, 제출 등을 위해 정부가 운영하는 서버를 말한다. (모바일신분증의 CA, 월렛과 연동하며 발급 및 인가 App 요청사항 처리)"
-},
-{
-"수정일": "2025-10-16",
-"구분": "용어",
-"용어": "클레임 (Claim)",
-"설명": "클레임은 크리덴셜의 일부로 발급한 이름, 주소 등 주체의 속성 또는 상태를 나타내는 기본단위를 말한다. 엔티티(사람 등)를 표현할 수 있는 속성값(예: 이름)"
-},
-{
-"수정일": "2025-10-16",
-"구분": "용어",
-"용어": "크리덴셜 (Credential)",
-"설명": "클레임의 집합."
-},
-{
-"수정일": "2025-10-16",
-"구분": "용어",
-"용어": "프레젠테이션 (Presentation)",
-"설명": "프레젠테이션은 주체가 검증자에게 제출하기 위해 하나 이상의 크리덴셜로부터 유도한 주체의 정보를 말한다."
-},
-{
-"수정일": "2025-10-22",
-"구분": "용어",
-"용어": "프로파일 (Profile)",
-"설명": "서비스 제공자가 사용자에게 VP 제출을 요청하면서 함께 전달되는 제출정보 목록. \nNon-ZKP VP의 경우는 직접적으로 공개되는 사용자의 신원정보가 포함되는 것으로 정보제출을 요청하기 위해 해당 정보 목록을 운영협의체로부터 사전에 승인받아야함.\n이때 승인된 정보 목록은 VP Profile Document로써 블록체인에 등록, \n프로파일은 발급에 필요한 정보를 담고 있는 문서(JSON) 데이터, 해당 정보는 제출 받고자 하는 VC Type, 암호화 처리 정보, Callback URL을 포함.\n\nProfile.presentType]\npresentType = 1 : DID VP 제출\n\n[사용자 인증 방식]\n일반인증\n- PIN 인증 or 지문/FaceID 인증\n- profile 에 \"authType\" 표기 안함\n안심인증\n- PIN 인증 and 안면인증\n- \"authType\": [\"PIN\", \"FACE\"]"
-},
-{
-"수정일": "2025-10-31",
-"구분": "용어",
-"용어": "Profile요청",
-"설명": "SpProfileParam spProfileParam = new SpProfileParam(\n  blockChainServerInfo: ServerInfo,\n  keyManager: IWKeyManager,\n  spKeyId: String,\n  serviceCode: String,\n  profile: Profile,\n  spDid: String,\n  spCode: String);\n(blockChainServerInfo: ServerInfo) 블록체인 서버 정보\n(keyManager: IWKeyManager) wallet 파일 키 매니저\n(spKeyId: String) SP서버 서명용 키id\n(serviceCode: String) SP 서비스 코드\n(profile: Profile) SP Profile\n(spDid: String)SP DID\n(spCode: String) SP Code"
-},
-{
-"수정일": "2025-10-16",
-"구분": "용어",
-"용어": "VC (Verified Credential)",
-"설명": "발급자(Issuer)가 본인확인 후 발급한 검증된 크리덴셜을 뜻하며, 사용자 개인정보가 담긴 신분증의 주체를 식별할 수 있는 정보(이름, 소속부처, 직급 정보 등)"
-},
-{
-"수정일": "2025-10-24",
-"구분": "용어",
-"용어": "VP (Verified Presentation)",
-"설명": "검증된 프레젠테이션은 암호화 검증 절차를 거치면 데이터의 원저자를 신뢰할 수 있는 방식으로 인코딩 되어 증명된 프레젠테이션을 말함. 발급된 VCs를 기준으로 사용자의 선택적 제출에 의해 증명된 정보.\n\nvp Example :\n\"vp\": {\n  \"presentType\": 1, //DID VP 제출\n  \"encryptType\": 2, // AES 256\n  \"keyType\": 2, //RSA_AES-RSA2048\n  \"authType\":[\"pin\"],//PIN인증\n  \"did\": \"did:omn:3WaMJYY4KeNsHmwH6G2Hmx8H9a74\",\n  \"nonce\": \"2704b5e4eb5de74c3ff7956c53ae1dc9596a89545fe581755bee82995f7a83a2\",\n  \"type\": \"VERIFY\",\n  \"data\": \"01005666dd8098f6f825...c2b7\"}"
-},
-{
-"수정일": "2025-10-16",
-"구분": "용어",
-"용어": "eVP (electronic Verifiable Presentation)",
-"설명": "VP를 **모바일 신분증 표준(ISO 18013-5 등)**이나 국가 전자신분증 규격에 맞추어, 전자적으로 교환·호환 가능하게 확장한 형식.\n단순 데이터 패키지가 아니라, 프로토콜·인터페이스 규격을 준수하는 전자적 표현물"
-},
-{
-"수정일": "2025-10-16",
-"구분": "용어",
-"용어": "VP Verifier(검증서버)",
-"설명": "블록체인 DID 기반 모바일신분증 검증 및 사본 이미지 저장, 검증이력관리, 업무시스템 연계관리 등의 기능을 제공 (API Gateway / 중계 Agent / SP 서버)"
-},
-{
-"수정일": "2025-10-16",
-"구분": "용어",
-"용어": "사용자(Holder)",
-"설명": "VC를 소지한 사용자"
-},
-{
-"수정일": "2025-10-16",
-"구분": "용어",
-"용어": "발급자 (Issuer)",
-"설명": "발급자는 VC를 발급하는 실체, 발급기관을 말한다. (VC 발급기관, VC 발급자)\n- 발행기관은 VC와 VC의 상태 및 부가정보를 나타내는 VC 메타데이터를 불록체인에 함께 등록"
-},
-{
-"수정일": "2025-10-16",
-"구분": "용어",
-"용어": "분산ID (DID)",
-"설명": "중앙 등록 메커니즘 없이 신뢰된 분산 프레임워크 하에서 활용되는 신원정보 체계.(decentralized identifier)"
-},
-{
-"수정일": "2025-10-17",
-"구분": "용어",
-"용어": "분산식별자 문서 (DID Doc)",
-"설명": "DID Document의 약어. DID 와 DID용 공개키, 알고리즘 등이 기재된 Document로 블록체인에 저장.\n* 구성요소\n- authentication : DID 주체의 인증용 키 목록\n- controller : DID document 생성, 변경, 삭제 권한 보유자\n- id : DID\n- key agreement : DID 주체 의 암호화 통신용 키 목록\n- updated : 최종변경일시\n- verificationMethod : 모든 용도로 사용가능한 공개키 목록"
-},
-{
-"수정일": "2025-10-16",
-"구분": "용어",
-"용어": "분산식별자(DID)",
-"설명": "분산 원장 기술로 등록된 전 세계적으로 유일한 식별자."
-},
-{
-"수정일": "2025-10-16",
-"구분": "용어",
-"용어": "이용기관, SP (Service Provider)",
-"설명": "VC에 대한 검증 및 검증 결과에 따라 서비스를 제공하는 기관."
-},
-{
-"수정일": "2025-10-16",
-"구분": "용어",
-"용어": "월렛(Wallet)",
-"설명": "개인키를 담고 있는 파일 형태의 암호화 지갑, DID의 개인키 저장"
-},
-{
-"수정일": "2025-10-16",
-"구분": "용어",
-"용어": "월렛사업자",
-"설명": "월렛사업자는 자사의 보안영역(TEE)에 월렛을 구현하고 모바일신분증 민간개방 참여기업 시스템 평가기준을 충족하여 인증서를 획득한 기관을 말한다. (평가기준을 통과하여 CA에 월렛을 제공하는 사업자)"
-},
-{
-"수정일": "2025-10-16",
-"구분": "용어",
-"용어": "중계서버",
-"설명": "사용자가 제시하는 QR에 담긴 프록시 서버 URL로, 사용자가 생성 및 제출하는 VP를 중계하여 SP 서버로 전송"
-},
-{
-"수정일": "2025-10-16",
-"구분": "용어",
-"용어": "증명 (Proof)",
-"설명": "프루프(증명)은 검증정보, 서명데이터를 의미"
-},
-{
-"수정일": "2025-10-16",
-"구분": "용어",
-"용어": "CA (Certified App)\n: 인가된 앱",
-"설명": "- 사용자가 이용할 수 있는 모바일 앱으로 모바일신분증 화면 표시, PUSH알림 표시, 모바일신분증 정보 제출 등 주로 사용자와 상호 작용하기 위한 기능을 제공한다. 사용자가 모바일신분증서비스를 이용하기 위해 사용하는 앱을 말한다. (모바일신분증 민간개방 시스템 평가 및 안면인식 평가를 통과하여 인가 받은 앱)\n- 정부가 모바일신분증 발급/보관/제출을 허용한 공식 앱 범주(정부 앱, 토스/카카오뱅크/네이버 등). 2025.07.23 보도자료 기준 iOS는 일부 앱만 지원 시작(정부앱, 토스, 카카오뱅크), 나머지는 순차 지원 계획이 공지되었습니다."
-},
-{
-"수정일": "2025-10-16",
-"구분": "용어",
-"용어": "1st CA",
-"설명": "1) 정부 CA 2) 단말에 Wallet이 생성되어 있지 않아 Wallet 생성, DID Doc 등록 후 VC 발급을 진행하는 CA\n\n**신뢰체계(PKI) 관점: 1st CA는 오직 정부 Root CA. 은행은 2nd CA.\n**사용자 발급 절차 관점: 은행이 최초로 Wallet을 생성하고 DID/VC 발급을 해주면, \"1st CA\"로 불릴 수 있음."
-},
-{
-"수정일": "2025-10-16",
-"구분": "용어",
-"용어": "2nd CA(민간)",
-"설명": "1) 2nd CA란 정부 Root CA를 기반으로 한 \"민간 발급/운영 인증기관\n2) 단말에 이미 Wallet이 생성되어 있어 DID Doc 등록 과정 없이 생성된 Wallet에 연결 후 등록된 CA를 사용하거나 VC를 추가로 발급하는 CA"
-},
-{
-"수정일": "2025-10-16",
-"구분": "용어",
-"용어": "CA서버\n(Client Application Serve)",
-"설명": "- CA서버는 CA 인가 등 기능 제공을 목적으로 참여기업이 운영하는 서버를 말한다. (CA신뢰확보 등 의 기능을 위한 서버, 참여기업은 CA와 CA서버 구성)\n- CA 앱 뒤에 있는 백엔드. 모바일신분증 서버 접근/월렛 접근의 안전성 판정 후 토큰을 발급하는 게이트 역할을 합니다.\nAuthToken: 모바일신분증 서버 접근 인가\nWalletToken: 월렛(단말 보안영역) 접근 인가"
-},
-{
-"수정일": "2025-10-16",
-"구분": "용어",
-"용어": "DID Auth",
-"설명": "DID Authentication의 약어. 암호화된 Challenge-Response 프로토콜을 사용하여, DID 소유자가 DID를 제어하고 있음을 신뢰 당사자에게 입증하는 것. (\"내가 나\" 임을 증명)"
-},
-{
-"수정일": "2025-10-16",
-"구분": "용어",
-"용어": "Read Node",
-"설명": "신원관리 플랫폼 블록체인에서 DID doc 등을 조회하기 위해 읽기 전용으로 사용"
-},
-{
-"수정일": "2025-10-16",
-"구분": "용어",
-"용어": "TEE (신뢰실행환경)",
-"설명": "Trusted Execution Environment의 약어. 프로세서 내에 일반 영역과 보안 영역을 나누어 제공함으로써 두 영역 간의 정보 교환을 통제하여 보안성을 유지하는 환경"
-},
-{
-"수정일": "2025-10-16",
-"구분": "용어",
-"용어": "TUI (신뢰할 수 있는 사용자 인터페이스)",
-"설명": "Trusted User Interface의 약어. TEE에서 제어되고 있는 Secure Mode에서 사용자 Input, Ouput, Display가 실행되는 인터페이스로 사용자가 입력한 전자서명 및 PIN 정보 등을 안전하게 보호하기 위한 기능"
-},
-{
-"수정일": "2025-10-16",
-"구분": "인터페이스",
-"용어": "QR-CPM",
-"설명": "사용자의 QR을 모바일기기 화면에서 표출하여 SP 사업자가 스캔하여 사용하는 기능(Customer Presented Mode)"
-},
-{
-"수정일": "2025-10-16",
-"구분": "인터페이스",
-"용어": "QR-MPM",
-"설명": "이용자가 SP에서 생성한 QR을 스캔하여 사용하는 기능(Merchant Presented Mode)"
-},
-{
-"수정일": "2025-10-16",
-"구분": "인터페이스",
-"용어": "App2App",
-"설명": "신분증앱과 서비스앱이 URL scheme으로 직접 통신하는 기능"
-},
-{
-"수정일": "2025-10-16",
-"구분": "인터페이스",
-"용어": "PUSH",
-"설명": "조폐공사 PUSH 서버를 통해 신분증앱에 VP 제출 요청하는 기능"
-},
-{
-"수정일": "2025-10-16",
-"구분": "인터페이스",
-"용어": "BLE + QR",
-"설명": "QR코드를 통해 BLE 연결을 수행하고 이후 BLE 통신. CPM, MPM 모두 지원"
-},
-{
-"수정일": "2025-10-16",
-"구분": "인터페이스",
-"용어": "NFC",
-"설명": "신분증앱이 단말기와 NFC방식으로 직접 통신"
-},
-{
-"수정일": "2025-10-16",
-"구분": "송신모드",
-"용어": "direct",
-"설명": "verifier서버에 VP 직접 제출"
-},
-{
-"수정일": "2025-10-16",
-"구분": "송신모드",
-"용어": "indirect",
-"설명": "App2App: 서비스앱으로 VP 제출\nBLE + QR: BLE 응대장치로 VP 제출"
-},
-{
-"수정일": "2025-10-16",
-"구분": "송신모드",
-"용어": "proxy",
-"설명": "verifier서버와의 통신 환경이 불가하여 중계서버를 이용하고자 하는 경우, 웹소켓 연결"
-},
-{
-"수정일": "2025-10-16",
-"구분": "송신모드",
-"용어": "nfc",
-"설명": "신분증앱이 단말기와 NFC방식으로 직접 통신"
-},
-{
-"수정일": "2025-10-16",
-"구분": "용어",
-"용어": "2nd SP서버(용어 주의)",
-"설명": "공식 구성요소 명칭은 아님\n현장에선 DMZ 분리나 중계(프록시) 서버를 두는 설계에서 다음과 같이 나누어 부르기도 함\n- 외부 노출용 SP : 1st SP\n- 내부 연동용(혹은 중계) SP : 2nd SP\n특히 QR-CPM에서 중계서버를 두고 앱이 중계서버로 VP를 제출하는 구조가 가이드에 명확히 나와 있어, 이를 **내부 정책상 '2nd SP'**로 부르는 사례가 있습니다. (권장 공식 용어는 '중계서버')"
-},
-{
-"수정일": "2025-10-16",
-"구분": "용어",
-"용어": "검증앱",
-"설명": "모바일 신분증 검증앱은 모바일 신분증의 진위 여부 및 정부24 주민등록 진위 확인(QR)을 하는 앱입니다. 검증앱을 설치하여 모바일 신분증 소지자에게 필요한 정보를 요청하고 받을 수 있습니다.\nhttps://www.mobileid.go.kr/mip/hps/svcCnter/indexSvcCnterList.do\nhttps://www.mobileid.go.kr/mip/hps/svcIntrcn/svcIntrcnIdnty.do"
-},
-{
-"수정일": "2025-10-16",
-"구분": "용어",
-"용어": "SSI",
-"설명": "Self Sovereign Identity. 중앙기관에 Identity를 등록하지 않는 탈중앙화된 신원인증 방식. 자기주권 신원증명방식\n쉽게 말해 국가가 운영하는 SSI 기반 신원관리 플랫폼\n- 정부신분증서버 (Government SSI Server)"
-},
-{
-"수정일": "2025-10-16",
-"구분": "용어",
-"용어": "App ID",
-"설명": "CA의 ID. SDK가 단말 별로 다른 unique한 값으로 생성. CA 삭제 시까지 유효"
-},
-{
-"수정일": "2025-10-16",
-"구분": "용어",
-"용어": "App user ID",
-"설명": "삼성전자 내부에서 관리하는 CA의 ID. SDK가 단말 별로 다른 unique한 값으로 생성Wallet 연결 해제 시 까지 유효"
-},
-{
-"수정일": "2025-10-20",
-"구분": "용어",
-"용어": "WalletToken",
-"설명": "CA가 월렛(단말 보안영역)에 안전하게 접근하여 VC를 보관 또는 이용할 수 있도록 접근권한을 부여하는 인증 토큰\n짧게. 지갑 접근 권한을 증명토큰\nwalletToken = base64Encode(tempToken) | \nbase64Encode(sha256Hash(CI) | \nbase64Encode(signedWalletToken)\n*월렛 토큰 구성요소(예시)\n{\n  \"walletId\": \"abcd1234efgh5678\", \n  \"did\": \"did:kr:bank001:xyz123...\", \n  \"issuer\": \"https://ca.bank.co.kr\", \n  \"aud\": \"https://relay.mobileid.go.kr\", \n  \"sub\": \"walletOwner\", \n  \"iat\": 1729765000,\n  \"exp\": 1729768600,\n  \"scope\": \"wallet.access\",\n  \"nonce\": \"9d8123b7f4...\",\n  \"signature\": \"MEQCIFdR....==\"\n}"
-},
-{
-"수정일": "2025-10-16",
-"구분": "용어",
-"용어": "AuthToken",
-"설명": "CA와 정부 서버간 접근 토큰\n모바일 신분증 서버를 접근하기 위한 token.\n모바일 신분증 서버가 appId, walletAuthNo, walletId, 인증서, publicKey, purpose를 사용해서 생성해 CA 서버를 통해 CA에 전달\n[ purpose ] \"행안부민간개방API 규격\" 참조\n0 : Wallet 상태 조회\n1 : DID 발급\n2 : VC 발급\n4 : 월렛-VC 목록 조회\n5 : 월렛-VC 상세정보 조회\n6 : 발급가능VC리스트\n7 : 주소갱신\n8 : VC 삭제\n9 : 2nd CA 등록\n10 : DID_UPDATE\n11 : VP 제출\n99 : VC 상세 상태 조회"
-},
-{
-"수정일": "2025-10-16",
-"구분": "용어",
-"용어": "TempToken",
-"설명": "삼성월렛 연결 요청시 월렛에서 CA연결 식별을 위해 반환하는 값\nCA의 Wallet 연결 식별을 위한 임시 token. 지갑24 앱에서 생성해 CA에 전달\npurpose의 lifecycle 동안만 유효\n[ purpose ]※ 최신 및 상세 정보는 FW SDK 가이드 참조\n1001 : DID 발급\n1002 : VC 발급\n1004 : 월렛-VC 목록 조회\n1005 : 월렛-VC 상세정보 조회\n1006 : 발급가능VC리스트\n1007 : 주소갱신\n1008 : VC 삭제... 1009 : 2nd CA 등록\n1010 : DID_UPDATE\n1011 : VP 제출\n1098 : VC 상태 조회\n1999 : 기타"
-},
-{
-"수정일": "2025-10-16",
-"구분": "용어",
-"용어": "WalletAuthNo",
-"설명": "평가인정시 월렛사업자에게 정부에서 발행한 고유한 번호"
-},
-{
-"수정일": "2025-10-16",
-"구분": "용어",
-"용어": "CaAuthNo",
-"설명": "평가인정시 인가앱사업자에게 정부에서 발행한 고유한 번호"
-},
-{
-"수정일": "2025-10-16",
-"구분": "용어",
-"용어": "WalletId",
-"설명": "Wallet Framework App이 생성하는 유니크 ID, 모바일 신분증 서버에서 관리되는 Wallet ID. 지갑24 앱이 단말 별로 다른 unique한 값으로 생성\nWallet 삭제 시까지 유효"
-},
-{
-"수정일": "2025-10-16",
-"구분": "용어",
-"용어": "CaAppId",
-"설명": "인가앱(CaApp)이 생성하는 유니크 ID"
-},
-{
-"수정일": "2025-10-16",
-"구분": "용어",
-"용어": "CaAppUserID",
-"설명": "삼성월렛 내부에서 관리하는 개인별 ID (로그인시 새로 생성)"
-},
-{
-"수정일": "2025-10-22",
-"구분": "용어",
-"용어": "ZKP",
-"설명": "Zero Knowledge Proof. 영지식증명. 개인정보 노출 없이 특정 사항(성인, 성별, 거주지역 등)을 증명할 때 사용\n즉, 사용자의 신원속성을 직접적으로 공개하지 않고 자격을 갖추었다는 사실 증명만 필요한 경우에는 영지식 증명이 적용된 ZKP VC를 사용할 수 있음\n그 외는 Non-ZKP VC 사용"
-},
-{
-"수정일": "2025-10-16",
-"구분": "용어",
-"용어": "ZKP VC",
-"설명": "ZKP 기술을 적용한 VC (VC안에 신원정보 없음, DID 없음)"
-},
-{
-"수정일": "2025-10-16",
-"구분": "용어",
-"용어": "mDL",
-"설명": "Mobile Driver License의 약어. 모바일운전면허증"
-},
-{
-"수정일": "2025-10-16",
-"구분": "용어",
-"용어": "모바일신분증안전지갑",
-"설명": "삼성폰 지원 지갑24의 새이름(25년 4월)"
-},
-{
-"수정일": "2025-10-19",
-"구분": "용어",
-"용어": "라이브니스 탐지(Liveness Detection)",
-"설명": "사용자에게 눈을 깜빡이거나 고개를 돌리는 등의 특정 행동을 요구하고, 그 반응이 실제 살아있는 사람의 자연스러운 움직임인지를 분석하여 타인의 사진이나 동영상, 딥페이크 영상 등을 이용한 사기 시도를 막기위한 기술"
-},
-{
-"수정일": "2025-10-20",
-"구분": "용어",
-"용어": "SAK",
-"설명": "지갑(Wallet) 과 CA 서버 사이의 상호 인증을 위한 키쌍 (Public/Private key pair)\nSecure Access Keypair (보안 접근 키쌍) 또는 Session Authentication Keypair 라고도 불림"
-},
-{
-"수정일": "2025-10-24",
-"구분": "용어",
-"용어": "실명인증 도관방식",
-"설명": "기존 실명인증 인프라를 중계하는 방식. 즉 CA 사업자가 NICE, KCB 등 기존 실명인증기관에서 인증한 결과만 받아서 전달.\n간편하고 빠른 구축 가능"
-},
-{
-"수정일": "2025-10-24",
-"구분": "용어",
-"용어": "실명인증 직접방식",
-"설명": "정부 시스템과 직접연동하여 중간 인증기관 없이 직접 검증하는 방식"
-},
-{
-"수정일": "2025-10-29",
-"구분": "용어",
-"용어": "안티스푸핑(Anti-Spoofing)",
-"설명": "사진, 영상, 마스크 등 가짜 얼굴을 사용한 부정 인증 시도를 탐지하고 차단하는 기술\n* 안티스푸핑 탐지 기술\n1) Liveness Detection(활성검출)\n2) Active Liveness(능동적 활성 검출) - 랜던 동작을 요구해"
-},
-{
-"수정일": "2025-10-31",
-"구분": "용어",
-"용어": "HSM",
-"설명": "암호화 키 및 중요한 데이터를 관리 및 보호하기 위해 암호화 연산기능을 내장한 침해 방지(temper-resistant) 하드웨어\n(Hardware Security Modules)\n- 가장 안전하게 암호키를 생성하고 저장하며 암호화를 수행하는 인증받고 신뢰된 보안플랫폼.\n- 인증 : 미국 국립표준기술연구소(NIST)가 정의한 FIPS 140-2 표준에 따라 암호모듈의 보안 요구사항을 충족하는지 검증하는 국제표준 인증\n- 암호키 저장, 암호화, 복호화 등의 기능을 수행하는 하드웨어 보안 모듈"
-}
-];
+        const glossaryData = [{"수정일": "2025-10-16", "구분": "용어", "용어": "모바일신분증신원관리 플랫폼", "설명": "분산ID를 활용하여 모바일신분증 발급, 제출 등 주체의 신원을 증명하기 위해 운영하는 소프트웨어, 하드웨어, 서비스를 포함한 체계를 말한다."}, {"수정일": "2025-10-16", "구분": "용어", "용어": "모바일신분증서버", "설명": "모바일신분증서버는 모바일신분증 발급, 제출 등을 위해 정부가 운영하는 서버를 말한다. (모바일신분증의 CA, 월렛과 연동하며 발급 및 인가 App 요청사항 처리)"}, {"수정일": "2025-10-16", "구분": "용어", "용어": "클레임 (Claim)", "설명": "클레임은 크리덴셜의 일부로 발급한 이름, 주소 등 주체의 속성 또는 상태를 나타내는 기본단위를 말한다. 엔티티(사람 등)를 표현할 수 있는 속성값(예: 이름)"}, {"수정일": "2025-10-16", "구분": "용어", "용어": "크리덴셜 (Credential)", "설명": "클레임의 집합."}, {"수정일": "2025-10-16", "구분": "용어", "용어": "프레젠테이션 (Presentation)", "설명": "프레젠테이션은 주체가 검증자에게 제출하기 위해 하나 이상의 크리덴셜로부터 유도한 주체의 정보를 말한다."}, {"수정일": "2025-10-22", "구분": "용어", "용어": "프로파일 (Profile)", "설명": "서비스 제공자가 사용자에게 VP 제출을 요청하면서 함께 전달되는 제출정보 목록. Non-ZKP VP의 경우는 직접적으로 공개되는 사용자의 신원정보가 포함되는 것으로 정보제출을 요청하기 위해 해당 정보 목록을 운영협의체로부터 사전에 승인받아야함. 이때 승인된 정보 목록은 VP Profile Document로써 블록체인에 등록, 프로파일은 발급에 필요한 정보를 담고 있는 문서(JSON) 데이터, 해당 정보는 제출 받고자 하는 VC Type, 암호화 처리 정보, Callback URL을 포함."}, {"수정일": "2025-10-31", "구분": "용어", "용어": "Profile요청", "설명": "SpProfileParam spProfileParam = new SpProfileParam(blockChainServerInfo: ServerInfo, keyManager: IWKeyManager, spKeyId: String, serviceCode: String, profile: Profile, spDid: String, spCode: String);"}, {"수정일": "2025-10-16", "구분": "용어", "용어": "VC (Verified Credential)", "설명": "발급자(Issuer)가 본인확인 후 발급한 검증된 크리덴셜을 뜻하며, 사용자 개인정보가 담긴 신분증의 주체를 식별할 수 있는 정보(이름, 소속부처, 직급 정보 등)"}, {"수정일": "2025-10-24", "구분": "용어", "용어": "VP (Verified Presentation)", "설명": "검증된 프레젠테이션은 암호화 검증 절차를 거치면 데이터의 원저자를 신뢰할 수 있는 방식으로 인코딩 되어 증명된 프레젠테이션을 말함. 발급된 VCs를 기준으로 사용자의 선택적 제출에 의해 증명된 정보."}, {"수정일": "2025-10-16", "구분": "용어", "용어": "eVP (electronic Verifiable Presentation)", "설명": "VP를 모바일 신분증 표준(ISO 18013-5 등)이나 국가 전자신분증 규격에 맞추어, 전자적으로 교환·호환 가능하게 확장한 형식. 단순 데이터 패키지가 아니라, 프로토콜·인터페이스 규격을 준수하는 전자적 표현물"}, {"수정일": "2025-10-16", "구분": "용어", "용어": "VP Verifier(검증서버)", "설명": "블록체인 DID 기반 모바일신분증 검증 및 사본 이미지 저장, 검증이력관리, 업무시스템 연계관리 등의 기능을 제공 (API Gateway / 중계 Agent / SP 서버)"}, {"수정일": "2025-10-16", "구분": "용어", "용어": "사용자(Holder)", "설명": "VC를 소지한 사용자"}, {"수정일": "2025-10-16", "구분": "용어", "용어": "발급자 (Issuer)", "설명": "발급자는 VC를 발급하는 실체, 발급기관을 말한다. (VC 발급기관, VC 발급자) - 발행기관은 VC와 VC의 상태 및 부가정보를 나타내는 VC 메타데이터를 불록체인에 함께 등록"}, {"수정일": "2025-10-16", "구분": "용어", "용어": "분산ID (DID)", "설명": "중앙 등록 메커니즘 없이 신뢰된 분산 프레임워크 하에서 활용되는 신원정보 체계.(decentralized identifier)"}, {"수정일": "2025-10-17", "구분": "용어", "용어": "분산식별자 문서 (DID Doc)", "설명": "DID Document의 약어. DID 와 DID용 공개키, 알고리즘 등이 기재된 Document로 블록체인에 저장. 구성요소 - authentication: DID 주체의 인증용 키 목록 - controller: DID document 생성, 변경, 삭제 권한 보유자 - id: DID - key agreement: DID 주체의 암호화 통신용 키 목록 - updated: 최종변경일시 - verificationMethod: 모든 용도로 사용가능한 공개키 목록"}, {"수정일": "2025-10-16", "구분": "용어", "용어": "분산식별자(DID)", "설명": "분산 원장 기술로 등록된 전 세계적으로 유일한 식별자."}, {"수정일": "2025-10-16", "구분": "용어", "용어": "이용기관, SP (Service Provider)", "설명": "VC에 대한 검증 및 검증 결과에 따라 서비스를 제공하는 기관."}, {"수정일": "2025-10-16", "구분": "용어", "용어": "월렛(Wallet)", "설명": "개인키를 담고 있는 파일 형태의 암호화 지갑, DID의 개인키 저장"}, {"수정일": "2025-10-16", "구분": "용어", "용어": "월렛사업자", "설명": "월렛사업자는 자사의 보안영역(TEE)에 월렛을 구현하고 모바일신분증 민간개방 참여기업 시스템 평가기준을 충족하여 인증서를 획득한 기관을 말한다. (평가기준을 통과하여 CA에 월렛을 제공하는 사업자)"}, {"수정일": "2025-10-16", "구분": "용어", "용어": "중계서버", "설명": "사용자가 제시하는 QR에 담긴 프록시 서버 URL로, 사용자가 생성 및 제출하는 VP를 중계하여 SP 서버로 전송"}, {"수정일": "2025-10-16", "구분": "용어", "용어": "증명 (Proof)", "설명": "프루프(증명)은 검증정보, 서명데이터를 의미"}, {"수정일": "2025-10-16", "구분": "용어", "용어": "CA (Certified App) : 인가된 앱", "설명": "사용자가 이용할 수 있는 모바일 앱으로 모바일신분증 화면 표시, PUSH알림 표시, 모바일신분증 정보 제출 등 주로 사용자와 상호 작용하기 위한 기능을 제공한다. 사용자가 모바일신분증서비스를 이용하기 위해 사용하는 앱을 말한다. (모바일신분증 민간개방 시스템 평가 및 안면인식 평가를 통과하여 인가 받은 앱) - 정부가 모바일신분증 발급/보관/제출을 허용한 공식 앱 범주(정부 앱, 토스/카카오뱅크/네이버 등)."}, {"수정일": "2025-10-16", "구분": "용어", "용어": "1st CA", "설명": "1) 정부 CA 2) 단말에 Wallet이 생성되어 있지 않아 Wallet 생성, DID Doc 등록 후 VC 발급을 진행하는 CA"}, {"수정일": "2025-10-16", "구분": "용어", "용어": "2nd CA(민간)", "설명": "1) 2nd CA란 정부 Root CA를 기반으로 한 '민간 발급/운영 인증기관' 2) 단말에 이미 Wallet이 생성되어 있어 DID Doc 등록 과정 없이 생성된 Wallet에 연결 후 등록된 CA를 사용하거나 VC를 추가로 발급하는 CA"}, {"수정일": "2025-10-16", "구분": "용어", "용어": "CA서버 (Client Application Serve)", "설명": "CA서버는 CA 인가 등 기능 제공을 목적으로 참여기업이 운영하는 서버를 말한다. (CA신뢰확보 등의 기능을 위한 서버, 참여기업은 CA와 CA서버 구성) - CA 앱 뒤에 있는 백엔드. 모바일신분증 서버 접근/월렛 접근의 안전성 판정 후 토큰을 발급하는 게이트 역할을 합니다."}, {"수정일": "2025-10-16", "구분": "용어", "용어": "DID Auth", "설명": "DID Authentication의 약어. 암호화된 Challenge-Response 프로토콜을 사용하여, DID 소유자가 DID를 제어하고 있음을 신뢰 당사자에게 입증하는 것. ('내가 나' 임을 증명)"}, {"수정일": "2025-10-16", "구분": "용어", "용어": "Read Node", "설명": "신원관리 플랫폼 블록체인에서 DID doc 등을 조회하기 위해 읽기 전용으로 사용"}, {"수정일": "2025-10-16", "구분": "용어", "용어": "TEE (신뢰실행환경)", "설명": "Trusted Execution Environment의 약어. 프로세서 내에 일반 영역과 보안 영역을 나누어 제공함으로써 두 영역 간의 정보 교환을 통제하여 보안성을 유지하는 환경"}, {"수정일": "2025-10-16", "구분": "용어", "용어": "TUI (신뢰할 수 있는 사용자 인터페이스)", "설명": "Trusted User Interface의 약어. TEE에서 제어되고 있는 Secure Mode에서 사용자 Input, Ouput, Display가 실행되는 인터페이스로 사용자가 입력한 전자서명 및 PIN 정보 등을 안전하게 보호하기 위한 기능"}, {"수정일": "2025-10-16", "구분": "인터페이스", "용어": "QR-CPM", "설명": "사용자의 QR을 모바일기기 화면에서 표출하여 SP 사업자가 스캔하여 사용하는 기능(Customer Presented Mode)"}, {"수정일": "2025-10-16", "구분": "인터페이스", "용어": "QR-MPM", "설명": "이용자가 SP에서 생성한 QR을 스캔하여 사용하는 기능(Merchant Presented Mode)"}, {"수정일": "2025-10-16", "구분": "인터페이스", "용어": "App2App", "설명": "신분증앱과 서비스앱이 URL scheme으로 직접 통신하는 기능"}, {"수정일": "2025-10-16", "구분": "인터페이스", "용어": "PUSH", "설명": "조폐공사 PUSH 서버를 통해 신분증앱에 VP 제출 요청하는 기능"}, {"수정일": "2025-10-16", "구분": "인터페이스", "용어": "BLE + QR", "설명": "QR코드를 통해 BLE 연결을 수행하고 이후 BLE 통신. CPM, MPM 모두 지원"}, {"수정일": "2025-10-16", "구분": "인터페이스", "용어": "NFC", "설명": "신분증앱이 단말기와 NFC방식으로 직접 통신"}, {"수정일": "2025-10-16", "구분": "송신모드", "용어": "direct", "설명": "verifier서버에 VP 직접 제출"}, {"수정일": "2025-10-16", "구분": "송신모드", "용어": "indirect", "설명": "App2App: 서비스앱으로 VP 제출 BLE + QR: BLE 응대장치로 VP 제출"}, {"수정일": "2025-10-16", "구분": "송신모드", "용어": "proxy", "설명": "verifier서버와의 통신 환경이 불가하여 중계서버를 이용하고자 하는 경우, 웹소켓 연결"}, {"수정일": "2025-10-16", "구분": "송신모드", "용어": "nfc", "설명": "신분증앱이 단말기와 NFC방식으로 직접 통신"}, {"수정일": "2025-10-16", "구분": "용어", "용어": "2nd SP서버(용어 주의)", "설명": "공식 구성요소 명칭은 아님. 현장에선 DMZ 분리나 중계(프록시) 서버를 두는 설계에서 다음과 같이 나누어 부르기도 함 - 외부 노출용 SP: 1st SP - 내부 연동용(혹은 중계) SP: 2nd SP"}, {"수정일": "2025-10-16", "구분": "용어", "용어": "검증앱", "설명": "모바일 신분증 검증앱은 모바일 신분증의 진위 여부 및 정부24 주민등록 진위 확인(QR)을 하는 앱입니다."}, {"수정일": "2025-10-16", "구분": "용어", "용어": "SSI", "설명": "Self Sovereign Identity. 중앙기관에 Identity를 등록하지 않는 탈중앙화된 신원인증 방식. 자기주권 신원증명방식. 쉽게 말해 국가가 운영하는 SSI 기반 신원관리 플랫폼 - 정부신분증서버 (Government SSI Server)"}, {"수정일": "2025-10-16", "구분": "용어", "용어": "App ID", "설명": "CA의 ID. SDK가 단말 별로 다른 unique한 값으로 생성. CA 삭제 시까지 유효"}, {"수정일": "2025-10-16", "구분": "용어", "용어": "App user ID", "설명": "삼성전자 내부에서 관리하는 CA의 ID. SDK가 단말 별로 다른 unique한 값으로 생성. Wallet 연결 해제 시 까지 유효"}, {"수정일": "2025-10-20", "구분": "용어", "용어": "WalletToken", "설명": "CA가 월렛(단말 보안영역)에 안전하게 접근하여 VC를 보관 또는 이용할 수 있도록 접근권한을 부여하는 인증 토큰"}, {"수정일": "2025-10-16", "구분": "용어", "용어": "AuthToken", "설명": "CA와 정부 서버간 접근 토큰. 모바일 신분증 서버를 접근하기 위한 token."}, {"수정일": "2025-10-16", "구분": "용어", "용어": "TempToken", "설명": "삼성월렛 연결 요청시 월렛에서 CA연결 식별을 위해 반환하는 값"}, {"수정일": "2025-10-16", "구분": "용어", "용어": "WalletAuthNo", "설명": "평가인정시 월렛사업자에게 정부에서 발행한 고유한 번호"}, {"수정일": "2025-10-16", "구분": "용어", "용어": "CaAuthNo", "설명": "평가인정시 인가앱사업자에게 정부에서 발행한 고유한 번호"}, {"수정일": "2025-10-16", "구분": "용어", "용어": "WalletId", "설명": "Wallet Framework App이 생성하는 유니크 ID, 모바일 신분증 서버에서 관리되는 Wallet ID. 지갑24 앱이 단말 별로 다른 unique한 값으로 생성. Wallet 삭제 시까지 유효"}, {"수정일": "2025-10-16", "구분": "용어", "용어": "CaAppId", "설명": "인가앱(CaApp)이 생성하는 유니크 ID"}, {"수정일": "2025-10-16", "구분": "용어", "용어": "CaAppUserID", "설명": "삼성월렛 내부에서 관리하는 개인별 ID (로그인시 새로 생성)"}, {"수정일": "2025-10-22", "구분": "용어", "용어": "ZKP", "설명": "Zero Knowledge Proof. 영지식증명. 개인정보 노출 없이 특정 사항(성인, 성별, 거주지역 등)을 증명할 때 사용"}, {"수정일": "2025-10-16", "구분": "용어", "용어": "ZKP VC", "설명": "ZKP 기술을 적용한 VC (VC안에 신원정보 없음, DID 없음)"}, {"수정일": "2025-10-16", "구분": "용어", "용어": "mDL", "설명": "Mobile Driver License의 약어. 모바일운전면허증"}, {"수정일": "2025-10-16", "구분": "용어", "용어": "모바일신분증안전지갑", "설명": "삼성폰 지원 지갑24의 새이름(25년 4월)"}, {"수정일": "2025-10-19", "구분": "용어", "용어": "라이브니스 탐지(Liveness Detection)", "설명": "사용자에게 눈을 깜빡이거나 고개를 돌리는 등의 특정 행동을 요구하고, 그 반응이 실제 살아있는 사람의 자연스러운 움직임인지를 분석하여 타인의 사진이나 동영상, 딥페이크 영상 등을 이용한 사기 시도를 막기위한 기술"}, {"수정일": "2025-10-20", "구분": "용어", "용어": "SAK", "설명": "지갑(Wallet) 과 CA 서버 사이의 상호 인증을 위한 키쌍 (Public/Private key pair). Secure Access Keypair (보안 접근 키쌍) 또는 Session Authentication Keypair라고도 불림"}, {"수정일": "2025-10-24", "구분": "용어", "용어": "실명인증 도관방식", "설명": "기존 실명인증 인프라를 중계하는 방식. 즉 CA 사업자가 NICE, KCB 등 기존 실명인증기관에서 인증한 결과만 받아서 전달. 간편하고 빠른 구축 가능"}, {"수정일": "2025-10-24", "구분": "용어", "용어": "실명인증 직접방식", "설명": "정부 시스템과 직접연동하여 중간 인증기관 없이 직접 검증하는 방식"}, {"수정일": "2025-10-29", "구분": "용어", "용어": "안티스푸핑(Anti-Spoofing)", "설명": "사진, 영상, 마스크 등 가짜 얼굴을 사용한 부정 인증 시도를 탐지하고 차단하는 기술"}, {"수정일": "2025-10-31", "구분": "용어", "용어": "HSM", "설명": "암호화 키 및 중요한 데이터를 관리 및 보호하기 위해 암호화 연산기능을 내장한 침해 방지(temper-resistant) 하드웨어 (Hardware Security Modules) - 가장 안전하게 암호키를 생성하고 저장하며 암호화를 수행하는 인증받고 신뢰된 보안플랫폼."}];
+        const codeData = [{"수정일": "2025-10-16", "구분": "응답코드", "코드이름": "성공", "코드": "0000", "그룹명": "기본응답", "그룹코드": "0000", "비고": "일반 성공", "설명": "API 요청이 정상적으로 처리되어 성공한 경우의 응답코드입니다."}, {"수정일": "2025-10-16", "구분": "응답코드", "코드이름": "인증실패", "코드": "0001", "그룹명": "인증오류", "그룹코드": "0001", "비고": "인증 정보 부재 또는 만료", "설명": "제공된 인증 토큰이 없거나 만료된 경우입니다."}, {"수정일": "2025-10-16", "구분": "응답코드", "코드이름": "권한없음", "코드": "0002", "그룹명": "인증오류", "그룹코드": "0001", "비고": "권한 부족", "설명": "요청한 작업을 수행할 권한이 없습니다."}];
 
-        let currentTerm = null;
+        let currentView = 'glossary';
+        let currentData = glossaryData;
         let filters = {
             category: '전체',
             date: '전체',
             searchQuery: '',
             searchType: 'all'
         };
-
         let isFilterCollapsed = true;
 
+        // Tab switching
+        document.getElementById('glossaryTab').addEventListener('click', function() {
+            switchView('glossary');
+        });
+
+        document.getElementById('codeTab').addEventListener('click', function() {
+            switchView('code');
+        });
+
+        function switchView(view) {
+            currentView = view;
+            currentData = view === 'glossary' ? glossaryData : codeData;
+
+            document.querySelectorAll('.tab-button').forEach(btn => btn.classList.remove('active'));
+            document.querySelectorAll('.view-section').forEach(section => section.classList.remove('active'));
+
+            if (view === 'glossary') {
+                document.getElementById('glossaryTab').classList.add('active');
+                document.getElementById('glossaryView').classList.add('active');
+                updateDropdownLabel('용어');
+            } else {
+                document.getElementById('codeTab').classList.add('active');
+                document.getElementById('codeView').classList.add('active');
+                updateDropdownLabel('코드이름');
+            }
+
+            filters = {
+                category: '전체',
+                date: '전체',
+                searchQuery: '',
+                searchType: 'all'
+            };
+            document.getElementById('searchInput').value = '';
+
+            renderFilterChips();
+            applyFilters();
+        }
+
+        function updateDropdownLabel(label) {
+            const toggle = document.getElementById('dropdownToggle');
+            toggle.textContent = label;
+        }
+
         function getUniqueValues(key) {
-            const values = [...new Set(terms.map(t => t[key]))];
+            const values = [...new Set(currentData.map(t => t[key]))];
             return values.sort();
         }
 
         function init() {
-            renderFilterChips();
             setupDropdown();
             setupFilterToggle();
+            renderFilterChips();
             applyFilters();
         }
 
@@ -1031,13 +701,8 @@
             document.querySelectorAll('.dropdown-item').forEach(item => {
                 item.addEventListener('click', () => {
                     filters.searchType = item.dataset.value;
-
                     document.querySelectorAll('.dropdown-item').forEach(i => i.classList.remove('selected'));
                     item.classList.add('selected');
-
-                    let displayText = item.textContent;
-                    toggle.textContent = displayText;
-
                     menu.classList.remove('active');
                     applyFilters();
                 });
@@ -1068,13 +733,13 @@
             const categories = ['전체', ...getUniqueValues('구분')];
             const dates = ['전체', ...getUniqueValues('수정일')];
 
-            const categoryFiltersEl = document.getElementById('categoryFilters');
-            categoryFiltersEl.innerHTML = categories.map(cat => 
+            const categoryEl = document.getElementById('categoryFilters');
+            categoryEl.innerHTML = categories.map(cat => 
                 `<div class="filter-chip ${cat === '전체' ? 'all' : ''} ${filters.category === cat ? 'active' : ''}" data-type="category" data-value="${cat}">${cat}</div>`
             ).join('');
 
-            const dateFiltersEl = document.getElementById('dateFilters');
-            dateFiltersEl.innerHTML = dates.map(date => 
+            const dateEl = document.getElementById('dateFilters');
+            dateEl.innerHTML = dates.map(date => 
                 `<div class="filter-chip ${date === '전체' ? 'all' : ''} ${filters.date === date ? 'active' : ''}" data-type="date" data-value="${date}">${date}</div>`
             ).join('');
 
@@ -1098,33 +763,41 @@
         }
 
         function applyFilters() {
-            let filtered = terms.filter(term => {
-                const matchCategory = filters.category === '전체' || term.구분 === filters.category;
-                const matchDate = filters.date === '전체' || term.수정일 === filters.date;
+            let filtered = currentData.filter(item => {
+                const matchCategory = filters.category === '전체' || item.구분 === filters.category;
+                const matchDate = filters.date === '전체' || item.수정일 === filters.date;
 
                 let matchSearch = true;
                 if (filters.searchQuery) {
                     const query = filters.searchQuery.toLowerCase();
+                    const searchFields = currentView === 'glossary' 
+                        ? { term: '용어', desc: '설명' }
+                        : { term: '코드이름', desc: '설명' };
+
                     if (filters.searchType === 'all') {
-                        matchSearch = term.용어.toLowerCase().includes(query) || 
-                                    term.설명.toLowerCase().includes(query);
+                        matchSearch = item[searchFields.term].toLowerCase().includes(query) || 
+                                    item[searchFields.desc].toLowerCase().includes(query);
                     } else if (filters.searchType === 'term') {
-                        matchSearch = term.용어.toLowerCase().includes(query);
+                        matchSearch = item[searchFields.term].toLowerCase().includes(query);
                     } else if (filters.searchType === 'description') {
-                        matchSearch = term.설명.toLowerCase().includes(query);
+                        matchSearch = item[searchFields.desc].toLowerCase().includes(query);
                     }
                 }
 
                 return matchCategory && matchDate && matchSearch;
             });
 
-            renderTermList(filtered);
+            renderItemList(filtered);
             updateFilterCount(filtered.length);
 
             if (filtered.length > 0) {
-                selectTerm(filtered[0], 0);
+                selectItem(filtered[0], 0);
             } else {
-                document.getElementById('contentArea').innerHTML = `
+                const contentArea = currentView === 'glossary' 
+                    ? document.getElementById('glossaryContent')
+                    : document.getElementById('codeContent');
+
+                contentArea.innerHTML = `
                     <div class="empty-state">
                         <div class="empty-state-icon">🔍</div>
                         <div class="empty-state-text">검색 결과가 없습니다.</div>
@@ -1134,68 +807,95 @@
         }
 
         function updateFilterCount(count) {
-            const total = terms.length;
+            const total = currentData.length;
             document.getElementById('filterCount').textContent = `${count}개 / 전체 ${total}개`;
         }
 
-        function renderTermList(filteredTerms) {
-            const termList = document.getElementById('termList');
-            termList.innerHTML = '';
+        function renderItemList(filteredItems) {
+            const list = document.getElementById('itemList');
+            list.innerHTML = '';
 
-            if (filteredTerms.length === 0) {
-                termList.innerHTML = '<li class="no-results">검색 결과가 없습니다.</li>';
+            if (filteredItems.length === 0) {
+                list.innerHTML = '<li class="no-results">검색 결과가 없습니다.</li>';
                 return;
             }
 
-            filteredTerms.forEach((term, index) => {
+            filteredItems.forEach((item, index) => {
                 const li = document.createElement('li');
                 li.className = 'term-item';
-                li.textContent = term.용어;
+                li.textContent = currentView === 'glossary' ? item.용어 : item.코드이름;
                 li.onclick = () => {
-                    selectTerm(term, index);
+                    selectItem(item, index);
                     document.getElementById('hamburger').classList.remove('active');
                     document.getElementById('sidebar').classList.remove('active');
                     document.getElementById('overlay').classList.remove('active');
                 };
-                termList.appendChild(li);
+                list.appendChild(li);
             });
         }
 
-        function selectTerm(term, index) {
-            currentTerm = term;
-
-            document.querySelectorAll('.term-item').forEach((item, i) => {
-                item.classList.toggle('active', i === index);
+        function selectItem(item, index) {
+            document.querySelectorAll('.term-item').forEach((el, i) => {
+                el.classList.toggle('active', i === index);
             });
 
-            const contentArea = document.getElementById('contentArea');
-            let description = term.설명.replace(/^§/, '').trim();
+            if (currentView === 'glossary') {
+                renderGlossaryCard(item);
+            } else {
+                renderCodeCard(item);
+            }
+        }
 
-            // 코드 블록 처리
-            description = description.replace(/```([sS]*?)```/g, '<div class="code-block">$1</div>');
-            description = description.replace(/`([^`]+)`/g, '<code style="background-color:#f5f5f5;padding:2px 6px;border-radius:3px;font-family:monospace;">$1</code>');
-
-            // 개행 처리
-            description = description.replace(/\n/g, '<br>');
-
-            contentArea.innerHTML = `
-                <div class="term-card" id="term-${index}">
-                    <div class="term-title">${term.용어}</div>
-                    <div class="term-meta">
-                        <div class="meta-item">
+        function renderGlossaryCard(item) {
+            const content = document.getElementById('glossaryContent');
+            content.innerHTML = `
+                <div class="item-card">
+                    <div class="item-title">${item.용어}</div>
+                    <div class="item-meta">
+                        <div class="meta-badge">
                             <span class="meta-label">수정일:</span>
-                            <span class="meta-value">${term.수정일}</span>
+                            <span class="meta-value">${item.수정일}</span>
                         </div>
-                        <div class="meta-item">
+                        <div class="meta-badge">
                             <span class="meta-label">구분:</span>
-                            <span class="meta-value">${term.구분}</span>
+                            <span class="meta-value">${item.구분}</span>
                         </div>
                     </div>
-                    <div class="term-description">${description}</div>
+                    <div class="item-description">${item.설명}</div>
                 </div>
             `;
+        }
 
-            contentArea.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        function renderCodeCard(item) {
+            const content = document.getElementById('codeContent');
+            content.innerHTML = `
+                <div class="item-card">
+                    <div class="item-title">${item.코드이름} (${item.코드})</div>
+                    <div class="item-meta">
+                        <div class="meta-badge">
+                            <span class="meta-label">수정일:</span>
+                            <span class="meta-value">${item.수정일}</span>
+                        </div>
+                        <div class="meta-badge">
+                            <span class="meta-label">구분:</span>
+                            <span class="meta-value">${item.구분}</span>
+                        </div>
+                        <div class="meta-badge">
+                            <span class="meta-label">그룹명:</span>
+                            <span class="meta-value">${item.그룹명}</span>
+                        </div>
+                        <div class="meta-badge">
+                            <span class="meta-label">그룹코드:</span>
+                            <span class="meta-value">${item.그룹코드}</span>
+                        </div>
+                        <div class="meta-badge">
+                            <span class="meta-label">비고:</span>
+                            <span class="meta-value">${item.비고}</span>
+                        </div>
+                    </div>
+                    <div class="item-description">${item.설명}</div>
+                </div>
+            `;
         }
 
         document.getElementById('searchInput').addEventListener('input', (e) => {
@@ -1211,23 +911,12 @@
                 searchType: 'all'
             };
             document.getElementById('searchInput').value = '';
-
             document.querySelectorAll('.filter-chip').forEach(chip => {
                 chip.classList.remove('active');
                 if (chip.dataset.value === '전체') {
                     chip.classList.add('active');
                 }
             });
-
-            const toggle = document.getElementById('dropdownToggle');
-            toggle.textContent = '용어 + 설명';
-            document.querySelectorAll('.dropdown-item').forEach(item => {
-                item.classList.remove('selected');
-                if (item.dataset.value === 'all') {
-                    item.classList.add('selected');
-                }
-            });
-
             applyFilters();
         });
 
