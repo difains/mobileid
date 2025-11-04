@@ -87,6 +87,106 @@
             transform: translateX(0);
         }
 
+        /* Filter Section */
+        .filter-section {
+            padding: 16px;
+            border-bottom: 1px solid #e0e0e0;
+        }
+
+        .search-box {
+            margin-bottom: 16px;
+        }
+
+        .search-input {
+            width: 100%;
+            padding: 10px 12px;
+            border: 1px solid #ddd;
+            border-radius: 6px;
+            font-size: 14px;
+            transition: border-color 0.2s ease;
+        }
+
+        .search-input:focus {
+            outline: none;
+            border-color: #1a73e8;
+            box-shadow: 0 0 0 2px rgba(26, 115, 232, 0.1);
+        }
+
+        .filter-group {
+            margin-bottom: 16px;
+        }
+
+        .filter-label {
+            display: block;
+            font-size: 12px;
+            font-weight: 600;
+            color: #666;
+            margin-bottom: 8px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .filter-chips {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 6px;
+        }
+
+        .filter-chip {
+            padding: 6px 12px;
+            background-color: #f1f3f4;
+            border: 1px solid #dadce0;
+            border-radius: 16px;
+            font-size: 13px;
+            color: #5f6368;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            user-select: none;
+        }
+
+        .filter-chip:hover {
+            background-color: #e8eaed;
+        }
+
+        .filter-chip.active {
+            background-color: #1a73e8;
+            color: white;
+            border-color: #1a73e8;
+        }
+
+        .filter-chip.all {
+            font-weight: 600;
+        }
+
+        .clear-filters {
+            display: inline-block;
+            padding: 8px 16px;
+            background-color: #fff;
+            border: 1px solid #dadce0;
+            border-radius: 6px;
+            font-size: 13px;
+            color: #5f6368;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            margin-top: 8px;
+        }
+
+        .clear-filters:hover {
+            background-color: #f8f9fa;
+            border-color: #1a73e8;
+            color: #1a73e8;
+        }
+
+        .filter-count {
+            font-size: 12px;
+            color: #999;
+            margin-top: 12px;
+            padding: 8px 12px;
+            background-color: #f8f9fa;
+            border-radius: 4px;
+            text-align: center;
+        }
+
         .term-list {
             list-style: none;
             padding: 16px 0;
@@ -224,27 +324,6 @@
             margin-bottom: 0;
         }
 
-        /* Search */
-        .search-box {
-            margin-bottom: 16px;
-            padding: 0 16px;
-        }
-
-        .search-input {
-            width: 100%;
-            padding: 10px 12px;
-            border: 1px solid #ddd;
-            border-radius: 6px;
-            font-size: 14px;
-            transition: border-color 0.2s ease;
-        }
-
-        .search-input:focus {
-            outline: none;
-            border-color: #1a73e8;
-            box-shadow: 0 0 0 2px rgba(26, 115, 232, 0.1);
-        }
-
         .no-results {
             text-align: center;
             padding: 40px 20px;
@@ -303,6 +382,15 @@
             .term-title {
                 font-size: 16px;
             }
+
+            .filter-chips {
+                gap: 4px;
+            }
+
+            .filter-chip {
+                font-size: 12px;
+                padding: 5px 10px;
+            }
         }
 
         /* Scrollbar */
@@ -340,8 +428,23 @@
 
     <!-- Sidebar -->
     <aside class="sidebar" id="sidebar">
-        <div class="search-box">
-            <input type="text" class="search-input" id="searchInput" placeholder="용어 검색...">
+        <div class="filter-section">
+            <div class="search-box">
+                <input type="text" class="search-input" id="searchInput" placeholder="용어 검색...">
+            </div>
+
+            <div class="filter-group">
+                <label class="filter-label">구분</label>
+                <div class="filter-chips" id="categoryFilters"></div>
+            </div>
+
+            <div class="filter-group">
+                <label class="filter-label">수정일</label>
+                <div class="filter-chips" id="dateFilters"></div>
+            </div>
+
+            <button class="clear-filters" id="clearFilters">필터 초기화</button>
+            <div class="filter-count" id="filterCount"></div>
         </div>
         <ul class="term-list" id="termList"></ul>
     </aside>
@@ -729,13 +832,90 @@
         ];
 
         let currentTerm = null;
+        let filters = {
+            category: '전체',
+            date: '전체',
+            searchQuery: ''
+        };
+
+        // Get unique values
+        function getUniqueValues(key) {
+            const values = [...new Set(terms.map(t => t[key]))];
+            return values.sort();
+        }
 
         // Initialize
         function init() {
-            renderTermList(terms);
-            if (terms.length > 0) {
-                selectTerm(terms[0], 0);
+            renderFilterChips();
+            applyFilters();
+        }
+
+        // Render filter chips
+        function renderFilterChips() {
+            const categories = ['전체', ...getUniqueValues('구분')];
+            const dates = ['전체', ...getUniqueValues('수정일')];
+
+            const categoryFiltersEl = document.getElementById('categoryFilters');
+            categoryFiltersEl.innerHTML = categories.map(cat => 
+                `<div class="filter-chip ${cat === '전체' ? 'all' : ''} ${filters.category === cat ? 'active' : ''}" data-type="category" data-value="${cat}">${cat}</div>`
+            ).join('');
+
+            const dateFiltersEl = document.getElementById('dateFilters');
+            dateFiltersEl.innerHTML = dates.map(date => 
+                `<div class="filter-chip ${date === '전체' ? 'all' : ''} ${filters.date === date ? 'active' : ''}" data-type="date" data-value="${date}">${date}</div>`
+            ).join('');
+
+            // Add click events
+            document.querySelectorAll('.filter-chip').forEach(chip => {
+                chip.addEventListener('click', () => {
+                    const type = chip.dataset.type;
+                    const value = chip.dataset.value;
+
+                    if (type === 'category') {
+                        filters.category = value;
+                        document.querySelectorAll('[data-type="category"]').forEach(c => c.classList.remove('active'));
+                    } else if (type === 'date') {
+                        filters.date = value;
+                        document.querySelectorAll('[data-type="date"]').forEach(c => c.classList.remove('active'));
+                    }
+
+                    chip.classList.add('active');
+                    applyFilters();
+                });
+            });
+        }
+
+        // Apply filters
+        function applyFilters() {
+            let filtered = terms.filter(term => {
+                const matchCategory = filters.category === '전체' || term.구분 === filters.category;
+                const matchDate = filters.date === '전체' || term.수정일 === filters.date;
+                const matchSearch = !filters.searchQuery || 
+                    term.용어.toLowerCase().includes(filters.searchQuery.toLowerCase()) ||
+                    term.설명.toLowerCase().includes(filters.searchQuery.toLowerCase());
+
+                return matchCategory && matchDate && matchSearch;
+            });
+
+            renderTermList(filtered);
+            updateFilterCount(filtered.length);
+
+            if (filtered.length > 0) {
+                selectTerm(filtered[0], 0);
+            } else {
+                document.getElementById('contentArea').innerHTML = `
+                    <div class="empty-state">
+                        <div class="empty-state-icon">🔍</div>
+                        <div class="empty-state-text">검색 결과가 없습니다.</div>
+                    </div>
+                `;
             }
+        }
+
+        // Update filter count
+        function updateFilterCount(count) {
+            const total = terms.length;
+            document.getElementById('filterCount').textContent = `${count}개 / 전체 ${total}개`;
         }
 
         // Render term list in sidebar
@@ -798,12 +978,27 @@
 
         // Search functionality
         document.getElementById('searchInput').addEventListener('input', (e) => {
-            const query = e.target.value.toLowerCase();
-            const filtered = terms.filter(term => 
-                term.용어.toLowerCase().includes(query) || 
-                term.설명.toLowerCase().includes(query)
-            );
-            renderTermList(filtered);
+            filters.searchQuery = e.target.value;
+            applyFilters();
+        });
+
+        // Clear filters
+        document.getElementById('clearFilters').addEventListener('click', () => {
+            filters = {
+                category: '전체',
+                date: '전체',
+                searchQuery: ''
+            };
+            document.getElementById('searchInput').value = '';
+
+            document.querySelectorAll('.filter-chip').forEach(chip => {
+                chip.classList.remove('active');
+                if (chip.dataset.value === '전체') {
+                    chip.classList.add('active');
+                }
+            });
+
+            applyFilters();
         });
 
         // Hamburger menu toggle
