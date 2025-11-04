@@ -28,11 +28,12 @@
         .filter-section { padding: 12px; border-bottom: 1px solid #e0e0e0; }
         .search-box { margin-bottom: 12px; display: flex; border: 1px solid #ddd; border-radius: 6px; overflow: hidden; }
         .search-dropdown { position: relative; flex-shrink: 0; }
-        .dropdown-toggle { padding: 10px 8px; background: #f9f9f9; border: none; border-right: 1px solid #ddd; font-size: 12px; cursor: pointer; min-width: 75px; text-align: center; display: flex; align-items: center; justify-content: center; gap: 4px; font-weight: 500; }
+        .dropdown-toggle { padding: 10px 8px; background: #f9f9f9; border: none; border-right: 1px solid #ddd; font-size: 12px; cursor: pointer; min-width: 80px; text-align: center; display: flex; align-items: center; justify-content: center; gap: 4px; font-weight: 500; white-space: nowrap; }
         .dropdown-toggle::after { content: '▼'; font-size: 9px; color: #999; }
-        .dropdown-menu { position: absolute; top: 100%; left: 0; background: #fff; border: 1px solid #ddd; border-top: none; min-width: 120px; z-index: 10; box-shadow: 0 4px 8px rgba(0,0,0,0.1); display: none; }
+        .dropdown-menu { position: absolute; top: 100%; left: 0; background: #fff; border: 1px solid #ddd; border-top: none; min-width: 130px; z-index: 1000; box-shadow: 0 4px 8px rgba(0,0,0,0.1); display: none; }
         .dropdown-menu.active { display: block; }
         .dropdown-item { padding: 10px 12px; cursor: pointer; font-size: 13px; color: #555; border-bottom: 1px solid #f0f0f0; transition: 0.2s; }
+        .dropdown-item:last-child { border-bottom: none; }
         .dropdown-item:hover { background: #f1f3f4; }
         .dropdown-item.selected { background: #e8f0fe; color: #1a73e8; font-weight: 600; }
         .search-input { flex: 1; padding: 10px 12px; border: none; font-size: 13px; }
@@ -40,7 +41,7 @@
         .filter-toggle-btn { width: 100%; padding: 10px 12px; background: #f5f5f5; border: 1px solid #ddd; border-radius: 4px; cursor: pointer; font-weight: 600; font-size: 13px; margin-bottom: 12px; display: flex; align-items: center; justify-content: space-between; }
         .filter-toggle-icon { font-size: 11px; transition: 0.3s; }
         .filter-toggle-icon.collapsed { transform: rotate(180deg); }
-        .filter-content { max-height: 500px; transition: 0.3s; margin-bottom: 12px; }
+        .filter-content { max-height: 600px; transition: 0.3s; margin-bottom: 12px; overflow-y: auto; }
         .filter-content.collapsed { max-height: 0; margin-bottom: 0; overflow: hidden; }
 
         .filter-group { margin-bottom: 12px; }
@@ -53,7 +54,7 @@
         .clear-filters:hover { border-color: #1a73e8; color: #1a73e8; }
 
         .term-list { list-style: none; padding: 8px 0; }
-        .term-item { padding: 10px 12px; cursor: pointer; border-bottom: 1px solid #f0f0f0; font-size: 13px; color: #555; transition: 0.2s; }
+        .term-item { padding: 10px 12px; cursor: pointer; border-bottom: 1px solid #f0f0f0; font-size: 13px; color: #555; transition: 0.2s; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
         .term-item:hover { background: #f9f9f9; color: #1a73e8; }
         .term-item.active { background: #e8f0fe; color: #1a73e8; font-weight: 600; border-left: 4px solid #1a73e8; padding-left: 8px; }
 
@@ -107,11 +108,7 @@
             <div class="search-box">
                 <div class="search-dropdown">
                     <button class="dropdown-toggle" id="dropdownToggle">용어</button>
-                    <div class="dropdown-menu" id="dropdownMenu">
-                        <div class="dropdown-item selected" data-value="all">용어 + 설명</div>
-                        <div class="dropdown-item" data-value="term">용어만</div>
-                        <div class="dropdown-item" data-value="description">설명만</div>
-                    </div>
+                    <div class="dropdown-menu" id="dropdownMenu"></div>
                 </div>
                 <input type="text" class="search-input" id="searchInput" placeholder="검색...">
             </div>
@@ -121,17 +118,7 @@
                 <span class="filter-toggle-icon">▼</span>
             </button>
 
-            <div class="filter-content collapsed" id="filterContent">
-                <div class="filter-group">
-                    <label class="filter-label">구분</label>
-                    <div class="filter-chips" id="categoryFilters"></div>
-                </div>
-                <div class="filter-group">
-                    <label class="filter-label">수정일</label>
-                    <div class="filter-chips" id="dateFilters"></div>
-                </div>
-                <button class="clear-filters" id="clearFilters">필터 초기화</button>
-            </div>
+            <div class="filter-content collapsed" id="filterContent"></div>
         </div>
         <ul class="term-list" id="itemList"></ul>
     </aside>
@@ -151,10 +138,10 @@
         let currentView = 'glossary';
         let currentData = [];
         let searchQuery = '';
-        let searchType = 'all';
-        let selectedCategory = '전체';
-        let selectedDate = '전체';
+        let searchType = '';
+        let filters = {};
         let isFilterCollapsed = true;
+        let dropdownOptions = [];
 
         // JSON 데이터 로드
         async function loadData() {
@@ -170,13 +157,16 @@
                 document.getElementById('codeCount').textContent = `(${codeData.length})`;
 
                 currentData = glossaryData;
+                currentView = 'glossary';
+                searchType = '용어';
                 init();
             } catch (error) {
                 console.error('데이터 로드 실패:', error);
-                document.getElementById('glossaryContent').innerHTML = '<div class="empty-state"><div style="font-size:48px;">⚠️</div><div>JSON 파일을 찾을 수 없습니다.</div><div style="font-size:12px; margin-top:10px;">glossary.json과 code.json 파일이 HTML과 같은 폴더에 있는지 확인하세요.</div></div>';
+                document.getElementById('glossaryContent').innerHTML = '<div class="empty-state"><div style="font-size:48px;">⚠️</div><div>JSON 파일을 찾을 수 없습니다.</div></div>';
             }
         }
 
+        // 탭 전환
         document.getElementById('glossaryTab').addEventListener('click', () => switchView('glossary'));
         document.getElementById('codeTab').addEventListener('click', () => switchView('code'));
 
@@ -189,53 +179,76 @@
             if (view === 'glossary') {
                 document.getElementById('glossaryTab').classList.add('active');
                 document.getElementById('glossaryView').classList.add('active');
-                document.getElementById('dropdownToggle').textContent = '용어';
+                searchType = '용어';
+                dropdownOptions = ['용어', '설명'];
             } else {
                 document.getElementById('codeTab').classList.add('active');
                 document.getElementById('codeView').classList.add('active');
-                document.getElementById('dropdownToggle').textContent = '코드이름';
+                searchType = '코드이름';
+                dropdownOptions = ['코드이름', '코드번호'];
             }
 
+            document.getElementById('dropdownToggle').textContent = searchType;
             resetFilters();
-            init();
-        }
-
-        function resetFilters() {
-            searchQuery = '';
-            searchType = 'all';
-            selectedCategory = '전체';
-            selectedDate = '전체';
-            document.getElementById('searchInput').value = '';
-        }
-
-        function init() {
-            setupDropdown();
-            setupFilterToggle();
+            renderDropdown();
             renderFilters();
             applyFilters();
         }
 
-        function setupDropdown() {
+        function resetFilters() {
+            searchQuery = '';
+            filters = {};
+            document.getElementById('searchInput').value = '';
+            dropdownOptions.forEach(opt => {
+                if (currentView === 'glossary' && opt === '용어') searchType = opt;
+                else if (currentView === 'code' && opt === '코드이름') searchType = opt;
+            });
+        }
+
+        function init() {
+            setupDropdownToggle();
+            setupFilterToggle();
+            renderDropdown();
+            renderFilters();
+            applyFilters();
+        }
+
+        // 드롭다운 렌더링 및 토글
+        function renderDropdown() {
+            const menu = document.getElementById('dropdownMenu');
+            menu.innerHTML = dropdownOptions.map(opt =>
+                `<div class="dropdown-item ${opt === searchType ? 'selected' : ''}" data-value="${opt}">${opt}</div>`
+            ).join('');
+
+            document.querySelectorAll('#dropdownMenu .dropdown-item').forEach(item => {
+                item.addEventListener('click', () => {
+                    searchType = item.dataset.value;
+                    document.querySelectorAll('#dropdownMenu .dropdown-item').forEach(i => i.classList.remove('selected'));
+                    item.classList.add('selected');
+                    document.getElementById('dropdownToggle').textContent = searchType;
+                    document.getElementById('dropdownMenu').classList.remove('active');
+                    applyFilters();
+                });
+            });
+        }
+
+        function setupDropdownToggle() {
             const toggle = document.getElementById('dropdownToggle');
             const menu = document.getElementById('dropdownMenu');
+
             toggle.addEventListener('click', (e) => {
                 e.stopPropagation();
                 menu.classList.toggle('active');
             });
-            document.querySelectorAll('.dropdown-item').forEach(item => {
-                item.addEventListener('click', () => {
-                    searchType = item.dataset.value;
-                    document.querySelectorAll('.dropdown-item').forEach(i => i.classList.remove('selected'));
-                    item.classList.add('selected');
-                    menu.classList.remove('active');
-                    applyFilters();
-                });
-            });
+
             document.addEventListener('click', (e) => {
-                if (!e.target.closest('.search-dropdown')) menu.classList.remove('active');
+                if (!e.target.closest('.search-dropdown')) {
+                    menu.classList.remove('active');
+                }
             });
         }
 
+        // 필터 토글
         function setupFilterToggle() {
             const btn = document.getElementById('filterToggleBtn');
             const content = document.getElementById('filterContent');
@@ -249,74 +262,128 @@
             });
         }
 
+        // 필터 렌더링
         function renderFilters() {
-            const categories = ['전체', ...new Set(currentData.map(t => t.구분))];
-            const dates = ['전체', ...new Set(currentData.map(t => t.수정일))];
+            const filterContent = document.getElementById('filterContent');
+            let filterGroups = [];
 
-            document.getElementById('categoryFilters').innerHTML = categories.map(cat =>
-                `<div class="filter-chip ${selectedCategory === cat ? 'active' : ''}" data-type="category" data-value="${cat}">${cat}</div>`
-            ).join('');
+            if (currentView === 'glossary') {
+                const categories = ['전체', ...new Set(currentData.map(t => t.구분))];
+                const dates = ['전체', ...new Set(currentData.map(t => t.수정일))];
+                filterGroups = [
+                    { label: '구분', key: '구분', values: categories },
+                    { label: '수정일', key: '수정일', values: dates }
+                ];
+            } else {
+                const categories = ['전체', ...new Set(currentData.map(t => t.구분))];
+                const groupNames = ['전체', ...new Set(currentData.map(t => t.그룹명))];
+                const groupCodes = ['전체', ...new Set(currentData.map(t => t.그룹코드))];
+                const codes = ['전체', ...new Set(currentData.map(t => t.코드))];
+                const remarks = ['전체', ...new Set(currentData.map(t => t.비고))];
+                const dates = ['전체', ...new Set(currentData.map(t => t.수정일))];
 
-            document.getElementById('dateFilters').innerHTML = dates.map(date =>
-                `<div class="filter-chip ${selectedDate === date ? 'active' : ''}" data-type="date" data-value="${date}">${date}</div>`
-            ).join('');
+                filterGroups = [
+                    { label: '수정일', key: '수정일', values: dates },
+                    { label: '구분', key: '구분', values: categories },
+                    { label: '그룹명', key: '그룹명', values: groupNames },
+                    { label: '그룹코드', key: '그룹코드', values: groupCodes },
+                    { label: '코드번호', key: '코드번호', values: codes },
+                    { label: '비고', key: '비고', values: remarks }
+                ];
+            }
+
+            filterContent.innerHTML = filterGroups.map(group =>
+                `<div class="filter-group">
+                    <label class="filter-label">${group.label}</label>
+                    <div class="filter-chips" data-key="${group.key}">
+                        ${group.values.map(val =>
+                            `<div class="filter-chip ${(filters[group.key] === val) ? 'active' : ''}" data-value="${val}">${val}</div>`
+                        ).join('')}
+                    </div>
+                </div>`
+            ).join('') + `<button class="clear-filters" id="clearFilters">필터 초기화</button>`;
 
             document.querySelectorAll('.filter-chip').forEach(chip => {
                 chip.addEventListener('click', () => {
-                    const type = chip.dataset.type;
+                    const key = chip.closest('.filter-chips').dataset.key;
                     const value = chip.dataset.value;
 
-                    if (type === 'category') {
-                        selectedCategory = value;
-                        document.querySelectorAll('[data-type="category"]').forEach(c => c.classList.remove('active'));
+                    document.querySelectorAll(`[data-key="${key}"] .filter-chip`).forEach(c => c.classList.remove('active'));
+
+                    if (value !== '전체') {
+                        chip.classList.add('active');
+                        filters[key] = value;
                     } else {
-                        selectedDate = value;
-                        document.querySelectorAll('[data-type="date"]').forEach(c => c.classList.remove('active'));
+                        delete filters[key];
                     }
-                    chip.classList.add('active');
                     applyFilters();
                 });
             });
+
+            document.getElementById('clearFilters').addEventListener('click', () => {
+                resetFilters();
+                renderFilters();
+                applyFilters();
+            });
         }
 
+        // 필터 적용
         function applyFilters() {
             let filtered = currentData.filter(item => {
-                const catMatch = selectedCategory === '전체' || item.구분 === selectedCategory;
-                const dateMatch = selectedDate === '전체' || item.수정일 === selectedDate;
+                // 필터 적용
+                for (let key in filters) {
+                    if (item[key] !== filters[key]) return false;
+                }
 
-                let searchMatch = true;
+                // 검색 적용
                 if (searchQuery) {
                     const q = searchQuery.toLowerCase();
-                    const field = currentView === 'glossary' ? '용어' : '코드이름';
+                    let searchField = '';
 
-                    if (searchType === 'all') {
-                        searchMatch = item[field].toLowerCase().includes(q) || item.설명.toLowerCase().includes(q);
-                    } else if (searchType === 'term') {
-                        searchMatch = item[field].toLowerCase().includes(q);
+                    if (currentView === 'glossary') {
+                        searchField = searchType === '용어' ? '용어' : '설명';
                     } else {
-                        searchMatch = item.설명.toLowerCase().includes(q);
+                        searchField = searchType === '코드이름' ? '코드이명' : '코드';
+                    }
+
+                    if (!item[searchField] || !item[searchField].toLowerCase().includes(q)) {
+                        return false;
                     }
                 }
 
-                return catMatch && dateMatch && searchMatch;
+                return true;
             });
 
             renderItemList(filtered);
             renderAllCards(filtered);
         }
 
+        // 좌측 메뉴 렌더링
         function renderItemList(items) {
             const list = document.getElementById('itemList');
             list.innerHTML = items.map((item, idx) => {
                 const title = currentView === 'glossary' 
                     ? item.용어 
-                    : (item.코드이름 ? `${item.코드이름}(${item.코드})` : item.코드);
-                return `<li class="term-item" onclick="selectItem(${idx})">${title}</li>`;
+                    : (item.코드이름 || item.코드이명 || item.코드);
+                return `<li class="term-item" onclick="selectItem(${idx})" title="${title}">${title}</li>`;
             }).join('');
         }
 
         function selectItem(idx) {
-            const filtered = applySearchFilter(currentData);
+            let filtered = currentData.filter(item => {
+                for (let key in filters) {
+                    if (item[key] !== filters[key]) return false;
+                }
+                if (searchQuery) {
+                    const q = searchQuery.toLowerCase();
+                    let searchField = currentView === 'glossary' 
+                        ? (searchType === '용어' ? '용어' : '설명')
+                        : (searchType === '코드이름' ? '코드이명' : '코드');
+                    if (!item[searchField] || !item[searchField].toLowerCase().includes(q)) return false;
+                }
+                return true;
+            });
+
             if (idx < filtered.length) {
                 renderAllCards([filtered[idx]]);
                 document.getElementById('hamburger').classList.remove('active');
@@ -325,29 +392,7 @@
             }
         }
 
-        function applySearchFilter(items) {
-            return items.filter(item => {
-                const catMatch = selectedCategory === '전체' || item.구분 === selectedCategory;
-                const dateMatch = selectedDate === '전체' || item.수정일 === selectedDate;
-
-                let searchMatch = true;
-                if (searchQuery) {
-                    const q = searchQuery.toLowerCase();
-                    const field = currentView === 'glossary' ? '용어' : '코드이름';
-
-                    if (searchType === 'all') {
-                        searchMatch = item[field].toLowerCase().includes(q) || item.설명.toLowerCase().includes(q);
-                    } else if (searchType === 'term') {
-                        searchMatch = item[field].toLowerCase().includes(q);
-                    } else {
-                        searchMatch = item.설명.toLowerCase().includes(q);
-                    }
-                }
-
-                return catMatch && dateMatch && searchMatch;
-            });
-        }
-
+        // 카드 렌더링
         function renderAllCards(items) {
             const area = currentView === 'glossary' 
                 ? document.getElementById('glossaryContent') 
@@ -369,10 +414,11 @@
                         <div class="item-description">${item.설명}</div>
                     </div>`
                     : `<div class="item-card">
-                        <div class="item-title">${item.코드이름 || item.코드}(${item.코드})</div>
+                        <div class="item-title">${item.코드이름 || item.코드이명 || item.코드}(${item.코드})</div>
                         <div class="item-meta">
                             <div class="meta-badge"><strong>수정일:</strong> <span class="meta-value">${item.수정일}</span></div>
                             <div class="meta-badge"><strong>구분:</strong> <span class="meta-value">${item.구분}</span></div>
+                            <div class="meta-badge"><strong>그룹명:</strong> <span class="meta-value">${item.그룹명}</span></div>
                             <div class="meta-badge"><strong>그룹코드:</strong> <span class="meta-value">${item.그룹코드}</span></div>
                             <div class="meta-badge"><strong>비고:</strong> <span class="meta-value">${item.비고}</span></div>
                         </div>
@@ -381,17 +427,18 @@
             ).join('');
         }
 
-        document.getElementById('searchInput').addEventListener('input', (e) => {
-            searchQuery = e.target.value;
-            applyFilters();
+        // 검색 입력
+        document.addEventListener('DOMContentLoaded', () => {
+            const searchInput = document.getElementById('searchInput');
+            if (searchInput) {
+                searchInput.addEventListener('input', (e) => {
+                    searchQuery = e.target.value;
+                    applyFilters();
+                });
+            }
         });
 
-        document.getElementById('clearFilters').addEventListener('click', () => {
-            resetFilters();
-            renderFilters();
-            applyFilters();
-        });
-
+        // 햄버거 메뉴
         document.getElementById('hamburger').addEventListener('click', () => {
             document.getElementById('hamburger').classList.toggle('active');
             document.getElementById('sidebar').classList.toggle('active');
