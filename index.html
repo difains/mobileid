@@ -1,90 +1,390 @@
 <!DOCTYPE html>
 <html lang="ko">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>모바일 신분증 - 용어집 & 코드집</title>
+    <title>모바일 신분증 - 용어집 & 코드집 & 도해</title>
+    <script src="https://cdn.jsdelivr.net/npm/mermaid/dist/mermaid.min.js"></script>
     <style>
-        * { margin: 0; padding: 0; box-sizing: border-box; }
-        body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto'; background: #f5f5f5; color: #333; }
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
 
-        .header { position: fixed; top: 0; width: 100%; background: #fff; border-bottom: 1px solid #e0e0e0; display: flex; align-items: center; justify-content: space-between; height: 56px; padding: 0 16px; z-index: 100; box-shadow: 0 2px 4px rgba(0,0,0,0.05); }
-        .header-left { display: flex; align-items: center; gap: 16px; }
-        .hamburger { display: none; flex-direction: column; cursor: pointer; gap: 5px; }
-        .hamburger span { width: 24px; height: 2px; background: #333; border-radius: 2px; transition: 0.3s; }
-        .hamburger.active span:nth-child(1) { transform: rotate(45deg) translate(10px, 10px); }
-        .hamburger.active span:nth-child(2) { opacity: 0; }
-        .hamburger.active span:nth-child(3) { transform: rotate(-45deg) translate(7px, -7px); }
-        .header h1 { font-size: 18px; font-weight: 600; color: #1a73e8; }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto';
+            background: #f5f5f5;
+            color: #333;
+        }
 
-        .header-tabs { display: flex; gap: 4px; }
-        .tab-button { padding: 8px 16px; background: transparent; border: 1px solid #ddd; border-radius: 4px; cursor: pointer; font-size: 13px; font-weight: 500; color: #666; transition: 0.2s; }
-        .tab-button.active { background: #1a73e8; color: white; border-color: #1a73e8; }
-        .tab-count { font-size: 12px; margin-left: 4px; }
+        .header {
+            position: fixed;
+            top: 0;
+            width: 100%;
+            background: #fff;
+            border-bottom: 1px solid #e0e0e0;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            height: 56px;
+            padding: 0 16px;
+            z-index: 100;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+        }
 
-        .sidebar { position: fixed; left: 0; top: 56px; bottom: 0; width: 280px; background: #fff; border-right: 1px solid #e0e0e0; overflow-y: auto; transform: translateX(-100%); transition: 0.3s; z-index: 99; }
-        .sidebar.active { transform: translateX(0); }
+        .header-left {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+        }
 
-        .filter-section { padding: 12px; border-bottom: 1px solid #e0e0e0; }
-        .search-box { margin-bottom: 12px; display: flex; border: 1px solid #ddd; border-radius: 6px; overflow: hidden; }
-        .search-dropdown { position: relative; flex-shrink: 0; }
-        .dropdown-toggle { padding: 10px 8px; background: #f9f9f9; border: none; border-right: 1px solid #ddd; font-size: 12px; cursor: pointer; min-width: 80px; text-align: center; display: flex; align-items: center; justify-content: center; gap: 4px; font-weight: 500; white-space: nowrap; }
-        .dropdown-toggle::after { content: '▼'; font-size: 9px; color: #999; }
-        .dropdown-menu { position: absolute; top: 100%; left: 0; background: #fff; border: 1px solid #ddd; border-top: none; min-width: 130px; z-index: 1000; box-shadow: 0 4px 8px rgba(0,0,0,0.1); display: none; }
-        .dropdown-menu.active { display: block; }
-        .dropdown-item { padding: 10px 12px; cursor: pointer; font-size: 13px; color: #555; border-bottom: 1px solid #f0f0f0; transition: 0.2s; }
-        .dropdown-item:last-child { border-bottom: none; }
-        .dropdown-item:hover { background: #f1f3f4; }
-        .dropdown-item.selected { background: #e8f0fe; color: #1a73e8; font-weight: 600; }
-        .search-input { flex: 1; padding: 10px 12px; border: none; font-size: 13px; }
+        .hamburger {
+            display: none;
+            flex-direction: column;
+            cursor: pointer;
+            gap: 5px;
+        }
 
-        .filter-toggle-btn { width: 100%; padding: 10px 12px; background: #f5f5f5; border: 1px solid #ddd; border-radius: 4px; cursor: pointer; font-weight: 600; font-size: 13px; margin-bottom: 12px; display: flex; align-items: center; justify-content: space-between; }
-        .filter-toggle-icon { font-size: 11px; transition: 0.3s; }
-        .filter-toggle-icon.collapsed { transform: rotate(180deg); }
-        .filter-content { max-height: 600px; transition: 0.3s; margin-bottom: 12px; overflow-y: auto; }
-        .filter-content.collapsed { max-height: 0; margin-bottom: 0; overflow: hidden; }
+        .hamburger span {
+            width: 24px;
+            height: 2px;
+            background: #333;
+            border-radius: 2px;
+            transition: 0.3s;
+        }
 
-        .filter-group { margin-bottom: 12px; }
-        .filter-label { font-size: 11px; font-weight: 600; color: #666; margin-bottom: 6px; text-transform: uppercase; }
-        .filter-chips { display: flex; flex-wrap: wrap; gap: 4px; }
-        .filter-chip { padding: 5px 10px; background: #f1f3f4; border: 1px solid #dadce0; border-radius: 14px; font-size: 12px; color: #5f6368; cursor: pointer; transition: 0.2s; }
-        .filter-chip:hover { background: #e8eaed; }
-        .filter-chip.active { background: #1a73e8; color: white; border-color: #1a73e8; }
-        .clear-filters { width: 100%; padding: 8px 12px; background: #fff; border: 1px solid #ddd; border-radius: 4px; font-size: 12px; color: #5f6368; cursor: pointer; margin-top: 8px; }
-        .clear-filters:hover { border-color: #1a73e8; color: #1a73e8; }
+        .header h1 {
+            font-size: 18px;
+            font-weight: 600;
+            color: #1a73e8;
+        }
 
-        .term-list { list-style: none; padding: 8px 0; }
-        .term-item { padding: 10px 12px; cursor: pointer; border-bottom: 1px solid #f0f0f0; font-size: 13px; color: #555; transition: 0.2s; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-        .term-item:hover { background: #f9f9f9; color: #1a73e8; }
-        .term-item.active { background: #e8f0fe; color: #1a73e8; font-weight: 600; border-left: 4px solid #1a73e8; padding-left: 8px; }
+        .header-tabs {
+            display: flex;
+            gap: 4px;
+        }
 
-        .main-content { margin-top: 56px; padding: 20px; }
-        @media (min-width: 768px) { .main-content { margin-left: 280px; } .hamburger { display: none !important; } .sidebar { transform: translateX(0); } .overlay { display: none !important; } }
+        .tab-button {
+            padding: 8px 16px;
+            background: transparent;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 13px;
+            font-weight: 500;
+            color: #666;
+            transition: 0.2s;
+        }
 
-        .overlay { display: none; position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0, 0, 0, 0.5); z-index: 98; }
-        .overlay.active { display: block; }
+        .tab-button.active {
+            background: #1a73e8;
+            color: white;
+            border-color: #1a73e8;
+        }
 
-        .view-section { display: none; }
-        .view-section.active { display: block; }
+        .tab-count {
+            font-size: 12px;
+            margin-left: 4px;
+        }
 
-        .items-container { display: grid; grid-template-columns: repeat(auto-fill, minmax(400px, 1fr)); gap: 20px; }
-        @media (max-width: 900px) { .items-container { grid-template-columns: 1fr; } }
+        .sidebar {
+            position: fixed;
+            left: 0;
+            top: 56px;
+            bottom: 0;
+            width: 280px;
+            background: #fff;
+            border-right: 1px solid #e0e0e0;
+            overflow-y: auto;
+            transform: translateX(-100%);
+            transition: 0.3s;
+            z-index: 99;
+        }
 
-        .item-card { background: #fff; border-radius: 8px; padding: 20px; box-shadow: 0 1px 3px rgba(0,0,0,0.08); border-left: 4px solid #1a73e8; transition: 0.2s; }
-        .item-card:hover { box-shadow: 0 4px 12px rgba(0,0,0,0.12); }
-        .item-title { font-size: 18px; font-weight: 600; color: #1a73e8; margin-bottom: 12px; word-break: break-word; }
-        .item-meta { display: flex; gap: 8px; margin-bottom: 12px; flex-wrap: wrap; font-size: 11px; }
-        .meta-badge { display: inline-flex; gap: 3px; padding: 4px 8px; background: #f0f0f0; border-radius: 4px; color: #666; }
-        .meta-label { font-weight: 600; }
-        .meta-value { color: #999; background: #f5f5f5; padding: 1px 4px; border-radius: 3px; font-family: monospace; }
-        .item-description { font-size: 13px; line-height: 1.6; color: #555; background: #fafafa; padding: 12px; border-radius: 4px; max-height: 300px; overflow-y: auto; white-space: pre-wrap; word-break: break-word; }
+        .sidebar.active {
+            transform: translateX(0);
+        }
 
-        .empty-state { text-align: center; padding: 60px 20px; color: #999; }
-        .loading { text-align: center; padding: 40px 20px; color: #999; }
+        .filter-section {
+            padding: 12px;
+            border-bottom: 1px solid #e0e0e0;
+        }
 
-        @media (max-width: 767px) { .main-content { margin-left: 0; padding: 12px; } .hamburger { display: flex; } .items-container { grid-template-columns: 1fr; } }
+        .search-box {
+            margin-bottom: 12px;
+            display: flex;
+            border: 1px solid #ddd;
+            border-radius: 6px;
+            overflow: hidden;
+        }
+
+        .search-input {
+            flex: 1;
+            padding: 10px 12px;
+            border: none;
+            font-size: 13px;
+        }
+
+        .filter-chips {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 4px;
+            margin-bottom: 8px;
+        }
+
+        .filter-chip {
+            padding: 5px 10px;
+            background: #f1f3f4;
+            border: 1px solid #dadce0;
+            border-radius: 14px;
+            font-size: 12px;
+            color: #5f6368;
+            cursor: pointer;
+            transition: 0.2s;
+        }
+
+        .filter-chip:hover {
+            background: #e8eaed;
+        }
+
+        .filter-chip.active {
+            background: #1a73e8;
+            color: white;
+            border-color: #1a73e8;
+        }
+
+        .term-list {
+            list-style: none;
+            padding: 8px 0;
+        }
+
+        .term-item {
+            padding: 10px 12px;
+            cursor: pointer;
+            border-bottom: 1px solid #f0f0f0;
+            font-size: 13px;
+            color: #555;
+            transition: 0.2s;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+
+        .term-item:hover {
+            background: #f9f9f9;
+            color: #1a73e8;
+        }
+
+        .term-item.active {
+            background: #e8f0fe;
+            color: #1a73e8;
+            font-weight: 600;
+            border-left: 4px solid #1a73e8;
+            padding-left: 8px;
+        }
+
+        .term-code {
+            font-size: 11px;
+            color: #999;
+            margin-right: 6px;
+        }
+
+        .main-content {
+            margin-top: 56px;
+            padding: 20px;
+        }
+
+        @media (min-width: 768px) {
+            .main-content {
+                margin-left: 280px;
+            }
+
+            .hamburger {
+                display: none !important;
+            }
+
+            .sidebar {
+                transform: translateX(0);
+            }
+
+            .overlay {
+                display: none !important;
+            }
+        }
+
+        .overlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.5);
+            z-index: 98;
+        }
+
+        .overlay.active {
+            display: block;
+        }
+
+        .view-section {
+            display: none;
+        }
+
+        .view-section.active {
+            display: block;
+        }
+
+        .items-container {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(400px, 1fr));
+            gap: 20px;
+        }
+
+        @media (max-width: 900px) {
+            .items-container {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .item-card {
+            background: #fff;
+            border-radius: 8px;
+            padding: 20px;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
+            border-left: 4px solid #1a73e8;
+            transition: 0.2s;
+        }
+
+        .item-card:hover {
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.12);
+        }
+
+        .item-title {
+            font-size: 18px;
+            font-weight: 600;
+            color: #1a73e8;
+            margin-bottom: 12px;
+            word-break: break-word;
+        }
+
+        .item-meta {
+            display: flex;
+            gap: 8px;
+            margin-bottom: 12px;
+            flex-wrap: wrap;
+            font-size: 11px;
+        }
+
+        .meta-badge {
+            display: inline-flex;
+            gap: 3px;
+            padding: 4px 8px;
+            background: #f0f0f0;
+            border-radius: 4px;
+            color: #666;
+        }
+
+        .item-description {
+            font-size: 13px;
+            line-height: 1.6;
+            color: #555;
+            background: #fafafa;
+            padding: 12px;
+            border-radius: 4px;
+            max-height: 300px;
+            overflow-y: auto;
+            white-space: pre-wrap;
+            word-break: break-word;
+        }
+
+        /* 도해 전용 스타일 */
+        .flowchart-card {
+            background: #fff;
+            border-radius: 12px;
+            padding: 24px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+        }
+
+        .flowchart-title {
+            font-size: 22px;
+            font-weight: 700;
+            color: #1a73e8;
+            margin-bottom: 8px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .flowchart-code {
+            font-size: 14px;
+            color: #666;
+            background: #f0f0f0;
+            padding: 4px 10px;
+            border-radius: 4px;
+        }
+
+        .flowchart-category {
+            display: inline-block;
+            padding: 4px 12px;
+            background: #e8f0fe;
+            color: #1a73e8;
+            border-radius: 12px;
+            font-size: 12px;
+            font-weight: 600;
+            margin-bottom: 16px;
+        }
+
+        .flowchart-summary {
+            font-size: 15px;
+            line-height: 1.7;
+            color: #333;
+            background: linear-gradient(135deg, #f8f9fa 0%, #e8f0fe 100%);
+            padding: 16px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            border-left: 4px solid #1a73e8;
+        }
+
+        .flowchart-diagram {
+            background: #fff;
+            border: 1px solid #e0e0e0;
+            border-radius: 8px;
+            padding: 20px;
+            margin-bottom: 16px;
+            overflow-x: auto;
+        }
+
+        .mermaid {
+            display: flex;
+            justify-content: center;
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 60px 20px;
+            color: #999;
+        }
+
+        @media (max-width: 767px) {
+            .main-content {
+                margin-left: 0;
+                padding: 12px;
+            }
+
+            .hamburger {
+                display: flex;
+            }
+
+            .items-container {
+                grid-template-columns: 1fr;
+            }
+        }
     </style>
 </head>
+
 <body>
     <div class="header">
         <div class="header-left">
@@ -92,12 +392,11 @@
             <h1>모바일 신분증</h1>
         </div>
         <div class="header-tabs">
-            <button class="tab-button active" id="glossaryTab">
-                용어집 <span class="tab-count" id="glossaryCount">(0)</span>
-            </button>
-            <button class="tab-button" id="codeTab">
-                코드집 <span class="tab-count" id="codeCount">(0)</span>
-            </button>
+            <button class="tab-button active" id="glossaryTab">용어집 <span class="tab-count"
+                    id="glossaryCount">(0)</span></button>
+            <button class="tab-button" id="codeTab">코드집 <span class="tab-count" id="codeCount">(0)</span></button>
+            <button class="tab-button" id="flowchartTab">프로세스 도해 <span class="tab-count"
+                    id="flowchartCount">(0)</span></button>
         </div>
     </div>
 
@@ -106,19 +405,9 @@
     <aside class="sidebar" id="sidebar">
         <div class="filter-section">
             <div class="search-box">
-                <div class="search-dropdown">
-                    <button class="dropdown-toggle" id="dropdownToggle">용어</button>
-                    <div class="dropdown-menu" id="dropdownMenu"></div>
-                </div>
                 <input type="text" class="search-input" id="searchInput" placeholder="검색...">
             </div>
-
-            <button class="filter-toggle-btn" id="filterToggleBtn">
-                <span>필터 열기</span>
-                <span class="filter-toggle-icon">▼</span>
-            </button>
-
-            <div class="filter-content collapsed" id="filterContent"></div>
+            <div class="filter-chips" id="categoryFilters"></div>
         </div>
         <ul class="term-list" id="itemList"></ul>
     </aside>
@@ -130,315 +419,203 @@
         <div class="view-section" id="codeView">
             <div class="items-container" id="codeContent"></div>
         </div>
+        <div class="view-section" id="flowchartView">
+            <div id="flowchartContent"></div>
+        </div>
     </main>
 
     <script>
-        let glossaryData = [];
-        let codeData = [];
+        mermaid.initialize({ startOnLoad: false, theme: 'default', securityLevel: 'loose' });
+
+        let glossaryData = [], codeData = [], flowchartData = [];
         let currentView = 'glossary';
         let currentData = [];
         let searchQuery = '';
-        let searchType = '';
-        let filters = {};
-        let isFilterCollapsed = true;
-        let dropdownOptions = [];
+        let categoryFilter = '';
 
-        // JSON 데이터 로드
         async function loadData() {
             try {
-                const glossaryRes = await fetch('glossary.json');
+                const [glossaryRes, codeRes, flowchartRes] = await Promise.all([
+                    fetch('glossary.json'), fetch('code.json'), fetch('flowchart.json')
+                ]);
                 glossaryData = await glossaryRes.json();
-
-                const codeRes = await fetch('code.json');
                 codeData = await codeRes.json();
+                flowchartData = await flowchartRes.json();
 
-                // 헤더 카운팅 업데이트
                 document.getElementById('glossaryCount').textContent = `(${glossaryData.length})`;
                 document.getElementById('codeCount').textContent = `(${codeData.length})`;
+                document.getElementById('flowchartCount').textContent = `(${flowchartData.length})`;
 
                 currentData = glossaryData;
-                currentView = 'glossary';
-                searchType = '용어';
                 init();
             } catch (error) {
                 console.error('데이터 로드 실패:', error);
-                document.getElementById('glossaryContent').innerHTML = '<div class="empty-state"><div style="font-size:48px;">⚠️</div><div>JSON 파일을 찾을 수 없습니다.</div></div>';
             }
         }
 
-        // 탭 전환
         document.getElementById('glossaryTab').addEventListener('click', () => switchView('glossary'));
         document.getElementById('codeTab').addEventListener('click', () => switchView('code'));
+        document.getElementById('flowchartTab').addEventListener('click', () => switchView('flowchart'));
 
         function switchView(view) {
             currentView = view;
-            currentData = view === 'glossary' ? glossaryData : codeData;
+            if (view === 'glossary') currentData = glossaryData;
+            else if (view === 'code') currentData = codeData;
+            else currentData = flowchartData;
+
             document.querySelectorAll('.tab-button').forEach(btn => btn.classList.remove('active'));
             document.querySelectorAll('.view-section').forEach(sec => sec.classList.remove('active'));
 
-            if (view === 'glossary') {
-                document.getElementById('glossaryTab').classList.add('active');
-                document.getElementById('glossaryView').classList.add('active');
-                searchType = '용어';
-                dropdownOptions = ['용어', '설명'];
+            document.getElementById(view + 'Tab').classList.add('active');
+            document.getElementById(view + 'View').classList.add('active');
+
+            searchQuery = '';
+            categoryFilter = '';
+            document.getElementById('searchInput').value = '';
+            renderCategoryFilters();
+            applyFilters();
+        }
+
+        function renderCategoryFilters() {
+            const container = document.getElementById('categoryFilters');
+            let categories = [];
+
+            if (currentView === 'flowchart') {
+                categories = ['전체', ...new Set(flowchartData.map(d => d.category))];
+            } else if (currentView === 'glossary') {
+                categories = ['전체', ...new Set(glossaryData.map(d => d.구분))];
             } else {
-                document.getElementById('codeTab').classList.add('active');
-                document.getElementById('codeView').classList.add('active');
-                searchType = '코드이름';
-                dropdownOptions = ['코드이름', '코드번호'];
+                categories = ['전체', ...new Set(codeData.map(d => d.구분))];
             }
 
-            document.getElementById('dropdownToggle').textContent = searchType;
-            resetFilters();
-            renderDropdown();
-            renderFilters();
-            applyFilters();
-        }
-
-        function resetFilters() {
-            searchQuery = '';
-            filters = {};
-            document.getElementById('searchInput').value = '';
-            dropdownOptions.forEach(opt => {
-                if (currentView === 'glossary' && opt === '용어') searchType = opt;
-                else if (currentView === 'code' && opt === '코드이름') searchType = opt;
-            });
-        }
-
-        function init() {
-            setupDropdownToggle();
-            setupFilterToggle();
-            renderDropdown();
-            renderFilters();
-            applyFilters();
-        }
-
-        // 드롭다운 렌더링 및 토글
-        function renderDropdown() {
-            const menu = document.getElementById('dropdownMenu');
-            menu.innerHTML = dropdownOptions.map(opt =>
-                `<div class="dropdown-item ${opt === searchType ? 'selected' : ''}" data-value="${opt}">${opt}</div>`
+            container.innerHTML = categories.map(cat =>
+                `<div class="filter-chip ${categoryFilter === cat || (categoryFilter === '' && cat === '전체') ? 'active' : ''}" data-cat="${cat}">${cat}</div>`
             ).join('');
 
-            document.querySelectorAll('#dropdownMenu .dropdown-item').forEach(item => {
-                item.addEventListener('click', () => {
-                    searchType = item.dataset.value;
-                    document.querySelectorAll('#dropdownMenu .dropdown-item').forEach(i => i.classList.remove('selected'));
-                    item.classList.add('selected');
-                    document.getElementById('dropdownToggle').textContent = searchType;
-                    document.getElementById('dropdownMenu').classList.remove('active');
-                    applyFilters();
-                });
-            });
-        }
-
-        function setupDropdownToggle() {
-            const toggle = document.getElementById('dropdownToggle');
-            const menu = document.getElementById('dropdownMenu');
-
-            toggle.addEventListener('click', (e) => {
-                e.stopPropagation();
-                menu.classList.toggle('active');
-            });
-
-            document.addEventListener('click', (e) => {
-                if (!e.target.closest('.search-dropdown')) {
-                    menu.classList.remove('active');
-                }
-            });
-        }
-
-        // 필터 토글
-        function setupFilterToggle() {
-            const btn = document.getElementById('filterToggleBtn');
-            const content = document.getElementById('filterContent');
-            const icon = btn.querySelector('.filter-toggle-icon');
-
-            btn.addEventListener('click', () => {
-                isFilterCollapsed = !isFilterCollapsed;
-                content.classList.toggle('collapsed');
-                icon.classList.toggle('collapsed');
-                btn.querySelector('span:first-child').textContent = isFilterCollapsed ? '필터 열기' : '필터 닫기';
-            });
-        }
-
-        // 필터 렌더링
-        function renderFilters() {
-            const filterContent = document.getElementById('filterContent');
-            let filterGroups = [];
-
-            if (currentView === 'glossary') {
-                const categories = ['전체', ...new Set(currentData.map(t => t.구분))];
-                const dates = ['전체', ...new Set(currentData.map(t => t.수정일))];
-                filterGroups = [
-                    { label: '구분', key: '구분', values: categories },
-                    { label: '수정일', key: '수정일', values: dates }
-                ];
-            } else {
-                const categories = ['전체', ...new Set(currentData.map(t => t.구분))];
-                const groupNames = ['전체', ...new Set(currentData.map(t => t.그룹명))];
-                const groupCodes = ['전체', ...new Set(currentData.map(t => t.그룹코드))];
-                const codes = ['전체', ...new Set(currentData.map(t => t.코드))];
-                const remarks = ['전체', ...new Set(currentData.map(t => t.비고))];
-                const dates = ['전체', ...new Set(currentData.map(t => t.수정일))];
-
-                filterGroups = [
-                    { label: '수정일', key: '수정일', values: dates },
-                    { label: '구분', key: '구분', values: categories },
-                    { label: '그룹명', key: '그룹명', values: groupNames },
-                    { label: '그룹코드', key: '그룹코드', values: groupCodes },
-                    { label: '코드번호', key: '코드번호', values: codes },
-                    { label: '비고', key: '비고', values: remarks }
-                ];
-            }
-
-            filterContent.innerHTML = filterGroups.map(group =>
-                `<div class="filter-group">
-                    <label class="filter-label">${group.label}</label>
-                    <div class="filter-chips" data-key="${group.key}">
-                        ${group.values.map(val =>
-                            `<div class="filter-chip ${(filters[group.key] === val) ? 'active' : ''}" data-value="${val}">${val}</div>`
-                        ).join('')}
-                    </div>
-                </div>`
-            ).join('') + `<button class="clear-filters" id="clearFilters">필터 초기화</button>`;
-
-            document.querySelectorAll('.filter-chip').forEach(chip => {
+            container.querySelectorAll('.filter-chip').forEach(chip => {
                 chip.addEventListener('click', () => {
-                    const key = chip.closest('.filter-chips').dataset.key;
-                    const value = chip.dataset.value;
-
-                    document.querySelectorAll(`[data-key="${key}"] .filter-chip`).forEach(c => c.classList.remove('active'));
-
-                    if (value !== '전체') {
-                        chip.classList.add('active');
-                        filters[key] = value;
-                    } else {
-                        delete filters[key];
-                    }
+                    categoryFilter = chip.dataset.cat === '전체' ? '' : chip.dataset.cat;
+                    container.querySelectorAll('.filter-chip').forEach(c => c.classList.remove('active'));
+                    chip.classList.add('active');
                     applyFilters();
                 });
             });
-
-            document.getElementById('clearFilters').addEventListener('click', () => {
-                resetFilters();
-                renderFilters();
-                applyFilters();
-            });
         }
 
-        // 필터 적용
         function applyFilters() {
             let filtered = currentData.filter(item => {
-                // 필터 적용
-                for (let key in filters) {
-                    if (item[key] !== filters[key]) return false;
-                }
-
-                // 검색 적용
-                if (searchQuery) {
-                    const q = searchQuery.toLowerCase();
-                    let searchField = '';
-
-                    if (currentView === 'glossary') {
-                        searchField = searchType === '용어' ? '용어' : '설명';
-                    } else {
-                        searchField = searchType === '코드이름' ? '코드이명' : '코드';
-                    }
-
-                    if (!item[searchField] || !item[searchField].toLowerCase().includes(q)) {
-                        return false;
+                if (currentView === 'flowchart') {
+                    if (categoryFilter && item.category !== categoryFilter) return false;
+                    if (searchQuery && !item.title.toLowerCase().includes(searchQuery.toLowerCase()) &&
+                        !item.code.toLowerCase().includes(searchQuery.toLowerCase())) return false;
+                } else {
+                    const catKey = currentView === 'glossary' ? '구분' : '구분';
+                    if (categoryFilter && item[catKey] !== categoryFilter) return false;
+                    if (searchQuery) {
+                        const searchField = currentView === 'glossary' ? '용어' : '코드이명';
+                        if (!item[searchField]?.toLowerCase().includes(searchQuery.toLowerCase())) return false;
                     }
                 }
-
                 return true;
             });
 
             renderItemList(filtered);
-            renderAllCards(filtered);
+            if (filtered.length > 0) selectItem(0, filtered);
         }
 
-        // 좌측 메뉴 렌더링
         function renderItemList(items) {
             const list = document.getElementById('itemList');
             list.innerHTML = items.map((item, idx) => {
-                const title = currentView === 'glossary' 
-                    ? item.용어 
-                    : (item.코드이름 || item.코드이명 || item.코드);
-                return `<li class="term-item" onclick="selectItem(${idx})" title="${title}">${title}</li>`;
+                if (currentView === 'flowchart') {
+                    return `<li class="term-item" onclick="selectItem(${idx})" title="${item.title}">
+                        <span class="term-code">${item.code}</span>${item.title}
+                    </li>`;
+                } else {
+                    const title = currentView === 'glossary' ? item.용어 : (item.코드이명 || item.코드);
+                    return `<li class="term-item" onclick="selectItem(${idx})" title="${title}">${title}</li>`;
+                }
             }).join('');
         }
 
-        function selectItem(idx) {
-            let filtered = currentData.filter(item => {
-                for (let key in filters) {
-                    if (item[key] !== filters[key]) return false;
-                }
-                if (searchQuery) {
-                    const q = searchQuery.toLowerCase();
-                    let searchField = currentView === 'glossary' 
-                        ? (searchType === '용어' ? '용어' : '설명')
-                        : (searchType === '코드이름' ? '코드이명' : '코드');
-                    if (!item[searchField] || !item[searchField].toLowerCase().includes(q)) return false;
-                }
-                return true;
-            });
-
-            if (idx < filtered.length) {
-                renderAllCards([filtered[idx]]);
-                document.getElementById('hamburger').classList.remove('active');
-                document.getElementById('sidebar').classList.remove('active');
-                document.getElementById('overlay').classList.remove('active');
-            }
-        }
-
-        // 카드 렌더링
-        function renderAllCards(items) {
-            const area = currentView === 'glossary' 
-                ? document.getElementById('glossaryContent') 
-                : document.getElementById('codeContent');
-
-            if (items.length === 0) {
-                area.innerHTML = '<div class="empty-state" style="grid-column: 1/-1;"><div style="font-size:48px;">🔍</div><div>검색 결과가 없습니다.</div></div>';
-                return;
-            }
-
-            area.innerHTML = items.map(item =>
-                currentView === 'glossary'
-                    ? `<div class="item-card">
-                        <div class="item-title">${item.용어}</div>
-                        <div class="item-meta">
-                            <div class="meta-badge"><strong>수정일:</strong> <span class="meta-value">${item.수정일}</span></div>
-                            <div class="meta-badge"><strong>구분:</strong> <span class="meta-value">${item.구분}</span></div>
-                        </div>
-                        <div class="item-description">${item.설명}</div>
-                    </div>`
-                    : `<div class="item-card">
-                        <div class="item-title">${item.코드이름 || item.코드이명 || item.코드}(${item.코드})</div>
-                        <div class="item-meta">
-                            <div class="meta-badge"><strong>수정일:</strong> <span class="meta-value">${item.수정일}</span></div>
-                            <div class="meta-badge"><strong>구분:</strong> <span class="meta-value">${item.구분}</span></div>
-                            <div class="meta-badge"><strong>그룹명:</strong> <span class="meta-value">${item.그룹명}</span></div>
-                            <div class="meta-badge"><strong>그룹코드:</strong> <span class="meta-value">${item.그룹코드}</span></div>
-                            <div class="meta-badge"><strong>비고:</strong> <span class="meta-value">${item.비고}</span></div>
-                        </div>
-                        <div class="item-description">${item.설명}</div>
-                    </div>`
-            ).join('');
-        }
-
-        // 검색 입력
-        document.addEventListener('DOMContentLoaded', () => {
-            const searchInput = document.getElementById('searchInput');
-            if (searchInput) {
-                searchInput.addEventListener('input', (e) => {
-                    searchQuery = e.target.value;
-                    applyFilters();
+        function selectItem(idx, items = null) {
+            if (!items) {
+                items = currentData.filter(item => {
+                    if (currentView === 'flowchart') {
+                        if (categoryFilter && item.category !== categoryFilter) return false;
+                        if (searchQuery && !item.title.toLowerCase().includes(searchQuery.toLowerCase())) return false;
+                    }
+                    return true;
                 });
             }
+
+            if (idx >= items.length) return;
+            const item = items[idx];
+
+            document.querySelectorAll('.term-item').forEach((el, i) => el.classList.toggle('active', i === idx));
+
+            if (currentView === 'flowchart') {
+                renderFlowchart(item);
+            } else {
+                renderCard(item);
+            }
+
+            document.getElementById('hamburger').classList.remove('active');
+            document.getElementById('sidebar').classList.remove('active');
+            document.getElementById('overlay').classList.remove('active');
+        }
+
+        function renderFlowchart(item) {
+            const container = document.getElementById('flowchartContent');
+            container.innerHTML = `
+                <div class="flowchart-card">
+                    <div class="flowchart-title">
+                        <span class="flowchart-code">${item.code}</span>
+                        ${item.title}
+                    </div>
+                    <div class="flowchart-category">${item.category}</div>
+                    <div class="flowchart-summary">📌 ${item.summary}</div>
+                    <div class="flowchart-diagram">
+                        <div class="mermaid">${item.mermaid}</div>
+                    </div>
+                </div>
+            `;
+            mermaid.run({ nodes: container.querySelectorAll('.mermaid') });
+        }
+
+        function renderCard(item) {
+            const area = currentView === 'glossary' ? document.getElementById('glossaryContent') : document.getElementById('codeContent');
+            if (currentView === 'glossary') {
+                area.innerHTML = `<div class="item-card">
+                    <div class="item-title">${item.용어}</div>
+                    <div class="item-meta">
+                        <div class="meta-badge"><strong>수정일:</strong> ${item.수정일}</div>
+                        <div class="meta-badge"><strong>구분:</strong> ${item.구분}</div>
+                    </div>
+                    <div class="item-description">${item.설명}</div>
+                </div>`;
+            } else {
+                area.innerHTML = `<div class="item-card">
+                    <div class="item-title">${item.코드이명 || item.코드}(${item.코드})</div>
+                    <div class="item-meta">
+                        <div class="meta-badge"><strong>수정일:</strong> ${item.수정일}</div>
+                        <div class="meta-badge"><strong>구분:</strong> ${item.구분}</div>
+                        <div class="meta-badge"><strong>그룹명:</strong> ${item.그룹명}</div>
+                    </div>
+                    <div class="item-description">${item.설명}</div>
+                </div>`;
+            }
+        }
+
+        function init() {
+            renderCategoryFilters();
+            applyFilters();
+        }
+
+        document.getElementById('searchInput').addEventListener('input', e => {
+            searchQuery = e.target.value;
+            applyFilters();
         });
 
-        // 햄버거 메뉴
         document.getElementById('hamburger').addEventListener('click', () => {
             document.getElementById('hamburger').classList.toggle('active');
             document.getElementById('sidebar').classList.toggle('active');
@@ -451,8 +628,8 @@
             document.getElementById('overlay').classList.remove('active');
         });
 
-        // 데이터 로드
         loadData();
     </script>
 </body>
+
 </html>

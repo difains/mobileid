@@ -1,0 +1,394 @@
+[
+    {
+        "code": "P100",
+        "category": "공통",
+        "title": "월렛 접근 (walletToken)",
+        "summary": "우리은행 앱이 월렛에 접근하려면 CA 서버에서 walletToken을 발급받아야 하며, 이 토큰 발급 API를 우리 서버에 구현해야 합니다.",
+        "mermaid": "flowchart TD\n    A[사용자] -->|앱 실행| B[월렛 앱]\n    B -->|토큰 요청| C[CA 서버]\n    C -->|walletToken 발급| D[토큰 수신]\n    D -->|토큰으로 접근| E[월렛 서버]\n    E -->|인증 확인| F[접근 허용 ✓]\n    style A fill:#e1f5fe\n    style F fill:#c8e6c9"
+    },
+    {
+        "code": "P102",
+        "category": "공통",
+        "title": "월렛 연결 해제",
+        "summary": "사용자가 우리은행 앱과 월렛 연결을 해제하면 통보를 받는 API를 구현하여 우리 측 세션/토큰을 정리해야 합니다.",
+        "mermaid": "flowchart TD\n    A[사용자] -->|연결해제 요청| B[월렛 앱]\n    B -->|PIN 인증| C{인증 성공?}\n    C -->|예| D[연결 해제 처리]\n    C -->|아니오| E[재시도]\n    D -->|서버 통보| F[CA 서버]\n    F -->|완료| G[연결해제 완료 ✓]\n    style A fill:#e1f5fe\n    style G fill:#c8e6c9"
+    },
+    {
+        "code": "P103",
+        "category": "공통",
+        "title": "월렛 연결 해제 (CA앱 삭제)",
+        "summary": "사용자가 우리은행 앱을 삭제하면 월렛 서버가 자동 감지하여 연결을 해제하므로, 재설치 시 재연결 프로세스가 필요합니다.",
+        "mermaid": "flowchart TD\n    A[사용자] -->|CA앱 삭제| B[시스템 감지]\n    B -->|삭제 이벤트| C[월렛 서버]\n    C -->|연결 정보 정리| D[연결 해제 처리]\n    D -->|완료| E[자동 연결해제 ✓]\n    style A fill:#e1f5fe\n    style E fill:#c8e6c9"
+    },
+    {
+        "code": "P104",
+        "category": "공통",
+        "title": "월렛 삭제",
+        "summary": "월렛 삭제 시 우리은행 앱에서 발급한 VC도 함께 삭제되므로, 삭제 통보 수신 후 고객 상태를 '재발급 필요'로 갱신해야 합니다.",
+        "mermaid": "flowchart TD\n    A[사용자] -->|삭제 요청| B[월렛 앱]\n    B -->|본인 인증| C[PIN/생체인증]\n    C -->|VC 전체 삭제| D[신분증 삭제]\n    D -->|개인키 폐기| E[키 삭제]\n    E -->|서버 통보| F[월렛 서버]\n    F -->|완료| G[월렛 완전 삭제 ✓]\n    style A fill:#e1f5fe\n    style G fill:#c8e6c9"
+    },
+    {
+        "code": "P105",
+        "category": "공통",
+        "title": "연결 CA 목록 조회",
+        "summary": "우리은행 앱이 월렛에 정상 연결되어 있는지 사용자가 확인할 수 있으며, 연결 상태 문제 시 고객센터 안내가 필요합니다.",
+        "mermaid": "flowchart TD\n    A[사용자] -->|목록 조회| B[월렛 앱]\n    B -->|조회 요청| C[월렛 서버]\n    C -->|CA 목록 반환| D[목록 표시]\n    D -->|확인| E[연결된 앱 목록 ✓]\n    style A fill:#e1f5fe\n    style E fill:#c8e6c9"
+    },
+    {
+        "code": "P106",
+        "category": "공통",
+        "title": "월렛 접근 사용",
+        "summary": "우리은행 앱에서 월렛 데이터(VC 목록 등)에 접근할 때 호출하는 API로, 권한 범위 내에서만 데이터를 조회할 수 있습니다.",
+        "mermaid": "flowchart TD\n    A[CA 앱] -->|월렛 접근 요청| B[월렛 앱]\n    B -->|권한 확인| C{접근 허용?}\n    C -->|예| D[월렛 데이터 접근]\n    C -->|아니오| E[접근 거부]\n    D -->|완료| F[데이터 반환 ✓]\n    style A fill:#fff3e0\n    style F fill:#c8e6c9"
+    },
+    {
+        "code": "P107",
+        "category": "공통",
+        "title": "월렛 PIN 등록/변경",
+        "summary": "월렛 PIN은 정부 앱에서 관리하며, 우리은행 앱은 PIN 설정을 직접 제어하지 않고 인증 결과만 수신합니다.",
+        "mermaid": "flowchart TD\n    A[사용자] -->|PIN 설정| B[월렛 앱]\n    B -->|기존 PIN 확인| C{최초 설정?}\n    C -->|예| D[새 PIN 입력]\n    C -->|아니오| E[기존 PIN 입력]\n    E -->|확인 후| D\n    D -->|PIN 암호화| F[서버 저장]\n    F -->|완료| G[PIN 설정 완료 ✓]\n    style A fill:#e1f5fe\n    style G fill:#c8e6c9"
+    },
+    {
+        "code": "P108",
+        "category": "공통",
+        "title": "월렛 PIN 인증",
+        "summary": "VP 제출 전 PIN 인증이 수행되며, 우리은행 앱은 인증 성공/실패 결과만 받아 처리합니다.",
+        "mermaid": "flowchart TD\n    A[사용자] -->|PIN 입력| B[월렛 앱]\n    B -->|PIN 검증| C{일치?}\n    C -->|예| D[인증 성공 ✓]\n    C -->|아니오| E{5회 초과?}\n    E -->|예| F[계정 잠금]\n    E -->|아니오| G[재시도]\n    style A fill:#e1f5fe\n    style D fill:#c8e6c9\n    style F fill:#ffcdd2"
+    },
+    {
+        "code": "P109",
+        "category": "공통",
+        "title": "인가 CA 검증",
+        "summary": "우리은행이 정식 CA로 등록되어야 월렛 접근이 가능합니다. 사전에 정부기관에 CA 등록 및 인증서 발급이 필요합니다.",
+        "mermaid": "flowchart TD\n    A[CA 앱] -->|접근 요청| B[월렛 앱]\n    B -->|CA 정보 확인| C[검증 서버]\n    C -->|인가 여부 확인| D{인가된 CA?}\n    D -->|예| E[접근 허용 ✓]\n    D -->|아니오| F[접근 거부]\n    style A fill:#fff3e0\n    style E fill:#c8e6c9\n    style F fill:#ffcdd2"
+    },
+    {
+        "code": "P110",
+        "category": "공통",
+        "title": "심카드 검증",
+        "summary": "SIM 변경 시 추가 인증이 요구되며, 우리은행 앱에서 VP 요청 시 이 검증 결과에 따라 재인증이 필요할 수 있습니다.",
+        "mermaid": "flowchart TD\n    A[월렛 앱] -->|SIM 정보 읽기| B[SIM 카드]\n    B -->|ICCID 추출| C[검증 서버]\n    C -->|등록 정보 비교| D{일치?}\n    D -->|예| E[검증 성공 ✓]\n    D -->|아니오| F[SIM 변경 감지]\n    style A fill:#e1f5fe\n    style E fill:#c8e6c9\n    style F fill:#ffcdd2"
+    },
+    {
+        "code": "P111",
+        "category": "공통",
+        "title": "인가 토큰",
+        "summary": "우리은행 앱이 월렛에서 특정 작업(VP 생성 등)을 수행하려면 인가토큰을 요청해야 하며, 이 토큰을 우리 서버에서 검증합니다.",
+        "mermaid": "flowchart TD\n    A[CA 앱] -->|토큰 요청| B[월렛 앱]\n    B -->|사용자 인증| C[PIN/생체]\n    C -->|토큰 생성| D[인가토큰 발급]\n    D -->|CA에 전달| E[CA 앱]\n    E -->|서버 검증| F[CA 서버]\n    F -->|검증 완료| G[인가 완료 ✓]\n    style A fill:#fff3e0\n    style G fill:#c8e6c9"
+    },
+    {
+        "code": "P112",
+        "category": "공통",
+        "title": "월렛 삭제 (Push)",
+        "summary": "분실/도난 신고 시 고객이 원격 삭제를 요청할 수 있으며, 삭제 후 우리은행 앱 연결도 해제되므로 고객 안내가 필요합니다.",
+        "mermaid": "flowchart TD\n    A[관리자] -->|삭제 명령| B[Push 서버]\n    B -->|Push 발송| C[월렛 앱]\n    C -->|삭제 확인| D{사용자 동의?}\n    D -->|예| E[월렛 삭제]\n    D -->|아니오| F[취소]\n    E -->|완료| G[원격 삭제 ✓]\n    style A fill:#fff3e0\n    style G fill:#c8e6c9"
+    },
+    {
+        "code": "P113",
+        "category": "공통",
+        "title": "월렛 삭제 - 로컬 안면정보 변경 (Passive)",
+        "summary": "Face ID 변경 시 자동 삭제되므로, 우리은행 앱에서 'Face ID 변경 시 재등록 필요' 안내를 사전에 고객에게 공지해야 합니다.",
+        "mermaid": "flowchart TD\n    A[시스템] -->|안면정보 변경 감지| B[월렛 앱]\n    B -->|보안 경고| C[사용자 알림]\n    C -->|자동 삭제| D[월렛 삭제]\n    D -->|완료| E[보안 삭제 ✓]\n    style A fill:#fff3e0\n    style E fill:#c8e6c9"
+    },
+    {
+        "code": "P114",
+        "category": "공통",
+        "title": "월렛 삭제 - 로컬 안면정보 변경 (Active Exception)",
+        "summary": "안면정보 변경 시 추가 인증 기회가 주어지며, 우리은행 앱에서 이 상황 발생 시 고객센터 연결 안내를 제공해야 합니다.",
+        "mermaid": "flowchart TD\n    A[시스템] -->|안면정보 변경 감지| B[월렛 앱]\n    B -->|재인증 요청| C{추가 인증}\n    C -->|성공| D[월렛 유지]\n    C -->|실패| E[월렛 삭제]\n    E -->|완료| F[보안 삭제 ✓]\n    style A fill:#fff3e0\n    style D fill:#c8e6c9\n    style F fill:#ffcdd2"
+    },
+    {
+        "code": "P115",
+        "category": "공통",
+        "title": "월렛 삭제 결과 통보",
+        "summary": "월렛 삭제 시 우리은행 서버로 통보가 오므로, 이를 수신하는 Webhook/API를 구현하여 고객 상태를 갱신해야 합니다.",
+        "mermaid": "flowchart TD\n    A[월렛 서버] -->|삭제 완료| B[결과 통보]\n    B -->|발급기관에 통보| C[발급기관 서버]\n    B -->|CA에 통보| D[CA 서버]\n    C -->|VC 상태 갱신| E[무효화 처리]\n    D -->|연결 정보 삭제| F[정리 완료 ✓]\n    style A fill:#fff3e0\n    style F fill:#c8e6c9"
+    },
+    {
+        "code": "P116",
+        "category": "공통",
+        "title": "월렛 연결해제 통보",
+        "summary": "연결 해제 통보 수신 시 우리은행 서버에서 해당 고객의 walletToken과 세션을 즉시 무효화해야 합니다.",
+        "mermaid": "flowchart TD\n    A[월렛 서버] -->|연결해제 완료| B[결과 통보]\n    B -->|CA에 통보| C[CA 서버]\n    C -->|세션 정리| D[토큰 무효화]\n    D -->|완료| E[통보 완료 ✓]\n    style A fill:#fff3e0\n    style E fill:#c8e6c9"
+    },
+    {
+        "code": "P117",
+        "category": "공통",
+        "title": "월렛 연결 정리 (FW2CA) [Draft]",
+        "summary": "프레임워크에서 우리은행 앱으로 연결 정리를 요청하는 프로세스로, 앱에서 이 이벤트를 수신하여 처리하는 로직이 필요합니다.",
+        "mermaid": "flowchart TD\n    A[프레임워크] -->|연결 정리 요청| B[CA 앱]\n    B -->|세션 종료| C[토큰 폐기]\n    C -->|서버 통보| D[CA 서버]\n    D -->|정리 완료| E[연결 정리 완료 ✓]\n    style A fill:#fff3e0\n    style E fill:#c8e6c9"
+    },
+    {
+        "code": "P121",
+        "category": "신원인증",
+        "title": "실명 인증 (도관 방식)",
+        "summary": "VC 발급 시 기존 통신사 인증을 활용하는 방식으로, 우리은행 앱에서 직접 구현할 필요 없이 월렛이 처리합니다.",
+        "mermaid": "flowchart TD\n    A[사용자] -->|실명인증 시작| B[월렛 앱]\n    B -->|인증기관 선택| C[통신사/카드사]\n    C -->|정보 입력| D[이름, 생년월일, 전화번호]\n    D -->|SMS 발송| E[인증번호 수신]\n    E -->|번호 입력| F[인증 확인]\n    F -->|완료| G[실명 확인 완료 ✓]\n    style A fill:#e1f5fe\n    style G fill:#c8e6c9"
+    },
+    {
+        "code": "P123",
+        "category": "신원인증",
+        "title": "실명 인증 (직접 방식)",
+        "summary": "신분증 OCR과 진위확인을 통한 실명인증으로, 우리은행이 발급기관으로서 진위확인 API를 제공할 수도 있습니다.",
+        "mermaid": "flowchart TD\n    A[사용자] -->|실명인증 시작| B[월렛 앱]\n    B -->|신분증 촬영| C[OCR 인식]\n    C -->|정보 추출| D[이름, 주민번호]\n    D -->|진위확인 요청| E[발급기관 서버]\n    E -->|진위 확인| F[본인 확인]\n    F -->|완료| G[실명 확인 완료 ✓]\n    style A fill:#e1f5fe\n    style G fill:#c8e6c9"
+    },
+    {
+        "code": "P130",
+        "category": "신원인증",
+        "title": "IC카드 인증 (VC 발급용)",
+        "summary": "고신뢰 인증 방식으로, 우리은행에서 VC 발급 시 이 인증 결과를 신뢰하여 추가 인증 없이 서비스를 제공할 수 있습니다.",
+        "mermaid": "flowchart TD\n    A[사용자] -->|VC 발급 시작| B[월렛 앱]\n    B -->|IC칩 태깅 안내| C[신분증 NFC 태깅]\n    C -->|정보 읽기| D[IC칩 데이터]\n    D -->|안면 촬영| E[사진 촬영]\n    E -->|서버 검증| F[발급기관 서버]\n    F -->|검증 완료| G[인증 완료 ✓]\n    style A fill:#e1f5fe\n    style G fill:#c8e6c9"
+    },
+    {
+        "code": "P131",
+        "category": "신원인증",
+        "title": "발급 QR 인증 (VC 발급용)",
+        "summary": "우리은행 영업점에서 고객에게 QR을 제공하여 모바일 신분증 발급을 진행할 수 있는 대면 채널입니다.",
+        "mermaid": "flowchart TD\n    A[사용자] -->|창구 방문| B[발급기관 창구]\n    B -->|QR 코드 제공| C[QR 코드]\n    D[사용자] -->|QR 스캔| E[월렛 앱]\n    E -->|인증 정보 수신| F[발급 진행]\n    F -->|완료| G[인증 완료 ✓]\n    style D fill:#e1f5fe\n    style G fill:#c8e6c9"
+    },
+    {
+        "code": "P142-2",
+        "category": "신원인증",
+        "title": "로컬 기반 정부 안면인증 (VC 발급)",
+        "summary": "얼굴 정보가 외부 전송되지 않아 프라이버시가 보호되며, 우리은행 앱에서 이 인증 방식 선호 여부를 고객에게 안내할 수 있습니다.",
+        "mermaid": "flowchart TD\n    A[사용자] -->|VC 발급 요청| B[월렛 앱]\n    B -->|카메라 활성화| C[안면 촬영]\n    C -->|단말기 내 비교| D{로컬 안면 인식}\n    D -->|일치| E[VC 발급 진행]\n    D -->|불일치| F[재시도]\n    E -->|완료| G[발급 완료 ✓]\n    style A fill:#e1f5fe\n    style G fill:#c8e6c9"
+    },
+    {
+        "code": "P142-3",
+        "category": "신원인증",
+        "title": "서버 기반 정부 안면인증 (VC 발급)",
+        "summary": "정부 DB와 비교하는 고신뢰 인증으로, 우리은행 비대면 계좌개설 등 고위험 거래에 이 인증 결과를 활용할 수 있습니다.",
+        "mermaid": "flowchart TD\n    A[사용자] -->|VC 발급 요청| B[월렛 앱]\n    B -->|안면 촬영| C[사진 촬영]\n    C -->|서버 전송| D[정부 안면인증 서버]\n    D -->|등록 정보 비교| E{일치?}\n    E -->|예| F[VC 발급 진행]\n    E -->|아니오| G[재시도]\n    F -->|완료| H[발급 완료 ✓]\n    style A fill:#e1f5fe\n    style H fill:#c8e6c9"
+    },
+    {
+        "code": "P142-4",
+        "category": "신원인증",
+        "title": "로컬 기반 정부 안면인증 (2nd CA 등록)",
+        "summary": "고객이 이미 다른 앱에 월렛을 연결한 경우, 우리은행 앱 등록 시 로컬 안면인증으로 빠르게 연결할 수 있습니다.",
+        "mermaid": "flowchart TD\n    A[사용자] -->|2nd CA 등록| B[새 CA 앱]\n    B -->|월렛 앱 호출| C[월렛 앱]\n    C -->|안면 촬영| D[로컬 안면 인식]\n    D -->|인증 성공| E[CA 등록 진행]\n    E -->|완료| F[등록 완료 ✓]\n    style A fill:#e1f5fe\n    style F fill:#c8e6c9"
+    },
+    {
+        "code": "P142-5",
+        "category": "신원인증",
+        "title": "서버 기반 정부 안면인증 (2nd CA 등록)",
+        "summary": "우리은행 앱 등록 시 정부 서버 안면인증을 요구하여 더 높은 보안 수준으로 고객을 등록할 수 있습니다.",
+        "mermaid": "flowchart TD\n    A[사용자] -->|2nd CA 등록| B[새 CA 앱]\n    B -->|월렛 앱 호출| C[월렛 앱]\n    C -->|안면 촬영| D[서버 전송]\n    D -->|정부 서버 비교| E[안면인증 서버]\n    E -->|인증 성공| F[CA 등록 진행]\n    F -->|완료| G[등록 완료 ✓]\n    style A fill:#e1f5fe\n    style G fill:#c8e6c9"
+    },
+    {
+        "code": "P143",
+        "category": "신원인증",
+        "title": "단말 안면인증",
+        "summary": "Face ID를 활용한 빠른 인증으로, 우리은행 앱에서 VP 제출 전 본인확인에 활용할 수 있습니다.",
+        "mermaid": "flowchart TD\n    A[사용자] -->|인증 시작| B[월렛 앱]\n    B -->|카메라 활성화| C[안면 촬영]\n    C -->|단말기 내 비교| D{로컬 인식}\n    D -->|일치| E[인증 성공 ✓]\n    D -->|불일치| F[재시도]\n    style A fill:#e1f5fe\n    style E fill:#c8e6c9"
+    },
+    {
+        "code": "P144",
+        "category": "신원인증",
+        "title": "서버 안면인증",
+        "summary": "고액 이체 등 고위험 거래 시 서버 안면인증을 요구하여 추가 보안을 제공할 수 있습니다.",
+        "mermaid": "flowchart TD\n    A[사용자] -->|인증 시작| B[월렛 앱]\n    B -->|안면 촬영| C[사진 촬영]\n    C -->|서버 전송| D[안면인증 서버]\n    D -->|등록 정보 비교| E{일치?}\n    E -->|예| F[인증 성공 ✓]\n    E -->|아니오| G[재시도]\n    style A fill:#e1f5fe\n    style F fill:#c8e6c9"
+    },
+    {
+        "code": "P150",
+        "category": "신원인증",
+        "title": "지문인증 상태변경 - Suspend",
+        "summary": "지문 변경 시 인증이 중지되므로, 우리은행 앱에서 거래 시도 시 '지문인증 재설정 필요' 안내를 표시해야 합니다.",
+        "mermaid": "flowchart TD\n    A[시스템] -->|지문 변경 감지| B[월렛 앱]\n    B -->|보안 경고| C[지문인증 중지]\n    C -->|상태 변경| D[Suspend 상태]\n    D -->|완료| E[지문인증 일시중지 ✓]\n    style A fill:#fff3e0\n    style E fill:#ffcdd2"
+    },
+    {
+        "code": "P151",
+        "category": "신원인증",
+        "title": "지문인증 상태변경 - Resume",
+        "summary": "지문인증 재활성화 후 우리은행 앱에서 정상적인 거래가 가능하며, 이 상태 변경을 앱에서 감지할 수 있습니다.",
+        "mermaid": "flowchart TD\n    A[사용자] -->|재활성화 요청| B[월렛 앱]\n    B -->|추가 인증| C[PIN/안면인증]\n    C -->|인증 성공| D[지문인증 재활성화]\n    D -->|완료| E[지문인증 Resume ✓]\n    style A fill:#e1f5fe\n    style E fill:#c8e6c9"
+    },
+    {
+        "code": "P190",
+        "category": "VC관리",
+        "title": "walletId 사용가능 여부 조회",
+        "summary": "우리은행 앱에서 거래 전 고객의 walletId 유효성을 확인하는 API로, 삭제/정지된 월렛은 사용 불가 상태로 반환됩니다.",
+        "mermaid": "flowchart TD\n    A[CA 앱] -->|ID 조회 요청| B[월렛 서버]\n    B -->|상태 확인| C{사용 가능?}\n    C -->|예| D[사용 가능 ✓]\n    C -->|아니오| E[사용 불가]\n    style A fill:#fff3e0\n    style D fill:#c8e6c9\n    style E fill:#ffcdd2"
+    },
+    {
+        "code": "P200",
+        "category": "VC관리",
+        "title": "DID 발급",
+        "summary": "DID는 월렛에서 자동 생성되며, 우리은행 앱은 이 DID를 기반으로 고객을 식별하고 VP 검증에 활용합니다.",
+        "mermaid": "flowchart TD\n    A[사용자] -->|월렛 설정| B[월렛 앱]\n    B -->|키쌍 생성| C[개인키/공개키]\n    C -->|DID 문서 생성| D[DID Document]\n    D -->|블록체인 등록| E[DID Registry]\n    E -->|완료| F[DID 발급 완료 ✓]\n    style A fill:#e1f5fe\n    style F fill:#c8e6c9"
+    },
+    {
+        "code": "P210",
+        "category": "VC관리",
+        "title": "발급 가능 VC 리스트 조회",
+        "summary": "우리은행이 발급기관으로 등록되면 이 목록에 '우리은행 직원증' 등 자체 VC가 표시될 수 있습니다.",
+        "mermaid": "flowchart TD\n    A[사용자] -->|VC 발급 메뉴| B[월렛 앱]\n    B -->|목록 요청| C[발급서버]\n    C -->|가능 목록 반환| D[VC 종류 표시]\n    D -->|선택| E[발급 가능 목록 ✓]\n    style A fill:#e1f5fe\n    style E fill:#c8e6c9"
+    },
+    {
+        "code": "P211",
+        "category": "VC관리",
+        "title": "VC 발급",
+        "summary": "우리은행이 발급기관 역할 시 VC 발급 API를 구현해야 하며, 발급된 VC에 우리은행 전자서명을 포함합니다.",
+        "mermaid": "flowchart TD\n    A[사용자] -->|VC 발급 요청| B[월렛 앱]\n    B -->|발급기관 선택| C[VC 종류 선택]\n    C -->|신원 인증| D[IC카드/안면인증]\n    D -->|인증 성공| E[발급기관 서버]\n    E -->|VC 생성 및 서명| F[전자서명된 VC]\n    F -->|월렛 저장| G[VC 발급 완료 ✓]\n    style A fill:#e1f5fe\n    style G fill:#c8e6c9"
+    },
+    {
+        "code": "P220",
+        "category": "VC관리",
+        "title": "VC 정보 표시",
+        "summary": "우리은행 앱에서 VC 정보 조회 API를 호출하면 허용된 항목만 반환되며, 민감 정보 접근은 제한됩니다.",
+        "mermaid": "flowchart TD\n    A[사용자] -->|신분증 보기| B[월렛 앱]\n    B -->|PIN 인증| C{인증 성공?}\n    C -->|예| D[VC 복호화]\n    D -->|화면 표시| E[신분증 정보 ✓]\n    C -->|아니오| F[인증 실패]\n    style A fill:#e1f5fe\n    style E fill:#c8e6c9"
+    },
+    {
+        "code": "P230",
+        "category": "VC관리",
+        "title": "주소갱신 VC 발급",
+        "summary": "고객 주소 변경 시 VP의 주소 정보도 갱신되므로, 우리은행 앱에서 주소 확인 시 항상 최신 정보를 받게 됩니다.",
+        "mermaid": "flowchart TD\n    A[사용자] -->|주소변경 신청| B[월렛 앱]\n    B -->|기존 VC 확인| C[본인 인증]\n    C -->|신규 주소 입력| D[주소 정보]\n    D -->|발급기관 확인| E[발급기관 서버]\n    E -->|갱신된 VC 발급| F[새 VC 저장]\n    F -->|완료| G[주소갱신 완료 ✓]\n    style A fill:#e1f5fe\n    style G fill:#c8e6c9"
+    },
+    {
+        "code": "P240",
+        "category": "VC관리",
+        "title": "VC 삭제",
+        "summary": "VC 삭제 시 우리은행이 발급기관이면 삭제 통보를 받으며, 검증기관이면 해당 고객의 VP가 더 이상 유효하지 않습니다.",
+        "mermaid": "flowchart TD\n    A[사용자] -->|VC 삭제 요청| B[월렛 앱]\n    B -->|삭제할 VC 선택| C[VC 선택]\n    C -->|PIN 인증| D{인증 성공?}\n    D -->|예| E[VC 삭제]\n    E -->|발급기관 통보| F[상태 갱신]\n    F -->|완료| G[VC 삭제 완료 ✓]\n    style A fill:#e1f5fe\n    style G fill:#c8e6c9"
+    },
+    {
+        "code": "P250",
+        "category": "VC관리",
+        "title": "Holder 개인키 갱신",
+        "summary": "키 갱신 후에도 기존 VP 검증이 정상 작동하도록 DID Resolver를 통해 최신 공개키를 조회해야 합니다.",
+        "mermaid": "flowchart TD\n    A[사용자] -->|키 갱신 요청| B[월렛 앱]\n    B -->|본인 인증| C[PIN/생체인증]\n    C -->|새 키쌍 생성| D[개인키/공개키]\n    D -->|DID 문서 갱신| E[DID Registry]\n    E -->|VC 재서명| F[VC 갱신]\n    F -->|완료| G[키 갱신 완료 ✓]\n    style A fill:#e1f5fe\n    style G fill:#c8e6c9"
+    },
+    {
+        "code": "P260",
+        "category": "VC관리",
+        "title": "정부앱 지갑 이관 [Draft]",
+        "summary": "기기 변경 시 기존 연결이 유지되므로, 우리은행 앱에서 이관 완료 후 별도 재등록 없이 서비스 이용이 가능합니다.",
+        "mermaid": "flowchart TD\n    A[기존 기기] -->|이관 시작| B[백업 생성]\n    B -->|암호화 전송| C[월렛 서버]\n    D[새 기기] -->|이관 요청| C\n    C -->|본인 인증| E[안면/PIN 인증]\n    E -->|데이터 복원| F[VC 복원]\n    F -->|완료| G[이관 완료 ✓]\n    style D fill:#e1f5fe\n    style G fill:#c8e6c9"
+    },
+    {
+        "code": "P290",
+        "category": "VC관리",
+        "title": "2nd CA 등록 (VP 기반 App2App)",
+        "summary": "고객이 우리은행 앱을 처음 설치하면 이 프로세스로 등록하며, VP 검증 후 고객 정보를 받아 계정을 생성합니다.",
+        "mermaid": "flowchart TD\n    A[사용자] -->|새 앱 등록| B[새 CA 앱]\n    B -->|월렛 앱 호출| C[월렛 앱]\n    C -->|VP 제출 요청| D[정보 선택]\n    D -->|본인 인증| E[PIN/생체]\n    E -->|VP 생성 및 전달| F[새 CA 앱]\n    F -->|등록 완료| G[2nd CA 등록 ✓]\n    style A fill:#e1f5fe\n    style G fill:#c8e6c9"
+    },
+    {
+        "code": "P311-1",
+        "category": "VP제출",
+        "title": "QR-MPM Direct Mode (VP)",
+        "summary": "우리은행 영업점/ATM에서 QR을 표시하고 고객이 스캔하면 VP를 직접 수신하여 본인확인을 완료하는 방식입니다.",
+        "mermaid": "flowchart TD\n    A[검증기관] -->|QR 표시| B[가맹점 화면]\n    C[사용자] -->|QR 스캔| D[월렛 앱]\n    D -->|요청 정보 확인| E[제출 항목 선택]\n    E -->|PIN 인증| F[VP 생성]\n    F -->|직접 전송| G[검증기관 서버]\n    G -->|VP 검증| H[신원 확인 ✓]\n    style C fill:#e1f5fe\n    style H fill:#c8e6c9"
+    },
+    {
+        "code": "P311-2",
+        "category": "VP제출",
+        "title": "QR-MPM Direct Mode (ZKP)",
+        "summary": "주민번호 노출 없이 '성인 여부'만 확인하는 ZKP 방식으로, 우리은행 ATM 성인인증 등에 활용할 수 있습니다.",
+        "mermaid": "flowchart TD\n    A[검증기관] -->|QR 표시| B[가맹점 화면]\n    C[사용자] -->|QR 스캔| D[월렛 앱]\n    D -->|요청 정보 확인| E[ZKP 증명 생성]\n    E -->|PIN 인증| F[영지식 증명]\n    F -->|직접 전송| G[검증기관 서버]\n    G -->|ZKP 검증| H[신원 확인 ✓]\n    style C fill:#e1f5fe\n    style H fill:#c8e6c9"
+    },
+    {
+        "code": "P311-3",
+        "category": "VP제출",
+        "title": "QR-MPM Direct Mode (Signature+VP)",
+        "summary": "전자서명이 포함되어 법적 효력이 있으며, 우리은행 대출 약정/계좌 개설 동의에 활용할 수 있습니다.",
+        "mermaid": "flowchart TD\n    A[검증기관] -->|QR 표시| B[가맹점 화면]\n    C[사용자] -->|QR 스캔| D[월렛 앱]\n    D -->|요청 확인| E[항목 선택]\n    E -->|전자서명 추가| F[Signature + VP]\n    F -->|PIN 인증| G[생성]\n    G -->|직접 전송| H[검증기관 서버]\n    H -->|검증| I[신원+서명 확인 ✓]\n    style C fill:#e1f5fe\n    style I fill:#c8e6c9"
+    },
+    {
+        "code": "P312-1",
+        "category": "VP제출",
+        "title": "QR-CPM Proxy Mode (VP)",
+        "summary": "고객이 QR을 보여주면 우리은행 직원이 스캔하는 방식으로, 창구 본인확인에 적합합니다.",
+        "mermaid": "flowchart TD\n    A[사용자] -->|VP 제출 시작| B[월렛 앱]\n    B -->|제출 정보 선택| C[항목 선택]\n    C -->|PIN 인증| D[QR 생성]\n    D -->|내 QR 표시| E[화면에 표시]\n    F[검증기관] -->|QR 스캔| E\n    E -->|중계 서버 경유| G[Proxy 서버]\n    G -->|VP 전달| H[검증기관 서버]\n    H -->|검증| I[신원 확인 ✓]\n    style A fill:#e1f5fe\n    style I fill:#c8e6c9"
+    },
+    {
+        "code": "P312-2",
+        "category": "VP제출",
+        "title": "QR-CPM Proxy Mode (ZKP)",
+        "summary": "최소한의 정보만 공개하는 ZKP를 QR로 제시하여 프라이버시를 보호하면서 본인확인합니다.",
+        "mermaid": "flowchart TD\n    A[사용자] -->|VP 제출| B[월렛 앱]\n    B -->|ZKP 증명 선택| C[증명 항목]\n    C -->|PIN 인증| D[ZKP 생성]\n    D -->|QR 표시| E[화면]\n    F[검증기관] -->|QR 스캔| E\n    E -->|Proxy 경유| G[중계 서버]\n    G -->|ZKP 전달| H[검증기관 서버]\n    H -->|검증| I[증명 확인 ✓]\n    style A fill:#e1f5fe\n    style I fill:#c8e6c9"
+    },
+    {
+        "code": "P312-3",
+        "category": "VP제출",
+        "title": "QR-CPM Proxy Direct Mode (VP)",
+        "summary": "Proxy를 거치되 최종적으로 우리은행 서버에 직접 연결되어 보안과 속도를 모두 확보합니다.",
+        "mermaid": "flowchart TD\n    A[사용자] -->|VP 제출| B[월렛 앱]\n    B -->|항목 선택| C[PIN 인증]\n    C -->|QR 생성| D[화면 표시]\n    E[검증기관] -->|QR 스캔| D\n    D -->|Proxy 중계| F[중계 서버]\n    F -->|Direct 전달| G[검증기관 직접]\n    G -->|검증| H[신원 확인 ✓]\n    style A fill:#e1f5fe\n    style H fill:#c8e6c9"
+    },
+    {
+        "code": "P312-4",
+        "category": "VP제출",
+        "title": "QR-CPM Proxy Direct Mode (ZKP)",
+        "summary": "ZKP의 프라이버시 장점과 Direct 연결의 보안성을 결합한 방식입니다.",
+        "mermaid": "flowchart TD\n    A[사용자] -->|ZKP 제출| B[월렛 앱]\n    B -->|증명 생성| C[ZKP 생성]\n    C -->|QR 표시| D[화면]\n    E[검증기관] -->|QR 스캔| D\n    D -->|Proxy 중계| F[중계 서버]\n    F -->|Direct 전달| G[검증기관 직접]\n    G -->|ZKP 검증| H[증명 확인 ✓]\n    style A fill:#e1f5fe\n    style H fill:#c8e6c9"
+    },
+    {
+        "code": "P313-1",
+        "category": "VP제출",
+        "title": "PUSH Direct Mode (VP)",
+        "summary": "우리은행 앱/인터넷뱅킹에서 본인확인이 필요할 때 푸시로 요청하고 VP를 직접 수신하는 비대면 방식입니다.",
+        "mermaid": "flowchart TD\n    A[검증기관] -->|Push 발송| B[Push 서버]\n    B -->|알림| C[월렛 앱]\n    C -->|요청 확인| D[항목 선택]\n    D -->|PIN 인증| E[VP 생성]\n    E -->|직접 전송| F[검증기관 서버]\n    F -->|검증| G[신원 확인 ✓]\n    style G fill:#c8e6c9"
+    },
+    {
+        "code": "P313-2",
+        "category": "VP제출",
+        "title": "PUSH Direct Mode (Signature+VP)",
+        "summary": "비대면 대출 약정 등 전자서명이 필요한 업무에서 푸시로 서명을 요청하고 VP+서명을 수신합니다.",
+        "mermaid": "flowchart TD\n    A[검증기관] -->|Push 발송| B[Push 서버]\n    B -->|알림| C[월렛 앱]\n    C -->|요청 확인| D[항목 선택]\n    D -->|전자서명 추가| E[Signature+VP]\n    E -->|PIN 인증| F[생성]\n    F -->|직접 전송| G[검증기관 서버]\n    G -->|검증| H[신원+서명 확인 ✓]\n    style H fill:#c8e6c9"
+    },
+    {
+        "code": "P314-1",
+        "category": "VP제출",
+        "title": "APP2APP Indirect Mode (VP)",
+        "summary": "우리은행 앱에서 월렛을 호출하여 VP를 받고, 이를 우리 서버로 전달하여 검증하는 기본 연동 방식입니다.",
+        "mermaid": "flowchart TD\n    A[서비스 앱] -->|신원확인 요청| B[월렛 앱 호출]\n    B -->|요청 표시| C[사용자 확인]\n    C -->|PIN 인증| D[VP 생성]\n    D -->|서비스 앱 응답| E[서비스 앱]\n    E -->|서버 전달| F[검증기관 서버]\n    F -->|VP 검증| G[신원 확인 ✓]\n    style A fill:#fff3e0\n    style G fill:#c8e6c9"
+    },
+    {
+        "code": "P314-2",
+        "category": "VP제출",
+        "title": "APP2APP Direct Mode",
+        "summary": "VP가 우리은행 서버로 직접 전송되어 앱에서 VP가 노출되지 않으므로 보안이 강화됩니다.",
+        "mermaid": "flowchart TD\n    A[서비스 앱] -->|신원확인 요청| B[월렛 앱 호출]\n    B -->|요청 확인| C[사용자 확인]\n    C -->|PIN 인증| D[VP 생성]\n    D -->|직접 전송| E[검증기관 서버]\n    E -->|VP 검증| F[결과 반환]\n    F -->|결과 전달| G[서비스 앱]\n    G -->|완료| H[신원 확인 ✓]\n    style A fill:#fff3e0\n    style H fill:#c8e6c9"
+    },
+    {
+        "code": "P314-3",
+        "category": "VP제출",
+        "title": "APP2APP Indirect Mode (Signature+VP)",
+        "summary": "앱 내에서 전자서명 동의를 받아 우리 서버로 전달하는 방식으로, 약관 동의 등에 활용합니다.",
+        "mermaid": "flowchart TD\n    A[서비스 앱] -->|서명 요청| B[월렛 앱]\n    B -->|요청 확인| C[사용자 확인]\n    C -->|전자서명 추가| D[Signature+VP]\n    D -->|PIN 인증| E[생성]\n    E -->|서비스 앱 응답| F[서비스 앱]\n    F -->|서버 전달| G[검증기관 서버]\n    G -->|검증| H[신원+서명 확인 ✓]\n    style A fill:#fff3e0\n    style H fill:#c8e6c9"
+    },
+    {
+        "code": "P314-4",
+        "category": "VP제출",
+        "title": "APP2APP Direct Mode (Signature+VP)",
+        "summary": "가장 보안이 강화된 방식으로, 서명+VP가 우리 서버로 직접 전송되어 대출/계약에 적합합니다.",
+        "mermaid": "flowchart TD\n    A[서비스 앱] -->|서명 요청| B[월렛 앱]\n    B -->|요청 확인| C[사용자 확인]\n    C -->|전자서명 추가| D[Signature+VP]\n    D -->|PIN 인증| E[생성]\n    E -->|검증기관 직접 전송| F[검증기관 서버]\n    F -->|검증 및 결과| G[서비스 앱]\n    G -->|완료| H[신원+서명 확인 ✓]\n    style A fill:#fff3e0\n    style H fill:#c8e6c9"
+    },
+    {
+        "code": "P315-1",
+        "category": "VP제출",
+        "title": "NFC Indirect Mode (VP)",
+        "summary": "우리은행 ATM이나 창구에 NFC 리더기를 설치하면 고객이 폰을 태깅하여 빠르게 본인확인 가능합니다.",
+        "mermaid": "flowchart TD\n    A[사용자] -->|NFC 제출 시작| B[월렛 앱]\n    B -->|제출 정보 선택| C[항목 선택]\n    C -->|PIN 인증| D[VP 생성]\n    D -->|NFC 활성화| E[NFC 대기]\n    E -->|단말기 태깅| F[NFC 리더기]\n    F -->|VP 수신| G[중계 서버]\n    G -->|검증기관 전달| H[검증기관 서버]\n    H -->|VP 검증| I[신원 확인 ✓]\n    style A fill:#e1f5fe\n    style I fill:#c8e6c9"
+    },
+    {
+        "code": "P410",
+        "category": "조회",
+        "title": "중계서버 주소 조회",
+        "summary": "VP 제출 시 사용할 중계서버 주소를 동적으로 조회하며, 우리은행 앱에서 이 API를 호출하여 연결 설정을 해야 합니다.",
+        "mermaid": "flowchart TD\n    A[CA 앱] -->|서버 주소 요청| B[월렛 앱]\n    B -->|주소 조회| C[설정 서버]\n    C -->|주소 반환| D[중계서버 URL]\n    D -->|CA에 전달| E[주소 수신 ✓]\n    style A fill:#fff3e0\n    style E fill:#c8e6c9"
+    },
+    {
+        "code": "P420",
+        "category": "조회",
+        "title": "VC 상태 상세사유 조회",
+        "summary": "고객의 VC가 정지/폐기된 경우 상세 사유를 조회할 수 있으며, 우리은행 앱에서 오류 안내 시 이 정보를 활용합니다.",
+        "mermaid": "flowchart TD\n    A[사용자] -->|상태 조회| B[월렛 앱]\n    B -->|상태 요청| C[발급기관 서버]\n    C -->|상태 정보 반환| D[상태 표시]\n    D -->|확인| E[상태 정보 ✓]\n    style A fill:#e1f5fe\n    style E fill:#c8e6c9"
+    },
+    {
+        "code": "P430",
+        "category": "조회",
+        "title": "장애여부 조회",
+        "summary": "거래 전 시스템 장애 여부를 확인하여, 장애 시 우리은행 앱에서 대체 인증 수단 안내를 제공해야 합니다.",
+        "mermaid": "flowchart TD\n    A[월렛 앱] -->|장애 확인| B[모니터링 서버]\n    B -->|상태 확인| C{장애 여부}\n    C -->|정상| D[정상 운영 ✓]\n    C -->|장애| E[장애 알림]\n    style A fill:#e1f5fe\n    style D fill:#c8e6c9\n    style E fill:#ffcdd2"
+    }
+]
