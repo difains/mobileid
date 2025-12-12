@@ -898,7 +898,31 @@
 
         function selectItem(idx, items = null) { if (!items) items = currentData.filter(item => { if (currentView === 'flowchart') { if (categoryFilter && item.category !== categoryFilter) return false; if (searchQuery && !item.title.toLowerCase().includes(searchQuery.toLowerCase())) return false; } return true; }); if (idx >= items.length) return; const item = items[idx]; document.querySelectorAll('.term-item').forEach((el, i) => el.classList.toggle('active', i === idx)); if (currentView === 'flowchart') renderFlowchart(item); else renderCard(item); }
 
-        function renderFlowchart(item) { const container = document.getElementById('flowchartContent'); container.innerHTML = `<div class="flowchart-card"><div class="flowchart-title"><span class="flowchart-code">${item.code}</span>${item.title}</div><div class="flowchart-category">${item.category}</div><div class="flowchart-summary">📌 ${item.summary}</div><div class="flowchart-diagram"><div class="mermaid">${item.mermaid}</div></div></div>`; mermaid.run({ nodes: container.querySelectorAll('.mermaid') }); }
+        let flowchartVersion = 'full';
+        function renderFlowchart(item) {
+            const container = document.getElementById('flowchartContent');
+            const hasBothVersions = item.mermaidLite && item.mermaid;
+            const currentMermaid = flowchartVersion === 'lite' && item.mermaidLite ? item.mermaidLite : item.mermaid;
+            const svgPath = `2.Full_Version/${item.code}_*.svg`;
+            const versionToggle = hasBothVersions ? `
+                <div style="display:flex;gap:8px;margin-bottom:16px;">
+                    <button onclick="setFlowchartVersion('lite','${item.code}')" class="filter-btn ${flowchartVersion === 'lite' ? 'active' : ''}" style="padding:8px 16px;border-radius:20px;cursor:pointer;font-size:13px;border:1px solid #ddd;background:${flowchartVersion === 'lite' ? '#1a73e8' : '#f5f5f5'};color:${flowchartVersion === 'lite' ? 'white' : '#333'}">📊 라이트 버전</button>
+                    <button onclick="setFlowchartVersion('full','${item.code}')" class="filter-btn ${flowchartVersion === 'full' ? 'active' : ''}" style="padding:8px 16px;border-radius:20px;cursor:pointer;font-size:13px;border:1px solid #ddd;background:${flowchartVersion === 'full' ? '#1a73e8' : '#f5f5f5'};color:${flowchartVersion === 'full' ? 'white' : '#333'}">📋 상세 버전</button>
+                </div>` : '';
+            container.innerHTML = `<div class="flowchart-card">
+                <div class="flowchart-title"><span class="flowchart-code">${item.code}</span>${item.title}</div>
+                <div class="flowchart-category">${item.category}</div>
+                ${versionToggle}
+                <div class="flowchart-summary">📌 ${item.summary}</div>
+                <div class="flowchart-diagram"><div class="mermaid">${currentMermaid}</div></div>
+            </div>`;
+            mermaid.run({ nodes: container.querySelectorAll('.mermaid') });
+        }
+        function setFlowchartVersion(ver, code) {
+            flowchartVersion = ver;
+            const item = flowchartData.find(f => f.code === code);
+            if (item) renderFlowchart(item);
+        }
 
         function renderCard(item) { const area = currentView === 'glossary' ? document.getElementById('glossaryContent') : document.getElementById('codeContent'); const term = currentView === 'glossary' ? item.용어 : item.코드이명; const easyExp = easyExplanations[term] || easyExplanations[item.용어]; const easySection = easyExp ? `<div class="easy-explanation"><div class="easy-explanation-title">🎈 쉬운 해설</div><div class="easy-explanation-content">${easyExp}</div></div>` : ''; if (currentView === 'glossary') { area.innerHTML = `<div class="item-card"><div class="item-title">${item.용어}</div><div class="item-meta"><div class="meta-badge"><strong>수정일:</strong> ${item.수정일}</div><div class="meta-badge"><strong>구분:</strong> ${item.구분}</div></div><div class="item-description">${item.설명}</div>${easySection}</div>`; } else { area.innerHTML = `<div class="item-card"><div class="item-title">${item.코드이명 || item.코드}(${item.코드})</div><div class="item-meta"><div class="meta-badge"><strong>수정일:</strong> ${item.수정일}</div><div class="meta-badge"><strong>구분:</strong> ${item.구분}</div><div class="meta-badge"><strong>그룹명:</strong> ${item.그룹명}</div></div><div class="item-description">${item.설명}</div>${easySection}</div>`; } }
 

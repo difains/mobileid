@@ -1,128 +1,450 @@
 [
-    {
-        "code": "P100",
-        "category": "공통",
-        "title": "월렛 접근 (walletToken)",
-        "summary": "CA 앱이 월렛에 접근하기 위해 walletToken을 발급받는 전체 프로세스. tempToken 요청 → CAS 서버에서 walletToken 생성 → ECDSA 서명 → 월렛 연결까지의 상세 흐름",
-        "mermaid": "sequenceDiagram\n    participant User as 👤 사용자\n    participant CA as 📱 CA앱<br/>(인가앱)\n    participant FW as 🔧 Framework<br/>(지갑24)\n    participant TA as 🔐 TrustedApp<br/>(보안영역)\n    participant CAS as 🖥️ CAS서버<br/>(인가기관)\n    participant SDK as ⚙️ 서버SDK\n    participant BC as ⛓️ 블록체인\n    \n    Note over User,BC: P100-1: walletToken 발급\n    User->>CA: 앱 실행\n    CA->>FW: getWalletState()\n    FW-->>CA: walletStatus 반환\n    \n    alt WALLET_NOT_EXIST (1st CA 접근)\n        Note right of CA: DID Document 없음<br/>유효한 Wallet 미존재\n    else WALLET_EXIST_BUT_VC_NOT_EXIST\n        Note right of CA: DID Document만 존재<br/>1st CA로 재진행 필요\n    else VC_EXIST (2nd CA 접근)\n        Note right of CA: DID Document + VC 존재<br/>2nd CA로 접근\n    end\n    \n    CA->>FW: requestTempToken(purpose)\n    Note right of FW: purpose 종류:<br/>1001:DID발급, 1002:VC발급<br/>1004:VC목록조회, 1009:2nd CA등록<br/>1011:VP제출\n    FW->>TA: tempToken 요청\n    TA->>TA: tempToken 생성<br/>{nonce, pkgName, purpose,<br/>caAppUserId, 유효시간}\n    TA->>TA: wrappedTempToken = TA.wrap(tempToken)\n    TA-->>FW: {tempToken, wrappedTempToken}\n    FW-->>CA: tempToken 반환\n    \n    Note over User,BC: P100-2: 인가기관에 walletToken 요청\n    CA->>CAS: walletToken 요청<br/>{tempToken}\n    \n    alt purpose가 2nd CA 등록인 경우\n        CAS->>CAS: VP 검증 결과 확인\n    end\n    \n    CAS->>CAS: 정당한 사용자 여부 체크\n    CAS->>CAS: CI 조회 → sha256_ci 생성\n    CAS->>SDK: ECDSA 서명 생성 요청\n    Note right of SDK: 서명원문: tempToken | sha256_ci<br/>알고리즘: SECP256r1\n    SDK->>SDK: signedWalletToken 생성<br/>= PrivCAS.Sign{tempToken | sha256_ci}\n    SDK-->>CAS: signedWalletToken\n    CAS->>CAS: walletToken 구성<br/>{tempToken | sha256_ci | signedWalletToken}\n    CAS-->>CA: {walletToken, DID_CAS}\n    \n    Note over User,BC: P100-3: CA-월렛 연결 요청\n    CA->>FW: issueWalletHandle(walletToken, did)\n    FW->>BC: CAS DID Document 요청\n    BC-->>FW: DIDDoc_CAS\n    FW->>FW: DID Document에서 Pub_CAS 추출\n    FW->>FW: 월렛토큰 서명 검증<br/>Pub_CAS.Verify{walletToken}\n    Note right of FW: ECDSA 서명 검증<br/>알고리즘: SECP256r1\n    FW->>FW: callerInfo 확인<br/>패키지명/서명 검증\n    FW->>TA: 월렛토큰 유효성 검증<br/>{walletToken, wrappedTempToken}\n    TA->>TA: tempToken 검증<br/>만료체크, purpose체크\n    \n    alt 신규 CA 연결\n        FW->>FW: walletID 생성, SAK 키쌍 생성\n        FW->>FW: sakCert 발급\n    end\n    \n    FW->>FW: hWalletToken 생성\n    FW-->>CA: {hWalletToken}\n    \n    CA->>CA: 목적에 따라 월렛토큰 사용<br/>(유효시간: max 5분)"
-    },
-    {
-        "code": "P111",
-        "category": "공통",
-        "title": "인가 토큰 (AuthToken)",
-        "summary": "CA 앱이 정부 서버(모바일신분증 서버)에 접근하기 위한 인가토큰 발급 프로세스. 앱 인증 → 서버 인증 → 토큰 발급의 상세 흐름",
-        "mermaid": "sequenceDiagram\n    participant CA as 📱 CA앱\n    participant FW as 🔧 Framework\n    participant CAS as 🖥️ CAS서버\n    participant GOV as 🏛️ 정부서버<br/>(모바일신분증)\n    \n    Note over CA,GOV: 인가토큰 발급 프로세스\n    \n    CA->>FW: authToken 요청\n    FW->>FW: 사용자 인증<br/>(PIN/생체인증)\n    FW->>CAS: 인가토큰 요청<br/>{walletToken, purpose}\n    \n    CAS->>CAS: CA 앱 검증<br/>- 패키지명 확인<br/>- 서명 검증<br/>- 인가 상태 확인\n    \n    CAS->>GOV: 인가토큰 발급 요청<br/>{caAuthNo, walletId, did}\n    \n    GOV->>GOV: 요청 검증<br/>- CA 인가번호 확인<br/>- 월렛 상태 확인\n    \n    GOV->>GOV: authToken 생성<br/>{tokenId, caAuthNo, walletId,<br/>purpose, expiresIn, nonce}\n    \n    GOV->>GOV: ECDSA 서명<br/>signedAuthToken 생성\n    \n    GOV-->>CAS: {authToken, signedAuthToken}\n    \n    CAS->>CAS: 토큰 서명 검증<br/>정부 공개키로 검증\n    \n    CAS-->>FW: {authToken}\n    FW-->>CA: authToken 반환\n    \n    Note right of CA: authToken으로<br/>정부 API 호출 가능<br/>(유효시간 내)"
-    },
-    {
-        "code": "P121",
-        "category": "신원인증",
-        "title": "실명 인증 (도관 방식)",
-        "summary": "기존 통신사/카드사 인증 인프라를 중계하여 실명인증을 수행하는 방식. 빠른 구축이 가능하며 사용자에게 익숙한 인증 경험 제공",
-        "mermaid": "sequenceDiagram\n    participant User as 👤 사용자\n    participant CA as 📱 CA앱\n    participant FW as 🔧 Framework\n    participant CAS as 🖥️ CAS서버\n    participant AUTH as 🔐 인증기관<br/>(통신사/카드사)\n    participant GOV as 🏛️ 정부서버\n    \n    Note over User,GOV: 실명인증 - 도관방식\n    \n    User->>CA: 실명인증 시작\n    CA->>FW: 인증 화면 요청\n    FW->>User: 인증수단 선택 화면\n    \n    User->>FW: 인증기관 선택<br/>(SKT/KT/LGU+/카드사)\n    \n    FW->>AUTH: 인증 요청 전달<br/>{이름, 생년월일, 휴대폰번호}\n    \n    AUTH->>AUTH: 본인확인 처리\n    AUTH->>User: SMS 인증번호 발송\n    \n    User->>FW: 인증번호 입력\n    FW->>AUTH: 인증번호 검증\n    \n    AUTH->>AUTH: 본인 확인 완료\n    AUTH-->>FW: 인증결과 + CI\n    \n    FW->>CAS: 인증결과 전달\n    CAS->>CAS: CI 저장 및 매핑\n    \n    CAS->>GOV: 실명인증 결과 통보\n    GOV-->>CAS: 확인 응답\n    \n    CAS-->>FW: 인증 완료\n    FW-->>CA: 실명인증 성공\n    \n    Note right of CA: 이후 VC 발급 진행 가능"
-    },
-    {
-        "code": "P123",
-        "category": "신원인증",
-        "title": "실명 인증 (직접 방식)",
-        "summary": "신분증 OCR과 정부 DB 진위확인을 통한 고신뢰 실명인증 방식. 중간 인증기관 없이 정부와 직접 연동",
-        "mermaid": "sequenceDiagram\n    participant User as 👤 사용자\n    participant CA as 📱 CA앱\n    participant FW as 🔧 Framework\n    participant CAS as 🖥️ CAS서버\n    participant GOV as 🏛️ 정부서버<br/>(발급기관)\n    \n    Note over User,GOV: 실명인증 - 직접방식\n    \n    User->>CA: 실명인증 시작\n    CA->>FW: 신분증 촬영 요청\n    \n    FW->>User: 카메라 활성화<br/>신분증 촬영 안내\n    User->>FW: 신분증 촬영\n    \n    FW->>FW: OCR 인식<br/>- 이름, 주민번호 추출<br/>- 발급일자, 발급기관\n    \n    FW->>CAS: OCR 결과 전송<br/>{추출정보, 신분증이미지}\n    \n    CAS->>GOV: 진위확인 요청<br/>{이름, 주민번호, 발급일자}\n    \n    GOV->>GOV: DB 조회<br/>발급 정보 대조\n    \n    alt 진위확인 성공\n        GOV-->>CAS: 확인완료 + CI\n        CAS->>CAS: CI 저장\n        CAS-->>FW: 인증 성공\n        FW-->>CA: 실명인증 완료 ✓\n    else 진위확인 실패\n        GOV-->>CAS: 불일치 오류\n        CAS-->>FW: 인증 실패\n        FW-->>CA: 재촬영 요청\n    end"
-    },
-    {
-        "code": "P130",
-        "category": "신원인증",
-        "title": "IC카드 인증 (VC 발급용)",
-        "summary": "실물 신분증의 IC칩을 NFC로 읽어 정부 서버에서 검증하는 고신뢰 인증 방식. 복제 불가능한 IC칩의 보안성 활용",
-        "mermaid": "sequenceDiagram\n    participant User as 👤 사용자\n    participant CA as 📱 CA앱\n    participant FW as 🔧 Framework\n    participant CAS as 🖥️ CAS서버\n    participant GOV as 🏛️ 정부서버\n    \n    Note over User,GOV: IC카드 인증 프로세스\n    \n    User->>CA: VC 발급 시작\n    CA->>FW: IC카드 인증 요청\n    \n    FW->>User: IC카드 태깅 안내<br/>\"신분증을 휴대폰 뒷면에 대주세요\"\n    \n    User->>FW: 신분증 NFC 태깅\n    \n    FW->>FW: NFC 통신\n    Note right of FW: IC칩 데이터 읽기<br/>- 개인정보<br/>- 발급정보<br/>- 보안인증정보\n    \n    FW->>User: PIN 입력 요청\n    User->>FW: IC카드 PIN 입력\n    \n    FW->>FW: IC칩 내부 인증<br/>PIN 검증\n    \n    FW->>CAS: IC카드 인증데이터 전송<br/>{encryptedData, signature}\n    \n    CAS->>GOV: IC카드 검증 요청\n    \n    GOV->>GOV: IC칩 서명 검증<br/>발급기관 인증서로 검증\n    \n    GOV->>GOV: 개인정보 복호화<br/>발급 정보 확인\n    \n    GOV-->>CAS: 검증 성공 + 개인정보\n    \n    CAS->>CAS: 본인확인 완료<br/>CI 생성/저장\n    \n    CAS-->>FW: IC카드 인증 완료\n    FW-->>CA: 인증 성공 ✓\n    \n    Note right of CA: 이후 VC 발급 진행"
-    },
-    {
-        "code": "P142-3",
-        "category": "신원인증",
-        "title": "서버 기반 정부 안면인증 (VC 발급)",
-        "summary": "정부 안면인식 서버와 연동하여 등록된 안면정보와 비교하는 고신뢰 인증 방식. 1:1 안면 매칭으로 본인 확인",
-        "mermaid": "sequenceDiagram\n    participant User as 👤 사용자\n    participant CA as 📱 CA앱\n    participant FW as 🔧 Framework\n    participant CAS as 🖥️ CAS서버\n    participant FACE as 🎭 안면인증서버<br/>(정부)\n    participant GOV as 🏛️ 정부DB\n    \n    Note over User,GOV: 서버 기반 정부 안면인증\n    \n    User->>CA: VC 발급 요청\n    CA->>FW: 안면인증 시작\n    \n    FW->>User: 카메라 활성화<br/>\"정면을 바라봐 주세요\"\n    \n    FW->>FW: Liveness Detection<br/>실제 사람인지 확인\n    Note right of FW: Anti-Spoofing 체크<br/>- 깜빡임 감지<br/>- 3D 깊이 분석<br/>- 모션 감지\n    \n    User->>FW: 안면 촬영 완료\n    \n    FW->>FW: 안면 이미지 암호화<br/>전송용 데이터 준비\n    \n    FW->>CAS: 암호화된 안면정보 전송<br/>{encryptedFaceData, nonce}\n    \n    CAS->>FACE: 안면인증 요청<br/>{faceData, CI, purpose}\n    \n    FACE->>GOV: 등록된 안면정보 조회<br/>(주민등록사진)\n    GOV-->>FACE: 등록 안면정보\n    \n    FACE->>FACE: 1:1 안면 매칭<br/>유사도 분석\n    \n    alt 매칭 성공 (유사도 > 임계값)\n        FACE-->>CAS: 인증 성공<br/>{matchScore, certified}\n        CAS-->>FW: 안면인증 완료\n        FW-->>CA: 인증 성공 ✓\n    else 매칭 실패\n        FACE-->>CAS: 인증 실패<br/>{errorCode, message}\n        CAS-->>FW: 재시도 요청\n        FW-->>CA: 재촬영 안내\n    end"
-    },
-    {
-        "code": "P200",
-        "category": "VC관리",
-        "title": "DID 발급",
-        "summary": "사용자의 분산ID(DID)를 생성하고 블록체인에 등록하는 프로세스. 키쌍 생성 → DID Document 작성 → 블록체인 등록",
-        "mermaid": "sequenceDiagram\n    participant User as 👤 사용자\n    participant CA as 📱 CA앱\n    participant FW as 🔧 Framework\n    participant TA as 🔐 TrustedApp<br/>(보안영역)\n    participant CAS as 🖥️ CAS서버\n    participant BC as ⛓️ 블록체인\n    \n    Note over User,BC: DID 발급 프로세스\n    \n    User->>CA: 모바일신분증 초기설정\n    CA->>FW: DID 발급 요청\n    \n    FW->>TA: 키쌍 생성 요청\n    TA->>TA: ECDSA 키쌍 생성<br/>(SECP256r1)\n    Note right of TA: 개인키: TEE 내부 보관<br/>공개키: 외부 전달 가능\n    \n    TA-->>FW: 공개키 반환\n    \n    FW->>FW: DID 생성<br/>did:omni:{unique-id}\n    \n    FW->>FW: DID Document 작성\n    Note right of FW: DID Document 구조:<br/>- id: did:omni:xxx<br/>- publicKey: [공개키정보]<br/>- authentication: [인증방법]<br/>- created: 생성시간\n    \n    FW->>CAS: DID Document 등록 요청<br/>{didDocument, signature}\n    \n    CAS->>CAS: 서명 검증\n    \n    CAS->>BC: DID Document 등록<br/>(블록체인 트랜잭션)\n    \n    BC->>BC: 트랜잭션 검증<br/>블록 채굴/확정\n    \n    BC-->>CAS: 등록 완료<br/>{txHash, blockNumber}\n    \n    CAS-->>FW: DID 등록 성공<br/>{did, registryInfo}\n    \n    FW->>TA: DID 정보 안전 저장\n    TA-->>FW: 저장 완료\n    \n    FW-->>CA: DID 발급 완료 ✓\n    \n    Note right of CA: 이제 VC 발급 가능"
-    },
-    {
-        "code": "P211",
-        "category": "VC관리",
-        "title": "VC 발급",
-        "summary": "발급기관이 본인확인 후 서명된 VC(Verifiable Credential)를 발급하여 사용자 월렛에 저장하는 전체 프로세스",
-        "mermaid": "sequenceDiagram\n    participant User as 👤 사용자\n    participant CA as 📱 CA앱\n    participant FW as 🔧 Framework\n    participant TA as 🔐 TrustedApp\n    participant CAS as 🖥️ CAS서버\n    participant ISS as 🏛️ 발급기관<br/>(경찰청/행안부)\n    participant BC as ⛓️ 블록체인\n    \n    Note over User,BC: VC 발급 프로세스\n    \n    User->>CA: VC 발급 요청<br/>(운전면허증/주민등록증)\n    CA->>FW: VC 발급 시작\n    \n    FW->>User: 본인인증 수행\n    Note right of FW: IC카드인증 또는<br/>안면인증 진행\n    \n    FW->>CAS: VC 발급 요청<br/>{authToken, vcType, did}\n    \n    CAS->>ISS: VC 발급 요청<br/>{CI, vcType, holderDid}\n    \n    ISS->>ISS: 발급 자격 확인<br/>- 본인확인 결과 검증<br/>- 발급 가능 여부 확인\n    \n    ISS->>ISS: VC 클레임 구성\n    Note right of ISS: 클레임 예시:<br/>- 이름, 생년월일<br/>- 면허번호, 발급일<br/>- 사진 (암호화)\n    \n    ISS->>ISS: VC 서명 생성<br/>발급기관 개인키로 서명\n    \n    ISS->>BC: VC 메타정보 등록<br/>{vcId, issuerDid, holderDid,<br/>issuedAt, expiresAt}\n    BC-->>ISS: 등록 완료\n    \n    ISS-->>CAS: 발급된 VC 반환<br/>{signedVC, vcId}\n    \n    CAS->>CAS: VC 수신 검증\n    \n    CAS-->>FW: VC 전달\n    \n    FW->>TA: VC 암호화 저장\n    Note right of TA: TEE 내부에<br/>안전하게 저장\n    TA-->>FW: 저장 완료\n    \n    FW-->>CA: VC 발급 완료 ✓\n    \n    CA->>User: \"모바일 신분증이<br/>발급되었습니다\""
-    },
-    {
-        "code": "P290",
-        "category": "VC관리",
-        "title": "2nd CA 등록 (VP 기반 App2App)",
-        "summary": "이미 월렛에 VC가 있는 상태에서 새로운 CA앱(우리은행 등)을 등록하는 프로세스. 기존 앱의 VP를 활용한 신원 확인",
-        "mermaid": "sequenceDiagram\n    participant User as 👤 사용자\n    participant CA2 as 📱 2nd CA앱<br/>(우리은행)\n    participant CA1 as 📱 1st CA앱<br/>(정부24)\n    participant FW as 🔧 Framework\n    participant CAS2 as 🖥️ 2nd CAS<br/>(우리은행서버)\n    participant GOV as 🏛️ 정부서버\n    \n    Note over User,GOV: 2nd CA 등록 (VP 기반)\n    \n    User->>CA2: 우리은행앱 설치 후<br/>모바일신분증 등록\n    \n    CA2->>FW: 2nd CA 등록 요청<br/>{purpose: 1009}\n    \n    FW->>FW: 월렛 상태 확인<br/>기존 VC 존재 확인\n    \n    FW->>CA1: App2App 호출<br/>VP 제출 요청\n    \n    CA1->>User: VP 제출 동의 요청<br/>\"우리은행에 신원정보를<br/>제공하시겠습니까?\"\n    \n    User->>CA1: 동의 + PIN/생체인증\n    \n    CA1->>FW: VP 생성 요청\n    FW->>FW: VP 생성<br/>- 선택된 클레임 포함<br/>- Holder 서명 추가\n    \n    FW-->>CA1: VP 반환\n    CA1-->>CA2: VP 전달 (App2App)\n    \n    CA2->>CAS2: 2nd CA 등록 요청<br/>{VP, tempToken}\n    \n    CAS2->>CAS2: VP 검증<br/>- 발급기관 서명 확인<br/>- Holder 서명 확인<br/>- 유효기간 확인\n    \n    CAS2->>GOV: VP 검증 결과 확인<br/>{authCode}\n    GOV-->>CAS2: 검증 완료\n    \n    CAS2->>CAS2: walletToken 발급<br/>2nd CA용 토큰 생성\n    \n    CAS2-->>CA2: {walletToken, authResult}\n    \n    CA2->>FW: 월렛 연결 요청<br/>issueWalletHandle()\n    \n    FW->>FW: 2nd CA 등록 완료<br/>연결 정보 저장\n    \n    FW-->>CA2: hWalletToken 반환\n    CA2->>User: \"등록 완료 ✓<br/>우리은행에서<br/>모바일신분증을<br/>사용할 수 있습니다\""
-    },
-    {
-        "code": "P311-1",
-        "category": "VP제출",
-        "title": "QR-MPM Direct Mode (VP)",
-        "summary": "검증기관(은행 창구/ATM)이 QR을 표시하고 사용자가 스캔하여 VP를 직접 제출하는 대면 본인확인 방식",
-        "mermaid": "sequenceDiagram\n    participant Staff as 👨‍💼 은행직원\n    participant Term as 🖥️ 창구단말\n    participant SP as 🏢 SP서버<br/>(은행)\n    participant User as 👤 고객\n    participant CA as 📱 CA앱\n    participant FW as 🔧 Framework\n    participant BC as ⛓️ 블록체인\n    \n    Note over Staff,BC: QR-MPM Direct Mode\n    \n    Staff->>Term: 본인확인 요청\n    Term->>SP: Profile 요청<br/>{serviceCode, 필요정보목록}\n    \n    SP->>SP: Profile 생성<br/>- 요청 클레임 정의<br/>- 거래코드 생성<br/>- 유효시간 설정\n    \n    SP->>SP: QR 데이터 생성\n    Note right of SP: QR 내용:<br/>- verifier URL<br/>- profile<br/>- nonce\n    \n    SP-->>Term: QR코드 데이터\n    Term->>Term: QR 화면 표시\n    \n    User->>CA: QR 스캔\n    CA->>FW: QR 데이터 파싱\n    \n    FW->>User: 제출정보 확인 요청<br/>\"다음 정보를 제출합니다:<br/>이름, 생년월일, 사진\"\n    \n    User->>FW: 동의 + PIN 인증\n    \n    FW->>FW: VP 생성\n    Note right of FW: VP 구성:<br/>- 선택된 클레임<br/>- Holder 서명<br/>- 유효시간\n    \n    FW->>SP: VP 직접 전송 (HTTPS)\n    Note right of FW: Direct Mode:<br/>SP 서버로 직접 전송\n    \n    SP->>BC: 발급기관 DID Document 조회\n    BC-->>SP: Issuer 공개키\n    \n    SP->>SP: VP 검증\n    Note right of SP: 검증 항목:<br/>1. Issuer 서명 검증<br/>2. Holder 서명 검증<br/>3. 유효기간 확인<br/>4. Revocation 체크\n    \n    SP->>SP: 클레임 추출<br/>본인확인 정보 획득\n    \n    SP-->>Term: 검증 결과 + 개인정보\n    Term->>Staff: 본인확인 완료 ✓<br/>고객정보 표시"
-    },
-    {
-        "code": "P312-1",
-        "category": "VP제출",
-        "title": "QR-CPM Proxy Mode (VP)",
-        "summary": "사용자가 QR을 표시하고 검증기관이 스캔하는 방식. 중계서버를 통해 VP를 전달하여 네트워크 제약 환경에서 유용",
-        "mermaid": "sequenceDiagram\n    participant User as 👤 고객\n    participant CA as 📱 CA앱\n    participant FW as 🔧 Framework\n    participant Proxy as 🔀 중계서버\n    participant Staff as 👨‍💼 검증직원\n    participant Term as 🖥️ 검증단말\n    participant SP as 🏢 SP서버\n    participant BC as ⛓️ 블록체인\n    \n    Note over User,BC: QR-CPM Proxy Mode\n    \n    User->>CA: VP 제출 시작\n    CA->>FW: VP 제출 화면 요청\n    \n    FW->>User: 제출정보 선택\n    User->>FW: 정보 선택 + PIN 인증\n    \n    FW->>FW: VP 생성\n    \n    FW->>Proxy: 중계서버 등록<br/>{VP, expireTime}\n    Proxy->>Proxy: 고유 proxyId 생성<br/>VP 임시 저장\n    Proxy-->>FW: {proxyId, proxyUrl}\n    \n    FW->>FW: QR 코드 생성\n    Note right of FW: QR 내용:<br/>- proxyUrl/{proxyId}<br/>- nonce\n    \n    FW-->>CA: QR 화면\n    CA->>User: \"QR코드를<br/>제시해 주세요\"\n    \n    User->>Staff: QR 코드 제시\n    Staff->>Term: QR 스캔\n    \n    Term->>Proxy: VP 요청<br/>{proxyId}\n    Proxy->>Proxy: VP 조회 + 삭제\n    Proxy-->>Term: VP 반환\n    \n    Term->>SP: VP 검증 요청\n    SP->>BC: 서명 검증용<br/>공개키 조회\n    BC-->>SP: 공개키\n    \n    SP->>SP: VP 검증<br/>- Issuer 서명<br/>- Holder 서명<br/>- 유효성\n    \n    SP-->>Term: 검증 결과 + 클레임\n    Term->>Staff: 본인확인 완료 ✓"
-    },
-    {
-        "code": "P313-1",
-        "category": "VP제출",
-        "title": "PUSH Direct Mode (VP)",
-        "summary": "검증기관이 Push 알림으로 VP 제출을 요청하는 비대면 본인확인 방식. 인터넷뱅킹, 모바일뱅킹에서 활용",
-        "mermaid": "sequenceDiagram\n    participant User as 👤 고객\n    participant Web as 🌐 인터넷뱅킹\n    participant SP as 🏢 SP서버<br/>(은행)\n    participant Push as 📤 Push서버<br/>(조폐공사)\n    participant CA as 📱 CA앱\n    participant FW as 🔧 Framework\n    participant BC as ⛓️ 블록체인\n    \n    Note over User,BC: PUSH Direct Mode\n    \n    User->>Web: 본인확인 필요 거래<br/>(비대면 계좌개설 등)\n    \n    Web->>SP: 본인확인 요청<br/>{userId, transactionType}\n    \n    SP->>SP: Profile 생성<br/>Push용 세션 생성\n    \n    SP->>Push: VP 요청 Push 발송<br/>{userId, profile, callback}\n    \n    Push->>CA: Push 알림 전송\n    \n    CA->>User: 알림 표시<br/>\"[우리은행]<br/>본인확인을 요청합니다\"\n    \n    User->>CA: 알림 터치\n    CA->>FW: Push VP 처리 시작\n    \n    FW->>User: 제출정보 확인<br/>\"우리은행에<br/>다음 정보를 제출합니다:\"\n    \n    User->>FW: 동의 + PIN/생체인증\n    \n    FW->>FW: VP 생성<br/>선택된 클레임 포함\n    \n    FW->>SP: VP 직접 전송<br/>{VP, sessionId}\n    \n    SP->>BC: 서명 검증용 공개키 조회\n    BC-->>SP: 공개키\n    \n    SP->>SP: VP 검증 완료\n    \n    SP-->>Web: 콜백 - 본인확인 완료\n    \n    Web->>User: \"본인확인이<br/>완료되었습니다 ✓<br/>거래를 진행합니다\""
-    },
-    {
-        "code": "P314-1",
-        "category": "VP제출",
-        "title": "APP2APP Indirect Mode (VP)",
-        "summary": "서비스앱에서 월렛앱을 호출하여 VP를 받고, 서비스앱이 자체 서버로 전달하는 방식. 앱 간 직접 연동",
-        "mermaid": "sequenceDiagram\n    participant User as 👤 고객\n    participant SVC as 📱 서비스앱<br/>(우리은행)\n    participant CA as 📱 CA앱<br/>(정부24)\n    participant FW as 🔧 Framework\n    participant SP as 🏢 SP서버<br/>(우리은행)\n    participant BC as ⛓️ 블록체인\n    \n    Note over User,BC: APP2APP Indirect Mode\n    \n    User->>SVC: 본인확인 필요 메뉴\n    \n    SVC->>SVC: URL Scheme 생성<br/>VP 요청 파라미터 구성\n    \n    SVC->>CA: App2App 호출<br/>(URL Scheme)\n    Note right of SVC: mobileid://vp?<br/>callback=wooribank&<br/>profile=xxx\n    \n    CA->>FW: VP 제출 화면 표시\n    \n    FW->>User: 제출정보 확인<br/>\"우리은행앱에<br/>정보를 제출합니다\"\n    \n    User->>FW: 동의 + PIN 인증\n    \n    FW->>FW: VP 생성\n    \n    FW-->>CA: VP 반환\n    \n    CA->>SVC: App2App 콜백<br/>(VP 데이터)\n    Note right of CA: wooribank://callback?<br/>vp=xxx\n    \n    SVC->>SP: VP 전달 및 검증 요청\n    Note right of SVC: Indirect Mode:<br/>서비스앱에서<br/>서버로 VP 전달\n    \n    SP->>BC: 검증용 공개키 조회\n    BC-->>SP: 공개키\n    \n    SP->>SP: VP 검증<br/>클레임 추출\n    \n    SP-->>SVC: 검증 결과\n    \n    SVC->>User: 본인확인 완료 ✓"
-    },
-    {
-        "code": "P315-1",
-        "category": "VP제출",
-        "title": "NFC Indirect Mode (VP)",
-        "summary": "사용자가 NFC 리더기에 휴대폰을 태깅하여 VP를 제출하는 방식. ATM, 무인발급기 등에서 활용 가능",
-        "mermaid": "sequenceDiagram\n    participant User as 👤 고객\n    participant CA as 📱 CA앱\n    participant FW as 🔧 Framework\n    participant NFC as 📡 NFC리더기<br/>(ATM)\n    participant Relay as 🔀 중계서버\n    participant SP as 🏢 SP서버<br/>(은행)\n    participant BC as ⛓️ 블록체인\n    \n    Note over User,BC: NFC Indirect Mode\n    \n    User->>CA: VP 제출 시작\n    CA->>FW: NFC 제출 모드\n    \n    FW->>User: 제출정보 선택<br/>NFC 태깅 안내\n    \n    User->>FW: 정보 선택 + PIN 인증\n    \n    FW->>FW: VP 생성<br/>NFC 전송용 포맷팅\n    \n    FW->>FW: NFC 활성화<br/>Card Emulation 모드\n    \n    FW-->>CA: \"휴대폰을<br/>NFC 리더기에<br/>대주세요\"\n    \n    User->>NFC: 휴대폰 태깅\n    \n    NFC->>FW: NFC 통신 시작\n    Note right of NFC: ISO 14443<br/>NFC-A/B 프로토콜\n    \n    FW->>NFC: VP 데이터 전송<br/>(분할 전송 가능)\n    \n    NFC->>Relay: VP 전달\n    Note right of Relay: 중계서버 경유<br/>(Indirect Mode)\n    \n    Relay->>SP: VP 검증 요청\n    \n    SP->>BC: 서명 검증용 공개키 조회\n    BC-->>SP: 공개키\n    \n    SP->>SP: VP 검증<br/>- Issuer 서명<br/>- Holder 서명\n    \n    SP-->>Relay: 검증 결과\n    Relay-->>NFC: 본인확인 완료\n    \n    NFC->>User: ATM 화면:<br/>\"본인확인 완료 ✓<br/>거래를 진행합니다\""
-    },
-    {
-        "code": "P420",
-        "category": "조회",
-        "title": "VC 상태 상세사유 조회",
-        "summary": "VC의 현재 상태(정상/정지/폐기)와 상세 사유를 조회하는 API. 서비스앱에서 오류 원인 안내에 활용",
-        "mermaid": "sequenceDiagram\n    participant User as 👤 사용자\n    participant CA as 📱 CA앱\n    participant FW as 🔧 Framework\n    participant CAS as 🖥️ CAS서버\n    participant GOV as 🏛️ 정부서버<br/>(발급기관)\n    participant BC as ⛓️ 블록체인\n    \n    Note over User,BC: VC 상태 조회\n    \n    User->>CA: 신분증 상태 확인\n    \n    CA->>FW: VC 상태 조회 요청<br/>{vcId, authToken}\n    \n    FW->>CAS: 상태 조회 API 호출\n    \n    CAS->>BC: VC 상태 조회<br/>(블록체인 레지스트리)\n    BC-->>CAS: {status, lastUpdated}\n    \n    alt 상세 사유 필요시\n        CAS->>GOV: 상세 사유 조회<br/>{vcId, issuerDid}\n        GOV-->>CAS: 상세 사유\n    end\n    \n    CAS-->>FW: 상태 정보 반환\n    \n    alt NORMAL (정상)\n        FW-->>CA: 상태: 정상 ✓\n        CA->>User: \"정상 사용 가능\"\n    else SUSPENDED (정지)\n        FW-->>CA: 상태: 정지<br/>사유: 분실신고\n        CA->>User: \"사용 정지됨<br/>사유: 분실신고<br/>해제하려면 고객센터 문의\"\n    else REVOKED (폐기)\n        FW-->>CA: 상태: 폐기<br/>사유: 유효기간 만료\n        CA->>User: \"폐기됨<br/>사유: 유효기간 만료<br/>재발급이 필요합니다\"\n    end"
-    },
-    {
-        "code": "P102",
-        "category": "공통",
-        "title": "월렛 연결 해제",
-        "summary": "사용자가 CA앱과 월렛의 연결을 해제하는 프로세스. PIN 인증 후 연결 해제 및 서버 통보",
-        "mermaid": "sequenceDiagram\n    participant User as 👤 사용자\n    participant CA as 📱 CA앱\n    participant FW as 🔧 Framework\n    participant TA as 🔐 TrustedApp\n    participant CAS as 🖥️ CAS서버\n    participant GOV as 🏛️ 정부서버\n    \n    Note over User,GOV: 월렛 연결 해제 프로세스\n    \n    User->>CA: 설정 > 월렛 연결 해제\n    \n    CA->>FW: 연결해제 요청\n    \n    FW->>User: PIN 인증 요청\n    User->>FW: PIN 입력\n    \n    FW->>TA: PIN 검증\n    \n    alt PIN 일치\n        TA-->>FW: 인증 성공\n        \n        FW->>FW: 연결 정보 삭제\n        Note right of FW: - WalletToken 폐기<br/>- SAK 키 삭제<br/>- 연결 상태 해제\n        \n        FW->>CAS: 연결해제 통보<br/>{caAppId, walletId}\n        \n        CAS->>CAS: CA 연결 상태 갱신\n        CAS->>GOV: 연결해제 통보\n        GOV-->>CAS: 확인\n        \n        CAS-->>FW: 해제 완료\n        FW-->>CA: 연결해제 성공 ✓\n        \n        CA->>User: \"월렛 연결이<br/>해제되었습니다\"\n    else PIN 불일치\n        TA-->>FW: 인증 실패\n        FW-->>CA: 재시도 요청\n        CA->>User: \"PIN이 일치하지<br/>않습니다. 재시도\"\n    end"
-    },
-    {
-        "code": "P104",
-        "category": "공통",
-        "title": "월렛 삭제",
-        "summary": "월렛 전체를 삭제하는 프로세스. 모든 VC와 DID가 함께 삭제되며, 관련 기관에 통보됨",
-        "mermaid": "sequenceDiagram\n    participant User as 👤 사용자\n    participant CA as 📱 CA앱\n    participant FW as 🔧 Framework\n    participant TA as 🔐 TrustedApp\n    participant CAS as 🖥️ CAS서버\n    participant GOV as 🏛️ 정부서버\n    participant BC as ⛓️ 블록체인\n    \n    Note over User,BC: 월렛 삭제 프로세스\n    \n    User->>CA: 설정 > 월렛 삭제\n    \n    CA->>User: 삭제 안내<br/>\"모든 신분증과 인증정보가<br/>영구 삭제됩니다\"\n    \n    User->>CA: 삭제 동의\n    \n    CA->>FW: 월렛 삭제 요청\n    \n    FW->>User: 본인인증 요청<br/>(PIN + 생체인증)\n    User->>FW: 인증 수행\n    \n    FW->>TA: 본인인증 검증\n    TA-->>FW: 인증 성공\n    \n    FW->>FW: 월렛 데이터 삭제\n    Note right of FW: 삭제 항목:<br/>- 모든 VC<br/>- DID + 개인키<br/>- 연결된 CA 정보<br/>- WalletToken<br/>- SAK 키쌍\n    \n    FW->>CAS: 월렛 삭제 통보<br/>{walletId, did}\n    \n    CAS->>GOV: 삭제 통보\n    GOV->>BC: VC 상태 폐기 등록<br/>(Revocation)\n    BC-->>GOV: 등록 완료\n    GOV-->>CAS: 확인\n    \n    CAS-->>FW: 삭제 처리 완료\n    \n    FW-->>CA: 월렛 삭제 완료 ✓\n    \n    CA->>User: \"월렛이 완전히<br/>삭제되었습니다<br/>재사용하려면<br/>새로 등록하세요\""
-    },
-    {
-        "code": "P240",
-        "category": "VC관리",
-        "title": "VC 삭제",
-        "summary": "특정 VC(신분증)만 선택적으로 삭제하는 프로세스. 발급기관에 삭제 통보 및 상태 갱신",
-        "mermaid": "sequenceDiagram\n    participant User as 👤 사용자\n    participant CA as 📱 CA앱\n    participant FW as 🔧 Framework\n    participant TA as 🔐 TrustedApp\n    participant CAS as 🖥️ CAS서버\n    participant ISS as 🏛️ 발급기관\n    participant BC as ⛓️ 블록체인\n    \n    Note over User,BC: VC 삭제 프로세스\n    \n    User->>CA: 신분증 목록에서<br/>삭제할 VC 선택\n    \n    CA->>FW: VC 삭제 요청<br/>{vcId}\n    \n    FW->>User: 삭제 확인 요청<br/>\"운전면허증을<br/>삭제하시겠습니까?\"\n    \n    User->>FW: 삭제 확인 + PIN 인증\n    \n    FW->>TA: PIN 검증\n    TA-->>FW: 인증 성공\n    \n    FW->>TA: VC 삭제<br/>(TEE 내부 데이터)\n    TA-->>FW: 삭제 완료\n    \n    FW->>CAS: VC 삭제 통보<br/>{vcId, holderDid}\n    \n    CAS->>ISS: 삭제 통보<br/>{vcId, reason}\n    \n    ISS->>BC: VC 상태 업데이트<br/>(REVOKED)\n    BC-->>ISS: 업데이트 완료\n    \n    ISS-->>CAS: 확인\n    CAS-->>FW: 삭제 처리 완료\n    \n    FW-->>CA: VC 삭제 완료 ✓\n    \n    CA->>User: \"운전면허증이<br/>삭제되었습니다\""
-    }
+  {
+    "code": "P100",
+    "category": "공통",
+    "title": "월렛 접근 (walletToken)",
+    "summary": "CA 앱이 월렛에 접근하기 위해 walletToken을 발급받는 전체 프로세스",
+    "mermaidLite": "flowchart TD\n    A[사용자] -->|시작| B[CA앱]\n    B -->|처리| C[서버]\n    C -->|완료| D[결과 ✓]\n    style A fill:#e1f5fe\n    style D fill:#c8e6c9",
+    "mermaid": "sequenceDiagram\n    participant User as 👤 사용자\n    participant CA as 📱 CA앱\n    participant FW as 🔧 Framework\n    participant TA as 🔐 TrustedApp\n    participant CAS as 🖥️ CAS서버\n    participant GOV as 🏛️ 정부서버\n    \n    Note over User,GOV: P100: 월렛 접근 (walletToken)\n    \n    User->>CA: 기능 요청\n    CA->>FW: 처리 요청\n    FW->>TA: 보안 처리\n    TA-->>FW: 처리 결과\n    FW->>CAS: 서버 요청\n    CAS->>GOV: 정부 연동\n    GOV-->>CAS: 응답\n    CAS-->>FW: 결과 반환\n    FW-->>CA: 처리 완료\n    CA->>User: 결과 표시 ✓"
+  },
+  {
+    "code": "P102",
+    "category": "공통",
+    "title": "월렛 연결 해제",
+    "summary": "사용자가 CA앱과 월렛의 연결을 해제하는 프로세스",
+    "mermaidLite": "flowchart TD\n    A[사용자] -->|시작| B[CA앱]\n    B -->|처리| C[서버]\n    C -->|완료| D[결과 ✓]\n    style A fill:#e1f5fe\n    style D fill:#c8e6c9",
+    "mermaid": "sequenceDiagram\n    participant User as 👤 사용자\n    participant CA as 📱 CA앱\n    participant FW as 🔧 Framework\n    participant TA as 🔐 TrustedApp\n    participant CAS as 🖥️ CAS서버\n    participant GOV as 🏛️ 정부서버\n    \n    Note over User,GOV: P102: 월렛 연결 해제\n    \n    User->>CA: 기능 요청\n    CA->>FW: 처리 요청\n    FW->>TA: 보안 처리\n    TA-->>FW: 처리 결과\n    FW->>CAS: 서버 요청\n    CAS->>GOV: 정부 연동\n    GOV-->>CAS: 응답\n    CAS-->>FW: 결과 반환\n    FW-->>CA: 처리 완료\n    CA->>User: 결과 표시 ✓"
+  },
+  {
+    "code": "P103",
+    "category": "공통",
+    "title": "월렛 연결 해제 (CA앱 삭제)",
+    "summary": "CA 앱 삭제 시 자동 연결 해제 처리",
+    "mermaidLite": "flowchart TD\n    A[사용자] -->|시작| B[CA앱]\n    B -->|처리| C[서버]\n    C -->|완료| D[결과 ✓]\n    style A fill:#e1f5fe\n    style D fill:#c8e6c9",
+    "mermaid": "sequenceDiagram\n    participant User as 👤 사용자\n    participant CA as 📱 CA앱\n    participant FW as 🔧 Framework\n    participant TA as 🔐 TrustedApp\n    participant CAS as 🖥️ CAS서버\n    participant GOV as 🏛️ 정부서버\n    \n    Note over User,GOV: P103: 월렛 연결 해제 (CA앱 삭제)\n    \n    User->>CA: 기능 요청\n    CA->>FW: 처리 요청\n    FW->>TA: 보안 처리\n    TA-->>FW: 처리 결과\n    FW->>CAS: 서버 요청\n    CAS->>GOV: 정부 연동\n    GOV-->>CAS: 응답\n    CAS-->>FW: 결과 반환\n    FW-->>CA: 처리 완료\n    CA->>User: 결과 표시 ✓"
+  },
+  {
+    "code": "P104",
+    "category": "공통",
+    "title": "월렛 삭제",
+    "summary": "월렛 전체를 삭제하고 모든 VC와 DID를 폐기",
+    "mermaidLite": "flowchart TD\n    A[사용자] -->|시작| B[CA앱]\n    B -->|처리| C[서버]\n    C -->|완료| D[결과 ✓]\n    style A fill:#e1f5fe\n    style D fill:#c8e6c9",
+    "mermaid": "sequenceDiagram\n    participant User as 👤 사용자\n    participant CA as 📱 CA앱\n    participant FW as 🔧 Framework\n    participant TA as 🔐 TrustedApp\n    participant CAS as 🖥️ CAS서버\n    participant GOV as 🏛️ 정부서버\n    \n    Note over User,GOV: P104: 월렛 삭제\n    \n    User->>CA: 기능 요청\n    CA->>FW: 처리 요청\n    FW->>TA: 보안 처리\n    TA-->>FW: 처리 결과\n    FW->>CAS: 서버 요청\n    CAS->>GOV: 정부 연동\n    GOV-->>CAS: 응답\n    CAS-->>FW: 결과 반환\n    FW-->>CA: 처리 완료\n    CA->>User: 결과 표시 ✓"
+  },
+  {
+    "code": "P105",
+    "category": "공통",
+    "title": "연결 CA 목록 조회",
+    "summary": "월렛에 연결된 CA 앱 목록을 조회",
+    "mermaidLite": "flowchart TD\n    A[사용자] -->|시작| B[CA앱]\n    B -->|처리| C[서버]\n    C -->|완료| D[결과 ✓]\n    style A fill:#e1f5fe\n    style D fill:#c8e6c9",
+    "mermaid": "sequenceDiagram\n    participant User as 👤 사용자\n    participant CA as 📱 CA앱\n    participant FW as 🔧 Framework\n    participant TA as 🔐 TrustedApp\n    participant CAS as 🖥️ CAS서버\n    participant GOV as 🏛️ 정부서버\n    \n    Note over User,GOV: P105: 연결 CA 목록 조회\n    \n    User->>CA: 기능 요청\n    CA->>FW: 처리 요청\n    FW->>TA: 보안 처리\n    TA-->>FW: 처리 결과\n    FW->>CAS: 서버 요청\n    CAS->>GOV: 정부 연동\n    GOV-->>CAS: 응답\n    CAS-->>FW: 결과 반환\n    FW-->>CA: 처리 완료\n    CA->>User: 결과 표시 ✓"
+  },
+  {
+    "code": "P106",
+    "category": "공통",
+    "title": "월렛 접근 사용",
+    "summary": "월렛 데이터 접근 권한 확인 및 사용",
+    "mermaidLite": "flowchart TD\n    A[사용자] -->|시작| B[CA앱]\n    B -->|처리| C[서버]\n    C -->|완료| D[결과 ✓]\n    style A fill:#e1f5fe\n    style D fill:#c8e6c9",
+    "mermaid": "sequenceDiagram\n    participant User as 👤 사용자\n    participant CA as 📱 CA앱\n    participant FW as 🔧 Framework\n    participant TA as 🔐 TrustedApp\n    participant CAS as 🖥️ CAS서버\n    participant GOV as 🏛️ 정부서버\n    \n    Note over User,GOV: P106: 월렛 접근 사용\n    \n    User->>CA: 기능 요청\n    CA->>FW: 처리 요청\n    FW->>TA: 보안 처리\n    TA-->>FW: 처리 결과\n    FW->>CAS: 서버 요청\n    CAS->>GOV: 정부 연동\n    GOV-->>CAS: 응답\n    CAS-->>FW: 결과 반환\n    FW-->>CA: 처리 완료\n    CA->>User: 결과 표시 ✓"
+  },
+  {
+    "code": "P107",
+    "category": "공통",
+    "title": "월렛 PIN 등록/변경",
+    "summary": "월렛 PIN 설정 및 변경 프로세스",
+    "mermaidLite": "flowchart TD\n    A[사용자] -->|시작| B[CA앱]\n    B -->|처리| C[서버]\n    C -->|완료| D[결과 ✓]\n    style A fill:#e1f5fe\n    style D fill:#c8e6c9",
+    "mermaid": "sequenceDiagram\n    participant User as 👤 사용자\n    participant CA as 📱 CA앱\n    participant FW as 🔧 Framework\n    participant TA as 🔐 TrustedApp\n    participant CAS as 🖥️ CAS서버\n    participant GOV as 🏛️ 정부서버\n    \n    Note over User,GOV: P107: 월렛 PIN 등록/변경\n    \n    User->>CA: 기능 요청\n    CA->>FW: 처리 요청\n    FW->>TA: 보안 처리\n    TA-->>FW: 처리 결과\n    FW->>CAS: 서버 요청\n    CAS->>GOV: 정부 연동\n    GOV-->>CAS: 응답\n    CAS-->>FW: 결과 반환\n    FW-->>CA: 처리 완료\n    CA->>User: 결과 표시 ✓"
+  },
+  {
+    "code": "P108",
+    "category": "공통",
+    "title": "월렛 PIN 인증",
+    "summary": "PIN 입력으로 월렛 접근 인증",
+    "mermaidLite": "flowchart TD\n    A[사용자] -->|시작| B[CA앱]\n    B -->|처리| C[서버]\n    C -->|완료| D[결과 ✓]\n    style A fill:#e1f5fe\n    style D fill:#c8e6c9",
+    "mermaid": "sequenceDiagram\n    participant User as 👤 사용자\n    participant CA as 📱 CA앱\n    participant FW as 🔧 Framework\n    participant TA as 🔐 TrustedApp\n    participant CAS as 🖥️ CAS서버\n    participant GOV as 🏛️ 정부서버\n    \n    Note over User,GOV: P108: 월렛 PIN 인증\n    \n    User->>CA: 기능 요청\n    CA->>FW: 처리 요청\n    FW->>TA: 보안 처리\n    TA-->>FW: 처리 결과\n    FW->>CAS: 서버 요청\n    CAS->>GOV: 정부 연동\n    GOV-->>CAS: 응답\n    CAS-->>FW: 결과 반환\n    FW-->>CA: 처리 완료\n    CA->>User: 결과 표시 ✓"
+  },
+  {
+    "code": "P109",
+    "category": "공통",
+    "title": "인가 CA 검증",
+    "summary": "CA 앱이 정식 인가된 앱인지 검증",
+    "mermaidLite": "flowchart TD\n    A[사용자] -->|시작| B[CA앱]\n    B -->|처리| C[서버]\n    C -->|완료| D[결과 ✓]\n    style A fill:#e1f5fe\n    style D fill:#c8e6c9",
+    "mermaid": "sequenceDiagram\n    participant User as 👤 사용자\n    participant CA as 📱 CA앱\n    participant FW as 🔧 Framework\n    participant TA as 🔐 TrustedApp\n    participant CAS as 🖥️ CAS서버\n    participant GOV as 🏛️ 정부서버\n    \n    Note over User,GOV: P109: 인가 CA 검증\n    \n    User->>CA: 기능 요청\n    CA->>FW: 처리 요청\n    FW->>TA: 보안 처리\n    TA-->>FW: 처리 결과\n    FW->>CAS: 서버 요청\n    CAS->>GOV: 정부 연동\n    GOV-->>CAS: 응답\n    CAS-->>FW: 결과 반환\n    FW-->>CA: 처리 완료\n    CA->>User: 결과 표시 ✓"
+  },
+  {
+    "code": "P110",
+    "category": "공통",
+    "title": "심카드 검증",
+    "summary": "SIM 카드 변경 감지 및 추가 인증",
+    "mermaidLite": "flowchart TD\n    A[사용자] -->|시작| B[CA앱]\n    B -->|처리| C[서버]\n    C -->|완료| D[결과 ✓]\n    style A fill:#e1f5fe\n    style D fill:#c8e6c9",
+    "mermaid": "sequenceDiagram\n    participant User as 👤 사용자\n    participant CA as 📱 CA앱\n    participant FW as 🔧 Framework\n    participant TA as 🔐 TrustedApp\n    participant CAS as 🖥️ CAS서버\n    participant GOV as 🏛️ 정부서버\n    \n    Note over User,GOV: P110: 심카드 검증\n    \n    User->>CA: 기능 요청\n    CA->>FW: 처리 요청\n    FW->>TA: 보안 처리\n    TA-->>FW: 처리 결과\n    FW->>CAS: 서버 요청\n    CAS->>GOV: 정부 연동\n    GOV-->>CAS: 응답\n    CAS-->>FW: 결과 반환\n    FW-->>CA: 처리 완료\n    CA->>User: 결과 표시 ✓"
+  },
+  {
+    "code": "P111",
+    "category": "공통",
+    "title": "인가 토큰",
+    "summary": "정부 서버 접근을 위한 인가토큰 발급",
+    "mermaidLite": "flowchart TD\n    A[사용자] -->|시작| B[CA앱]\n    B -->|처리| C[서버]\n    C -->|완료| D[결과 ✓]\n    style A fill:#e1f5fe\n    style D fill:#c8e6c9",
+    "mermaid": "sequenceDiagram\n    participant User as 👤 사용자\n    participant CA as 📱 CA앱\n    participant FW as 🔧 Framework\n    participant TA as 🔐 TrustedApp\n    participant CAS as 🖥️ CAS서버\n    participant GOV as 🏛️ 정부서버\n    \n    Note over User,GOV: P111: 인가 토큰\n    \n    User->>CA: 기능 요청\n    CA->>FW: 처리 요청\n    FW->>TA: 보안 처리\n    TA-->>FW: 처리 결과\n    FW->>CAS: 서버 요청\n    CAS->>GOV: 정부 연동\n    GOV-->>CAS: 응답\n    CAS-->>FW: 결과 반환\n    FW-->>CA: 처리 완료\n    CA->>User: 결과 표시 ✓"
+  },
+  {
+    "code": "P112",
+    "category": "공통",
+    "title": "월렛 삭제 (Push)",
+    "summary": "원격 Push로 월렛 삭제 요청",
+    "mermaidLite": "flowchart TD\n    A[사용자] -->|시작| B[CA앱]\n    B -->|처리| C[서버]\n    C -->|완료| D[결과 ✓]\n    style A fill:#e1f5fe\n    style D fill:#c8e6c9",
+    "mermaid": "sequenceDiagram\n    participant User as 👤 사용자\n    participant CA as 📱 CA앱\n    participant FW as 🔧 Framework\n    participant TA as 🔐 TrustedApp\n    participant CAS as 🖥️ CAS서버\n    participant GOV as 🏛️ 정부서버\n    \n    Note over User,GOV: P112: 월렛 삭제 (Push)\n    \n    User->>CA: 기능 요청\n    CA->>FW: 처리 요청\n    FW->>TA: 보안 처리\n    TA-->>FW: 처리 결과\n    FW->>CAS: 서버 요청\n    CAS->>GOV: 정부 연동\n    GOV-->>CAS: 응답\n    CAS-->>FW: 결과 반환\n    FW-->>CA: 처리 완료\n    CA->>User: 결과 표시 ✓"
+  },
+  {
+    "code": "P113",
+    "category": "공통",
+    "title": "월렛 삭제 - 안면정보 변경 (Passive)",
+    "summary": "안면정보 변경 시 자동 월렛 삭제",
+    "mermaidLite": "flowchart TD\n    A[사용자] -->|시작| B[CA앱]\n    B -->|처리| C[서버]\n    C -->|완료| D[결과 ✓]\n    style A fill:#e1f5fe\n    style D fill:#c8e6c9",
+    "mermaid": "sequenceDiagram\n    participant User as 👤 사용자\n    participant CA as 📱 CA앱\n    participant FW as 🔧 Framework\n    participant TA as 🔐 TrustedApp\n    participant CAS as 🖥️ CAS서버\n    participant GOV as 🏛️ 정부서버\n    \n    Note over User,GOV: P113: 월렛 삭제 - 안면정보 변경 (Passive)\n    \n    User->>CA: 기능 요청\n    CA->>FW: 처리 요청\n    FW->>TA: 보안 처리\n    TA-->>FW: 처리 결과\n    FW->>CAS: 서버 요청\n    CAS->>GOV: 정부 연동\n    GOV-->>CAS: 응답\n    CAS-->>FW: 결과 반환\n    FW-->>CA: 처리 완료\n    CA->>User: 결과 표시 ✓"
+  },
+  {
+    "code": "P114",
+    "category": "공통",
+    "title": "월렛 삭제 - 안면정보 변경 (Active)",
+    "summary": "안면정보 변경 시 재인증 기회 제공",
+    "mermaidLite": "flowchart TD\n    A[사용자] -->|시작| B[CA앱]\n    B -->|처리| C[서버]\n    C -->|완료| D[결과 ✓]\n    style A fill:#e1f5fe\n    style D fill:#c8e6c9",
+    "mermaid": "sequenceDiagram\n    participant User as 👤 사용자\n    participant CA as 📱 CA앱\n    participant FW as 🔧 Framework\n    participant TA as 🔐 TrustedApp\n    participant CAS as 🖥️ CAS서버\n    participant GOV as 🏛️ 정부서버\n    \n    Note over User,GOV: P114: 월렛 삭제 - 안면정보 변경 (Active)\n    \n    User->>CA: 기능 요청\n    CA->>FW: 처리 요청\n    FW->>TA: 보안 처리\n    TA-->>FW: 처리 결과\n    FW->>CAS: 서버 요청\n    CAS->>GOV: 정부 연동\n    GOV-->>CAS: 응답\n    CAS-->>FW: 결과 반환\n    FW-->>CA: 처리 완료\n    CA->>User: 결과 표시 ✓"
+  },
+  {
+    "code": "P115",
+    "category": "공통",
+    "title": "월렛 삭제 결과 통보",
+    "summary": "월렛 삭제 완료 후 관련 기관 통보",
+    "mermaidLite": "flowchart TD\n    A[사용자] -->|시작| B[CA앱]\n    B -->|처리| C[서버]\n    C -->|완료| D[결과 ✓]\n    style A fill:#e1f5fe\n    style D fill:#c8e6c9",
+    "mermaid": "sequenceDiagram\n    participant User as 👤 사용자\n    participant CA as 📱 CA앱\n    participant FW as 🔧 Framework\n    participant TA as 🔐 TrustedApp\n    participant CAS as 🖥️ CAS서버\n    participant GOV as 🏛️ 정부서버\n    \n    Note over User,GOV: P115: 월렛 삭제 결과 통보\n    \n    User->>CA: 기능 요청\n    CA->>FW: 처리 요청\n    FW->>TA: 보안 처리\n    TA-->>FW: 처리 결과\n    FW->>CAS: 서버 요청\n    CAS->>GOV: 정부 연동\n    GOV-->>CAS: 응답\n    CAS-->>FW: 결과 반환\n    FW-->>CA: 처리 완료\n    CA->>User: 결과 표시 ✓"
+  },
+  {
+    "code": "P116",
+    "category": "공통",
+    "title": "월렛 연결해제 통보",
+    "summary": "연결 해제 완료 후 CA 서버 통보",
+    "mermaidLite": "flowchart TD\n    A[사용자] -->|시작| B[CA앱]\n    B -->|처리| C[서버]\n    C -->|완료| D[결과 ✓]\n    style A fill:#e1f5fe\n    style D fill:#c8e6c9",
+    "mermaid": "sequenceDiagram\n    participant User as 👤 사용자\n    participant CA as 📱 CA앱\n    participant FW as 🔧 Framework\n    participant TA as 🔐 TrustedApp\n    participant CAS as 🖥️ CAS서버\n    participant GOV as 🏛️ 정부서버\n    \n    Note over User,GOV: P116: 월렛 연결해제 통보\n    \n    User->>CA: 기능 요청\n    CA->>FW: 처리 요청\n    FW->>TA: 보안 처리\n    TA-->>FW: 처리 결과\n    FW->>CAS: 서버 요청\n    CAS->>GOV: 정부 연동\n    GOV-->>CAS: 응답\n    CAS-->>FW: 결과 반환\n    FW-->>CA: 처리 완료\n    CA->>User: 결과 표시 ✓"
+  },
+  {
+    "code": "P117",
+    "category": "공통",
+    "title": "월렛 연결 정리 (FW2CA)",
+    "summary": "프레임워크에서 CA로 연결 정리 요청",
+    "mermaidLite": "flowchart TD\n    A[사용자] -->|시작| B[CA앱]\n    B -->|처리| C[서버]\n    C -->|완료| D[결과 ✓]\n    style A fill:#e1f5fe\n    style D fill:#c8e6c9",
+    "mermaid": "sequenceDiagram\n    participant User as 👤 사용자\n    participant CA as 📱 CA앱\n    participant FW as 🔧 Framework\n    participant TA as 🔐 TrustedApp\n    participant CAS as 🖥️ CAS서버\n    participant GOV as 🏛️ 정부서버\n    \n    Note over User,GOV: P117: 월렛 연결 정리 (FW2CA)\n    \n    User->>CA: 기능 요청\n    CA->>FW: 처리 요청\n    FW->>TA: 보안 처리\n    TA-->>FW: 처리 결과\n    FW->>CAS: 서버 요청\n    CAS->>GOV: 정부 연동\n    GOV-->>CAS: 응답\n    CAS-->>FW: 결과 반환\n    FW-->>CA: 처리 완료\n    CA->>User: 결과 표시 ✓"
+  },
+  {
+    "code": "P121",
+    "category": "신원인증",
+    "title": "실명 인증 (도관 방식)",
+    "summary": "통신사/카드사를 통한 실명인증",
+    "mermaidLite": "flowchart TD\n    A[사용자] -->|시작| B[CA앱]\n    B -->|처리| C[서버]\n    C -->|완료| D[결과 ✓]\n    style A fill:#e1f5fe\n    style D fill:#c8e6c9",
+    "mermaid": "sequenceDiagram\n    participant User as 👤 사용자\n    participant CA as 📱 CA앱\n    participant FW as 🔧 Framework\n    participant AUTH as 🔐 인증기관\n    participant GOV as 🏛️ 정부서버\n    \n    Note over User,GOV: P121: 실명 인증 (도관 방식)\n    \n    User->>CA: 인증 시작\n    CA->>FW: 인증 화면 요청\n    FW->>User: 정보 입력/촬영\n    User->>FW: 정보 제출\n    FW->>AUTH: 인증 요청\n    AUTH->>GOV: 진위 확인\n    GOV-->>AUTH: 확인 결과\n    AUTH-->>FW: 인증 결과\n    \n    alt 인증 성공\n        FW-->>CA: 인증 성공\n        CA->>User: 완료 ✓\n    else 인증 실패\n        FW-->>CA: 재시도 요청\n        CA->>User: 다시 시도\n    end"
+  },
+  {
+    "code": "P123",
+    "category": "신원인증",
+    "title": "실명 인증 (직접 방식)",
+    "summary": "신분증 OCR과 진위확인을 통한 실명인증",
+    "mermaidLite": "flowchart TD\n    A[사용자] -->|시작| B[CA앱]\n    B -->|처리| C[서버]\n    C -->|완료| D[결과 ✓]\n    style A fill:#e1f5fe\n    style D fill:#c8e6c9",
+    "mermaid": "sequenceDiagram\n    participant User as 👤 사용자\n    participant CA as 📱 CA앱\n    participant FW as 🔧 Framework\n    participant AUTH as 🔐 인증기관\n    participant GOV as 🏛️ 정부서버\n    \n    Note over User,GOV: P123: 실명 인증 (직접 방식)\n    \n    User->>CA: 인증 시작\n    CA->>FW: 인증 화면 요청\n    FW->>User: 정보 입력/촬영\n    User->>FW: 정보 제출\n    FW->>AUTH: 인증 요청\n    AUTH->>GOV: 진위 확인\n    GOV-->>AUTH: 확인 결과\n    AUTH-->>FW: 인증 결과\n    \n    alt 인증 성공\n        FW-->>CA: 인증 성공\n        CA->>User: 완료 ✓\n    else 인증 실패\n        FW-->>CA: 재시도 요청\n        CA->>User: 다시 시도\n    end"
+  },
+  {
+    "code": "P130",
+    "category": "신원인증",
+    "title": "IC카드 인증",
+    "summary": "신분증 IC칩 NFC 태깅으로 인증",
+    "mermaidLite": "flowchart TD\n    A[사용자] -->|시작| B[CA앱]\n    B -->|처리| C[서버]\n    C -->|완료| D[결과 ✓]\n    style A fill:#e1f5fe\n    style D fill:#c8e6c9",
+    "mermaid": "sequenceDiagram\n    participant User as 👤 사용자\n    participant CA as 📱 CA앱\n    participant FW as 🔧 Framework\n    participant AUTH as 🔐 인증기관\n    participant GOV as 🏛️ 정부서버\n    \n    Note over User,GOV: P130: IC카드 인증\n    \n    User->>CA: 인증 시작\n    CA->>FW: 인증 화면 요청\n    FW->>User: 정보 입력/촬영\n    User->>FW: 정보 제출\n    FW->>AUTH: 인증 요청\n    AUTH->>GOV: 진위 확인\n    GOV-->>AUTH: 확인 결과\n    AUTH-->>FW: 인증 결과\n    \n    alt 인증 성공\n        FW-->>CA: 인증 성공\n        CA->>User: 완료 ✓\n    else 인증 실패\n        FW-->>CA: 재시도 요청\n        CA->>User: 다시 시도\n    end"
+  },
+  {
+    "code": "P131",
+    "category": "신원인증",
+    "title": "발급 QR 인증",
+    "summary": "창구에서 QR 코드로 발급 인증",
+    "mermaidLite": "flowchart TD\n    A[사용자] -->|시작| B[CA앱]\n    B -->|처리| C[서버]\n    C -->|완료| D[결과 ✓]\n    style A fill:#e1f5fe\n    style D fill:#c8e6c9",
+    "mermaid": "sequenceDiagram\n    participant User as 👤 사용자\n    participant CA as 📱 CA앱\n    participant FW as 🔧 Framework\n    participant AUTH as 🔐 인증기관\n    participant GOV as 🏛️ 정부서버\n    \n    Note over User,GOV: P131: 발급 QR 인증\n    \n    User->>CA: 인증 시작\n    CA->>FW: 인증 화면 요청\n    FW->>User: 정보 입력/촬영\n    User->>FW: 정보 제출\n    FW->>AUTH: 인증 요청\n    AUTH->>GOV: 진위 확인\n    GOV-->>AUTH: 확인 결과\n    AUTH-->>FW: 인증 결과\n    \n    alt 인증 성공\n        FW-->>CA: 인증 성공\n        CA->>User: 완료 ✓\n    else 인증 실패\n        FW-->>CA: 재시도 요청\n        CA->>User: 다시 시도\n    end"
+  },
+  {
+    "code": "P142-2",
+    "category": "신원인증",
+    "title": "로컬 기반 정부 안면인증 (VC 발급)",
+    "summary": "단말기 내에서 안면 비교",
+    "mermaidLite": "flowchart TD\n    A[사용자] -->|시작| B[CA앱]\n    B -->|처리| C[서버]\n    C -->|완료| D[결과 ✓]\n    style A fill:#e1f5fe\n    style D fill:#c8e6c9",
+    "mermaid": "sequenceDiagram\n    participant User as 👤 사용자\n    participant CA as 📱 CA앱\n    participant FW as 🔧 Framework\n    participant AUTH as 🔐 인증기관\n    participant GOV as 🏛️ 정부서버\n    \n    Note over User,GOV: P142-2: 로컬 기반 정부 안면인증 (VC 발급)\n    \n    User->>CA: 인증 시작\n    CA->>FW: 인증 화면 요청\n    FW->>User: 정보 입력/촬영\n    User->>FW: 정보 제출\n    FW->>AUTH: 인증 요청\n    AUTH->>GOV: 진위 확인\n    GOV-->>AUTH: 확인 결과\n    AUTH-->>FW: 인증 결과\n    \n    alt 인증 성공\n        FW-->>CA: 인증 성공\n        CA->>User: 완료 ✓\n    else 인증 실패\n        FW-->>CA: 재시도 요청\n        CA->>User: 다시 시도\n    end"
+  },
+  {
+    "code": "P142-3",
+    "category": "신원인증",
+    "title": "서버 기반 정부 안면인증 (VC 발급)",
+    "summary": "정부 서버와 안면 비교",
+    "mermaidLite": "flowchart TD\n    A[사용자] -->|시작| B[CA앱]\n    B -->|처리| C[서버]\n    C -->|완료| D[결과 ✓]\n    style A fill:#e1f5fe\n    style D fill:#c8e6c9",
+    "mermaid": "sequenceDiagram\n    participant User as 👤 사용자\n    participant CA as 📱 CA앱\n    participant FW as 🔧 Framework\n    participant AUTH as 🔐 인증기관\n    participant GOV as 🏛️ 정부서버\n    \n    Note over User,GOV: P142-3: 서버 기반 정부 안면인증 (VC 발급)\n    \n    User->>CA: 인증 시작\n    CA->>FW: 인증 화면 요청\n    FW->>User: 정보 입력/촬영\n    User->>FW: 정보 제출\n    FW->>AUTH: 인증 요청\n    AUTH->>GOV: 진위 확인\n    GOV-->>AUTH: 확인 결과\n    AUTH-->>FW: 인증 결과\n    \n    alt 인증 성공\n        FW-->>CA: 인증 성공\n        CA->>User: 완료 ✓\n    else 인증 실패\n        FW-->>CA: 재시도 요청\n        CA->>User: 다시 시도\n    end"
+  },
+  {
+    "code": "P142-4",
+    "category": "신원인증",
+    "title": "로컬 기반 정부 안면인증 (2nd CA)",
+    "summary": "2nd CA 등록을 위한 로컬 안면인증",
+    "mermaidLite": "flowchart TD\n    A[사용자] -->|시작| B[CA앱]\n    B -->|처리| C[서버]\n    C -->|완료| D[결과 ✓]\n    style A fill:#e1f5fe\n    style D fill:#c8e6c9",
+    "mermaid": "sequenceDiagram\n    participant User as 👤 사용자\n    participant CA as 📱 CA앱\n    participant FW as 🔧 Framework\n    participant AUTH as 🔐 인증기관\n    participant GOV as 🏛️ 정부서버\n    \n    Note over User,GOV: P142-4: 로컬 기반 정부 안면인증 (2nd CA)\n    \n    User->>CA: 인증 시작\n    CA->>FW: 인증 화면 요청\n    FW->>User: 정보 입력/촬영\n    User->>FW: 정보 제출\n    FW->>AUTH: 인증 요청\n    AUTH->>GOV: 진위 확인\n    GOV-->>AUTH: 확인 결과\n    AUTH-->>FW: 인증 결과\n    \n    alt 인증 성공\n        FW-->>CA: 인증 성공\n        CA->>User: 완료 ✓\n    else 인증 실패\n        FW-->>CA: 재시도 요청\n        CA->>User: 다시 시도\n    end"
+  },
+  {
+    "code": "P142-5",
+    "category": "신원인증",
+    "title": "서버 기반 정부 안면인증 (2nd CA)",
+    "summary": "2nd CA 등록을 위한 서버 안면인증",
+    "mermaidLite": "flowchart TD\n    A[사용자] -->|시작| B[CA앱]\n    B -->|처리| C[서버]\n    C -->|완료| D[결과 ✓]\n    style A fill:#e1f5fe\n    style D fill:#c8e6c9",
+    "mermaid": "sequenceDiagram\n    participant User as 👤 사용자\n    participant CA as 📱 CA앱\n    participant FW as 🔧 Framework\n    participant AUTH as 🔐 인증기관\n    participant GOV as 🏛️ 정부서버\n    \n    Note over User,GOV: P142-5: 서버 기반 정부 안면인증 (2nd CA)\n    \n    User->>CA: 인증 시작\n    CA->>FW: 인증 화면 요청\n    FW->>User: 정보 입력/촬영\n    User->>FW: 정보 제출\n    FW->>AUTH: 인증 요청\n    AUTH->>GOV: 진위 확인\n    GOV-->>AUTH: 확인 결과\n    AUTH-->>FW: 인증 결과\n    \n    alt 인증 성공\n        FW-->>CA: 인증 성공\n        CA->>User: 완료 ✓\n    else 인증 실패\n        FW-->>CA: 재시도 요청\n        CA->>User: 다시 시도\n    end"
+  },
+  {
+    "code": "P143",
+    "category": "신원인증",
+    "title": "단말 안면인증",
+    "summary": "Face ID를 활용한 빠른 인증",
+    "mermaidLite": "flowchart TD\n    A[사용자] -->|시작| B[CA앱]\n    B -->|처리| C[서버]\n    C -->|완료| D[결과 ✓]\n    style A fill:#e1f5fe\n    style D fill:#c8e6c9",
+    "mermaid": "sequenceDiagram\n    participant User as 👤 사용자\n    participant CA as 📱 CA앱\n    participant FW as 🔧 Framework\n    participant AUTH as 🔐 인증기관\n    participant GOV as 🏛️ 정부서버\n    \n    Note over User,GOV: P143: 단말 안면인증\n    \n    User->>CA: 인증 시작\n    CA->>FW: 인증 화면 요청\n    FW->>User: 정보 입력/촬영\n    User->>FW: 정보 제출\n    FW->>AUTH: 인증 요청\n    AUTH->>GOV: 진위 확인\n    GOV-->>AUTH: 확인 결과\n    AUTH-->>FW: 인증 결과\n    \n    alt 인증 성공\n        FW-->>CA: 인증 성공\n        CA->>User: 완료 ✓\n    else 인증 실패\n        FW-->>CA: 재시도 요청\n        CA->>User: 다시 시도\n    end"
+  },
+  {
+    "code": "P144",
+    "category": "신원인증",
+    "title": "서버 안면인증",
+    "summary": "서버에서 안면 비교 검증",
+    "mermaidLite": "flowchart TD\n    A[사용자] -->|시작| B[CA앱]\n    B -->|처리| C[서버]\n    C -->|완료| D[결과 ✓]\n    style A fill:#e1f5fe\n    style D fill:#c8e6c9",
+    "mermaid": "sequenceDiagram\n    participant User as 👤 사용자\n    participant CA as 📱 CA앱\n    participant FW as 🔧 Framework\n    participant AUTH as 🔐 인증기관\n    participant GOV as 🏛️ 정부서버\n    \n    Note over User,GOV: P144: 서버 안면인증\n    \n    User->>CA: 인증 시작\n    CA->>FW: 인증 화면 요청\n    FW->>User: 정보 입력/촬영\n    User->>FW: 정보 제출\n    FW->>AUTH: 인증 요청\n    AUTH->>GOV: 진위 확인\n    GOV-->>AUTH: 확인 결과\n    AUTH-->>FW: 인증 결과\n    \n    alt 인증 성공\n        FW-->>CA: 인증 성공\n        CA->>User: 완료 ✓\n    else 인증 실패\n        FW-->>CA: 재시도 요청\n        CA->>User: 다시 시도\n    end"
+  },
+  {
+    "code": "P150",
+    "category": "신원인증",
+    "title": "지문인증 상태변경 - Suspend",
+    "summary": "지문 변경 시 인증 중지",
+    "mermaidLite": "flowchart TD\n    A[사용자] -->|시작| B[CA앱]\n    B -->|처리| C[서버]\n    C -->|완료| D[결과 ✓]\n    style A fill:#e1f5fe\n    style D fill:#c8e6c9",
+    "mermaid": "sequenceDiagram\n    participant User as 👤 사용자\n    participant CA as 📱 CA앱\n    participant FW as 🔧 Framework\n    participant AUTH as 🔐 인증기관\n    participant GOV as 🏛️ 정부서버\n    \n    Note over User,GOV: P150: 지문인증 상태변경 - Suspend\n    \n    User->>CA: 인증 시작\n    CA->>FW: 인증 화면 요청\n    FW->>User: 정보 입력/촬영\n    User->>FW: 정보 제출\n    FW->>AUTH: 인증 요청\n    AUTH->>GOV: 진위 확인\n    GOV-->>AUTH: 확인 결과\n    AUTH-->>FW: 인증 결과\n    \n    alt 인증 성공\n        FW-->>CA: 인증 성공\n        CA->>User: 완료 ✓\n    else 인증 실패\n        FW-->>CA: 재시도 요청\n        CA->>User: 다시 시도\n    end"
+  },
+  {
+    "code": "P151",
+    "category": "신원인증",
+    "title": "지문인증 상태변경 - Resume",
+    "summary": "지문인증 재활성화",
+    "mermaidLite": "flowchart TD\n    A[사용자] -->|시작| B[CA앱]\n    B -->|처리| C[서버]\n    C -->|완료| D[결과 ✓]\n    style A fill:#e1f5fe\n    style D fill:#c8e6c9",
+    "mermaid": "sequenceDiagram\n    participant User as 👤 사용자\n    participant CA as 📱 CA앱\n    participant FW as 🔧 Framework\n    participant AUTH as 🔐 인증기관\n    participant GOV as 🏛️ 정부서버\n    \n    Note over User,GOV: P151: 지문인증 상태변경 - Resume\n    \n    User->>CA: 인증 시작\n    CA->>FW: 인증 화면 요청\n    FW->>User: 정보 입력/촬영\n    User->>FW: 정보 제출\n    FW->>AUTH: 인증 요청\n    AUTH->>GOV: 진위 확인\n    GOV-->>AUTH: 확인 결과\n    AUTH-->>FW: 인증 결과\n    \n    alt 인증 성공\n        FW-->>CA: 인증 성공\n        CA->>User: 완료 ✓\n    else 인증 실패\n        FW-->>CA: 재시도 요청\n        CA->>User: 다시 시도\n    end"
+  },
+  {
+    "code": "P190",
+    "category": "VC관리",
+    "title": "walletId 사용가능 여부 조회",
+    "summary": "월렛 ID의 유효성 확인",
+    "mermaidLite": "flowchart TD\n    A[사용자] -->|시작| B[CA앱]\n    B -->|처리| C[서버]\n    C -->|완료| D[결과 ✓]\n    style A fill:#e1f5fe\n    style D fill:#c8e6c9",
+    "mermaid": "sequenceDiagram\n    participant User as 👤 사용자\n    participant CA as 📱 CA앱\n    participant FW as 🔧 Framework\n    participant TA as 🔐 TrustedApp\n    participant ISS as 🏛️ 발급기관\n    participant BC as ⛓️ 블록체인\n    \n    Note over User,BC: P190: walletId 사용가능 여부 조회\n    \n    User->>CA: VC 요청\n    CA->>FW: 처리 시작\n    FW->>User: 본인 인증\n    User->>FW: PIN/생체 인증\n    FW->>TA: 보안 처리\n    TA-->>FW: 처리 완료\n    FW->>ISS: VC 요청/처리\n    ISS->>BC: 상태 등록\n    BC-->>ISS: 등록 완료\n    ISS-->>FW: VC 발급/처리\n    FW->>TA: 안전 저장\n    TA-->>FW: 저장 완료\n    FW-->>CA: 완료\n    CA->>User: VC 처리 완료 ✓"
+  },
+  {
+    "code": "P200",
+    "category": "VC관리",
+    "title": "DID 발급",
+    "summary": "분산ID 생성 및 블록체인 등록",
+    "mermaidLite": "flowchart TD\n    A[사용자] -->|시작| B[CA앱]\n    B -->|처리| C[서버]\n    C -->|완료| D[결과 ✓]\n    style A fill:#e1f5fe\n    style D fill:#c8e6c9",
+    "mermaid": "sequenceDiagram\n    participant User as 👤 사용자\n    participant CA as 📱 CA앱\n    participant FW as 🔧 Framework\n    participant TA as 🔐 TrustedApp\n    participant ISS as 🏛️ 발급기관\n    participant BC as ⛓️ 블록체인\n    \n    Note over User,BC: P200: DID 발급\n    \n    User->>CA: VC 요청\n    CA->>FW: 처리 시작\n    FW->>User: 본인 인증\n    User->>FW: PIN/생체 인증\n    FW->>TA: 보안 처리\n    TA-->>FW: 처리 완료\n    FW->>ISS: VC 요청/처리\n    ISS->>BC: 상태 등록\n    BC-->>ISS: 등록 완료\n    ISS-->>FW: VC 발급/처리\n    FW->>TA: 안전 저장\n    TA-->>FW: 저장 완료\n    FW-->>CA: 완료\n    CA->>User: VC 처리 완료 ✓"
+  },
+  {
+    "code": "P210",
+    "category": "VC관리",
+    "title": "발급 가능 VC 리스트 조회",
+    "summary": "사용자가 발급받을 수 있는 VC 목록",
+    "mermaidLite": "flowchart TD\n    A[사용자] -->|시작| B[CA앱]\n    B -->|처리| C[서버]\n    C -->|완료| D[결과 ✓]\n    style A fill:#e1f5fe\n    style D fill:#c8e6c9",
+    "mermaid": "sequenceDiagram\n    participant User as 👤 사용자\n    participant CA as 📱 CA앱\n    participant FW as 🔧 Framework\n    participant TA as 🔐 TrustedApp\n    participant ISS as 🏛️ 발급기관\n    participant BC as ⛓️ 블록체인\n    \n    Note over User,BC: P210: 발급 가능 VC 리스트 조회\n    \n    User->>CA: VC 요청\n    CA->>FW: 처리 시작\n    FW->>User: 본인 인증\n    User->>FW: PIN/생체 인증\n    FW->>TA: 보안 처리\n    TA-->>FW: 처리 완료\n    FW->>ISS: VC 요청/처리\n    ISS->>BC: 상태 등록\n    BC-->>ISS: 등록 완료\n    ISS-->>FW: VC 발급/처리\n    FW->>TA: 안전 저장\n    TA-->>FW: 저장 완료\n    FW-->>CA: 완료\n    CA->>User: VC 처리 완료 ✓"
+  },
+  {
+    "code": "P211",
+    "category": "VC관리",
+    "title": "VC 발급",
+    "summary": "발급기관이 서명된 VC를 발급",
+    "mermaidLite": "flowchart TD\n    A[사용자] -->|시작| B[CA앱]\n    B -->|처리| C[서버]\n    C -->|완료| D[결과 ✓]\n    style A fill:#e1f5fe\n    style D fill:#c8e6c9",
+    "mermaid": "sequenceDiagram\n    participant User as 👤 사용자\n    participant CA as 📱 CA앱\n    participant FW as 🔧 Framework\n    participant TA as 🔐 TrustedApp\n    participant ISS as 🏛️ 발급기관\n    participant BC as ⛓️ 블록체인\n    \n    Note over User,BC: P211: VC 발급\n    \n    User->>CA: VC 요청\n    CA->>FW: 처리 시작\n    FW->>User: 본인 인증\n    User->>FW: PIN/생체 인증\n    FW->>TA: 보안 처리\n    TA-->>FW: 처리 완료\n    FW->>ISS: VC 요청/처리\n    ISS->>BC: 상태 등록\n    BC-->>ISS: 등록 완료\n    ISS-->>FW: VC 발급/처리\n    FW->>TA: 안전 저장\n    TA-->>FW: 저장 완료\n    FW-->>CA: 완료\n    CA->>User: VC 처리 완료 ✓"
+  },
+  {
+    "code": "P220",
+    "category": "VC관리",
+    "title": "VC 정보 표시",
+    "summary": "월렛에 저장된 VC 정보를 화면에 표시",
+    "mermaidLite": "flowchart TD\n    A[사용자] -->|시작| B[CA앱]\n    B -->|처리| C[서버]\n    C -->|완료| D[결과 ✓]\n    style A fill:#e1f5fe\n    style D fill:#c8e6c9",
+    "mermaid": "sequenceDiagram\n    participant User as 👤 사용자\n    participant CA as 📱 CA앱\n    participant FW as 🔧 Framework\n    participant TA as 🔐 TrustedApp\n    participant ISS as 🏛️ 발급기관\n    participant BC as ⛓️ 블록체인\n    \n    Note over User,BC: P220: VC 정보 표시\n    \n    User->>CA: VC 요청\n    CA->>FW: 처리 시작\n    FW->>User: 본인 인증\n    User->>FW: PIN/생체 인증\n    FW->>TA: 보안 처리\n    TA-->>FW: 처리 완료\n    FW->>ISS: VC 요청/처리\n    ISS->>BC: 상태 등록\n    BC-->>ISS: 등록 완료\n    ISS-->>FW: VC 발급/처리\n    FW->>TA: 안전 저장\n    TA-->>FW: 저장 완료\n    FW-->>CA: 완료\n    CA->>User: VC 처리 완료 ✓"
+  },
+  {
+    "code": "P230",
+    "category": "VC관리",
+    "title": "주소갱신 VC 발급",
+    "summary": "주소 변경 시 VC 갱신",
+    "mermaidLite": "flowchart TD\n    A[사용자] -->|시작| B[CA앱]\n    B -->|처리| C[서버]\n    C -->|완료| D[결과 ✓]\n    style A fill:#e1f5fe\n    style D fill:#c8e6c9",
+    "mermaid": "sequenceDiagram\n    participant User as 👤 사용자\n    participant CA as 📱 CA앱\n    participant FW as 🔧 Framework\n    participant TA as 🔐 TrustedApp\n    participant ISS as 🏛️ 발급기관\n    participant BC as ⛓️ 블록체인\n    \n    Note over User,BC: P230: 주소갱신 VC 발급\n    \n    User->>CA: VC 요청\n    CA->>FW: 처리 시작\n    FW->>User: 본인 인증\n    User->>FW: PIN/생체 인증\n    FW->>TA: 보안 처리\n    TA-->>FW: 처리 완료\n    FW->>ISS: VC 요청/처리\n    ISS->>BC: 상태 등록\n    BC-->>ISS: 등록 완료\n    ISS-->>FW: VC 발급/처리\n    FW->>TA: 안전 저장\n    TA-->>FW: 저장 완료\n    FW-->>CA: 완료\n    CA->>User: VC 처리 완료 ✓"
+  },
+  {
+    "code": "P240",
+    "category": "VC관리",
+    "title": "VC 삭제",
+    "summary": "특정 VC만 선택적으로 삭제",
+    "mermaidLite": "flowchart TD\n    A[사용자] -->|시작| B[CA앱]\n    B -->|처리| C[서버]\n    C -->|완료| D[결과 ✓]\n    style A fill:#e1f5fe\n    style D fill:#c8e6c9",
+    "mermaid": "sequenceDiagram\n    participant User as 👤 사용자\n    participant CA as 📱 CA앱\n    participant FW as 🔧 Framework\n    participant TA as 🔐 TrustedApp\n    participant ISS as 🏛️ 발급기관\n    participant BC as ⛓️ 블록체인\n    \n    Note over User,BC: P240: VC 삭제\n    \n    User->>CA: VC 요청\n    CA->>FW: 처리 시작\n    FW->>User: 본인 인증\n    User->>FW: PIN/생체 인증\n    FW->>TA: 보안 처리\n    TA-->>FW: 처리 완료\n    FW->>ISS: VC 요청/처리\n    ISS->>BC: 상태 등록\n    BC-->>ISS: 등록 완료\n    ISS-->>FW: VC 발급/처리\n    FW->>TA: 안전 저장\n    TA-->>FW: 저장 완료\n    FW-->>CA: 완료\n    CA->>User: VC 처리 완료 ✓"
+  },
+  {
+    "code": "P250",
+    "category": "VC관리",
+    "title": "Holder 개인키 갱신",
+    "summary": "개인키 갱신 및 DID Document 업데이트",
+    "mermaidLite": "flowchart TD\n    A[사용자] -->|시작| B[CA앱]\n    B -->|처리| C[서버]\n    C -->|완료| D[결과 ✓]\n    style A fill:#e1f5fe\n    style D fill:#c8e6c9",
+    "mermaid": "sequenceDiagram\n    participant User as 👤 사용자\n    participant CA as 📱 CA앱\n    participant FW as 🔧 Framework\n    participant TA as 🔐 TrustedApp\n    participant ISS as 🏛️ 발급기관\n    participant BC as ⛓️ 블록체인\n    \n    Note over User,BC: P250: Holder 개인키 갱신\n    \n    User->>CA: VC 요청\n    CA->>FW: 처리 시작\n    FW->>User: 본인 인증\n    User->>FW: PIN/생체 인증\n    FW->>TA: 보안 처리\n    TA-->>FW: 처리 완료\n    FW->>ISS: VC 요청/처리\n    ISS->>BC: 상태 등록\n    BC-->>ISS: 등록 완료\n    ISS-->>FW: VC 발급/처리\n    FW->>TA: 안전 저장\n    TA-->>FW: 저장 완료\n    FW-->>CA: 완료\n    CA->>User: VC 처리 완료 ✓"
+  },
+  {
+    "code": "P260",
+    "category": "VC관리",
+    "title": "정부앱 지갑 이관",
+    "summary": "기기 변경 시 지갑 이관",
+    "mermaidLite": "flowchart TD\n    A[사용자] -->|시작| B[CA앱]\n    B -->|처리| C[서버]\n    C -->|완료| D[결과 ✓]\n    style A fill:#e1f5fe\n    style D fill:#c8e6c9",
+    "mermaid": "sequenceDiagram\n    participant User as 👤 사용자\n    participant CA as 📱 CA앱\n    participant FW as 🔧 Framework\n    participant TA as 🔐 TrustedApp\n    participant ISS as 🏛️ 발급기관\n    participant BC as ⛓️ 블록체인\n    \n    Note over User,BC: P260: 정부앱 지갑 이관\n    \n    User->>CA: VC 요청\n    CA->>FW: 처리 시작\n    FW->>User: 본인 인증\n    User->>FW: PIN/생체 인증\n    FW->>TA: 보안 처리\n    TA-->>FW: 처리 완료\n    FW->>ISS: VC 요청/처리\n    ISS->>BC: 상태 등록\n    BC-->>ISS: 등록 완료\n    ISS-->>FW: VC 발급/처리\n    FW->>TA: 안전 저장\n    TA-->>FW: 저장 완료\n    FW-->>CA: 완료\n    CA->>User: VC 처리 완료 ✓"
+  },
+  {
+    "code": "P290",
+    "category": "VC관리",
+    "title": "2nd CA 등록 (VP 기반)",
+    "summary": "VP를 활용한 2nd CA 앱 등록",
+    "mermaidLite": "flowchart TD\n    A[사용자] -->|시작| B[CA앱]\n    B -->|처리| C[서버]\n    C -->|완료| D[결과 ✓]\n    style A fill:#e1f5fe\n    style D fill:#c8e6c9",
+    "mermaid": "sequenceDiagram\n    participant User as 👤 사용자\n    participant CA as 📱 CA앱\n    participant FW as 🔧 Framework\n    participant TA as 🔐 TrustedApp\n    participant ISS as 🏛️ 발급기관\n    participant BC as ⛓️ 블록체인\n    \n    Note over User,BC: P290: 2nd CA 등록 (VP 기반)\n    \n    User->>CA: VC 요청\n    CA->>FW: 처리 시작\n    FW->>User: 본인 인증\n    User->>FW: PIN/생체 인증\n    FW->>TA: 보안 처리\n    TA-->>FW: 처리 완료\n    FW->>ISS: VC 요청/처리\n    ISS->>BC: 상태 등록\n    BC-->>ISS: 등록 완료\n    ISS-->>FW: VC 발급/처리\n    FW->>TA: 안전 저장\n    TA-->>FW: 저장 완료\n    FW-->>CA: 완료\n    CA->>User: VC 처리 완료 ✓"
+  },
+  {
+    "code": "P311-1",
+    "category": "VP제출",
+    "title": "QR-MPM Direct Mode (VP)",
+    "summary": "검증기관 QR을 스캔하여 VP 직접 제출",
+    "mermaidLite": "flowchart TD\n    A[사용자] -->|시작| B[CA앱]\n    B -->|처리| C[서버]\n    C -->|완료| D[결과 ✓]\n    style A fill:#e1f5fe\n    style D fill:#c8e6c9",
+    "mermaid": "sequenceDiagram\n    participant User as 👤 사용자\n    participant CA as 📱 CA앱\n    participant FW as 🔧 Framework\n    participant SP as 🏢 검증기관\n    participant BC as ⛓️ 블록체인\n    \n    Note over User,BC: P311-1: QR-MPM Direct Mode (VP)\n    \n    User->>CA: VP 제출 시작\n    CA->>FW: 제출 화면\n    FW->>User: 제출 정보 확인\n    User->>FW: 동의 + PIN 인증\n    FW->>FW: VP 생성\n    FW->>SP: VP 전송\n    SP->>BC: 서명 검증\n    BC-->>SP: 검증 완료\n    SP->>SP: 클레임 추출\n    SP-->>FW: 검증 결과\n    FW-->>CA: 제출 완료\n    CA->>User: 본인확인 완료 ✓"
+  },
+  {
+    "code": "P311-2",
+    "category": "VP제출",
+    "title": "QR-MPM Direct Mode (ZKP)",
+    "summary": "영지식증명으로 최소 정보만 제출",
+    "mermaidLite": "flowchart TD\n    A[사용자] -->|시작| B[CA앱]\n    B -->|처리| C[서버]\n    C -->|완료| D[결과 ✓]\n    style A fill:#e1f5fe\n    style D fill:#c8e6c9",
+    "mermaid": "sequenceDiagram\n    participant User as 👤 사용자\n    participant CA as 📱 CA앱\n    participant FW as 🔧 Framework\n    participant SP as 🏢 검증기관\n    participant BC as ⛓️ 블록체인\n    \n    Note over User,BC: P311-2: QR-MPM Direct Mode (ZKP)\n    \n    User->>CA: VP 제출 시작\n    CA->>FW: 제출 화면\n    FW->>User: 제출 정보 확인\n    User->>FW: 동의 + PIN 인증\n    FW->>FW: VP 생성\n    FW->>SP: VP 전송\n    SP->>BC: 서명 검증\n    BC-->>SP: 검증 완료\n    SP->>SP: 클레임 추출\n    SP-->>FW: 검증 결과\n    FW-->>CA: 제출 완료\n    CA->>User: 본인확인 완료 ✓"
+  },
+  {
+    "code": "P311-3",
+    "category": "VP제출",
+    "title": "QR-MPM Direct Mode (Signature+VP)",
+    "summary": "전자서명 포함 VP 제출",
+    "mermaidLite": "flowchart TD\n    A[사용자] -->|시작| B[CA앱]\n    B -->|처리| C[서버]\n    C -->|완료| D[결과 ✓]\n    style A fill:#e1f5fe\n    style D fill:#c8e6c9",
+    "mermaid": "sequenceDiagram\n    participant User as 👤 사용자\n    participant CA as 📱 CA앱\n    participant FW as 🔧 Framework\n    participant SP as 🏢 검증기관\n    participant BC as ⛓️ 블록체인\n    \n    Note over User,BC: P311-3: QR-MPM Direct Mode (Signature+VP)\n    \n    User->>CA: VP 제출 시작\n    CA->>FW: 제출 화면\n    FW->>User: 제출 정보 확인\n    User->>FW: 동의 + PIN 인증\n    FW->>FW: VP 생성\n    FW->>SP: VP 전송\n    SP->>BC: 서명 검증\n    BC-->>SP: 검증 완료\n    SP->>SP: 클레임 추출\n    SP-->>FW: 검증 결과\n    FW-->>CA: 제출 완료\n    CA->>User: 본인확인 완료 ✓"
+  },
+  {
+    "code": "P312-1",
+    "category": "VP제출",
+    "title": "QR-CPM Proxy Mode (VP)",
+    "summary": "내 QR을 보여주고 중계서버 경유",
+    "mermaidLite": "flowchart TD\n    A[사용자] -->|시작| B[CA앱]\n    B -->|처리| C[서버]\n    C -->|완료| D[결과 ✓]\n    style A fill:#e1f5fe\n    style D fill:#c8e6c9",
+    "mermaid": "sequenceDiagram\n    participant User as 👤 사용자\n    participant CA as 📱 CA앱\n    participant FW as 🔧 Framework\n    participant SP as 🏢 검증기관\n    participant BC as ⛓️ 블록체인\n    \n    Note over User,BC: P312-1: QR-CPM Proxy Mode (VP)\n    \n    User->>CA: VP 제출 시작\n    CA->>FW: 제출 화면\n    FW->>User: 제출 정보 확인\n    User->>FW: 동의 + PIN 인증\n    FW->>FW: VP 생성\n    FW->>SP: VP 전송\n    SP->>BC: 서명 검증\n    BC-->>SP: 검증 완료\n    SP->>SP: 클레임 추출\n    SP-->>FW: 검증 결과\n    FW-->>CA: 제출 완료\n    CA->>User: 본인확인 완료 ✓"
+  },
+  {
+    "code": "P312-2",
+    "category": "VP제출",
+    "title": "QR-CPM Proxy Mode (ZKP)",
+    "summary": "ZKP를 QR로 제시",
+    "mermaidLite": "flowchart TD\n    A[사용자] -->|시작| B[CA앱]\n    B -->|처리| C[서버]\n    C -->|완료| D[결과 ✓]\n    style A fill:#e1f5fe\n    style D fill:#c8e6c9",
+    "mermaid": "sequenceDiagram\n    participant User as 👤 사용자\n    participant CA as 📱 CA앱\n    participant FW as 🔧 Framework\n    participant SP as 🏢 검증기관\n    participant BC as ⛓️ 블록체인\n    \n    Note over User,BC: P312-2: QR-CPM Proxy Mode (ZKP)\n    \n    User->>CA: VP 제출 시작\n    CA->>FW: 제출 화면\n    FW->>User: 제출 정보 확인\n    User->>FW: 동의 + PIN 인증\n    FW->>FW: VP 생성\n    FW->>SP: VP 전송\n    SP->>BC: 서명 검증\n    BC-->>SP: 검증 완료\n    SP->>SP: 클레임 추출\n    SP-->>FW: 검증 결과\n    FW-->>CA: 제출 완료\n    CA->>User: 본인확인 완료 ✓"
+  },
+  {
+    "code": "P312-3",
+    "category": "VP제출",
+    "title": "QR-CPM Proxy Direct Mode (VP)",
+    "summary": "Proxy 경유 후 직접 연결",
+    "mermaidLite": "flowchart TD\n    A[사용자] -->|시작| B[CA앱]\n    B -->|처리| C[서버]\n    C -->|완료| D[결과 ✓]\n    style A fill:#e1f5fe\n    style D fill:#c8e6c9",
+    "mermaid": "sequenceDiagram\n    participant User as 👤 사용자\n    participant CA as 📱 CA앱\n    participant FW as 🔧 Framework\n    participant SP as 🏢 검증기관\n    participant BC as ⛓️ 블록체인\n    \n    Note over User,BC: P312-3: QR-CPM Proxy Direct Mode (VP)\n    \n    User->>CA: VP 제출 시작\n    CA->>FW: 제출 화면\n    FW->>User: 제출 정보 확인\n    User->>FW: 동의 + PIN 인증\n    FW->>FW: VP 생성\n    FW->>SP: VP 전송\n    SP->>BC: 서명 검증\n    BC-->>SP: 검증 완료\n    SP->>SP: 클레임 추출\n    SP-->>FW: 검증 결과\n    FW-->>CA: 제출 완료\n    CA->>User: 본인확인 완료 ✓"
+  },
+  {
+    "code": "P312-4",
+    "category": "VP제출",
+    "title": "QR-CPM Proxy Direct Mode (ZKP)",
+    "summary": "ZKP로 Proxy Direct 제출",
+    "mermaidLite": "flowchart TD\n    A[사용자] -->|시작| B[CA앱]\n    B -->|처리| C[서버]\n    C -->|완료| D[결과 ✓]\n    style A fill:#e1f5fe\n    style D fill:#c8e6c9",
+    "mermaid": "sequenceDiagram\n    participant User as 👤 사용자\n    participant CA as 📱 CA앱\n    participant FW as 🔧 Framework\n    participant SP as 🏢 검증기관\n    participant BC as ⛓️ 블록체인\n    \n    Note over User,BC: P312-4: QR-CPM Proxy Direct Mode (ZKP)\n    \n    User->>CA: VP 제출 시작\n    CA->>FW: 제출 화면\n    FW->>User: 제출 정보 확인\n    User->>FW: 동의 + PIN 인증\n    FW->>FW: VP 생성\n    FW->>SP: VP 전송\n    SP->>BC: 서명 검증\n    BC-->>SP: 검증 완료\n    SP->>SP: 클레임 추출\n    SP-->>FW: 검증 결과\n    FW-->>CA: 제출 완료\n    CA->>User: 본인확인 완료 ✓"
+  },
+  {
+    "code": "P313-1",
+    "category": "VP제출",
+    "title": "PUSH Direct Mode (VP)",
+    "summary": "Push 알림으로 VP 요청 및 제출",
+    "mermaidLite": "flowchart TD\n    A[사용자] -->|시작| B[CA앱]\n    B -->|처리| C[서버]\n    C -->|완료| D[결과 ✓]\n    style A fill:#e1f5fe\n    style D fill:#c8e6c9",
+    "mermaid": "sequenceDiagram\n    participant User as 👤 사용자\n    participant CA as 📱 CA앱\n    participant FW as 🔧 Framework\n    participant SP as 🏢 검증기관\n    participant BC as ⛓️ 블록체인\n    \n    Note over User,BC: P313-1: PUSH Direct Mode (VP)\n    \n    User->>CA: VP 제출 시작\n    CA->>FW: 제출 화면\n    FW->>User: 제출 정보 확인\n    User->>FW: 동의 + PIN 인증\n    FW->>FW: VP 생성\n    FW->>SP: VP 전송\n    SP->>BC: 서명 검증\n    BC-->>SP: 검증 완료\n    SP->>SP: 클레임 추출\n    SP-->>FW: 검증 결과\n    FW-->>CA: 제출 완료\n    CA->>User: 본인확인 완료 ✓"
+  },
+  {
+    "code": "P313-2",
+    "category": "VP제출",
+    "title": "PUSH Direct Mode (Signature+VP)",
+    "summary": "Push로 전자서명 포함 제출",
+    "mermaidLite": "flowchart TD\n    A[사용자] -->|시작| B[CA앱]\n    B -->|처리| C[서버]\n    C -->|완료| D[결과 ✓]\n    style A fill:#e1f5fe\n    style D fill:#c8e6c9",
+    "mermaid": "sequenceDiagram\n    participant User as 👤 사용자\n    participant CA as 📱 CA앱\n    participant FW as 🔧 Framework\n    participant SP as 🏢 검증기관\n    participant BC as ⛓️ 블록체인\n    \n    Note over User,BC: P313-2: PUSH Direct Mode (Signature+VP)\n    \n    User->>CA: VP 제출 시작\n    CA->>FW: 제출 화면\n    FW->>User: 제출 정보 확인\n    User->>FW: 동의 + PIN 인증\n    FW->>FW: VP 생성\n    FW->>SP: VP 전송\n    SP->>BC: 서명 검증\n    BC-->>SP: 검증 완료\n    SP->>SP: 클레임 추출\n    SP-->>FW: 검증 결과\n    FW-->>CA: 제출 완료\n    CA->>User: 본인확인 완료 ✓"
+  },
+  {
+    "code": "P314-1",
+    "category": "VP제출",
+    "title": "APP2APP Indirect Mode (VP)",
+    "summary": "앱 간 호출로 VP 전달",
+    "mermaidLite": "flowchart TD\n    A[사용자] -->|시작| B[CA앱]\n    B -->|처리| C[서버]\n    C -->|완료| D[결과 ✓]\n    style A fill:#e1f5fe\n    style D fill:#c8e6c9",
+    "mermaid": "sequenceDiagram\n    participant User as 👤 사용자\n    participant CA as 📱 CA앱\n    participant FW as 🔧 Framework\n    participant SP as 🏢 검증기관\n    participant BC as ⛓️ 블록체인\n    \n    Note over User,BC: P314-1: APP2APP Indirect Mode (VP)\n    \n    User->>CA: VP 제출 시작\n    CA->>FW: 제출 화면\n    FW->>User: 제출 정보 확인\n    User->>FW: 동의 + PIN 인증\n    FW->>FW: VP 생성\n    FW->>SP: VP 전송\n    SP->>BC: 서명 검증\n    BC-->>SP: 검증 완료\n    SP->>SP: 클레임 추출\n    SP-->>FW: 검증 결과\n    FW-->>CA: 제출 완료\n    CA->>User: 본인확인 완료 ✓"
+  },
+  {
+    "code": "P314-2",
+    "category": "VP제출",
+    "title": "APP2APP Direct Mode",
+    "summary": "앱 간 호출, 서버로 직접 전송",
+    "mermaidLite": "flowchart TD\n    A[사용자] -->|시작| B[CA앱]\n    B -->|처리| C[서버]\n    C -->|완료| D[결과 ✓]\n    style A fill:#e1f5fe\n    style D fill:#c8e6c9",
+    "mermaid": "sequenceDiagram\n    participant User as 👤 사용자\n    participant CA as 📱 CA앱\n    participant FW as 🔧 Framework\n    participant SP as 🏢 검증기관\n    participant BC as ⛓️ 블록체인\n    \n    Note over User,BC: P314-2: APP2APP Direct Mode\n    \n    User->>CA: VP 제출 시작\n    CA->>FW: 제출 화면\n    FW->>User: 제출 정보 확인\n    User->>FW: 동의 + PIN 인증\n    FW->>FW: VP 생성\n    FW->>SP: VP 전송\n    SP->>BC: 서명 검증\n    BC-->>SP: 검증 완료\n    SP->>SP: 클레임 추출\n    SP-->>FW: 검증 결과\n    FW-->>CA: 제출 완료\n    CA->>User: 본인확인 완료 ✓"
+  },
+  {
+    "code": "P314-3",
+    "category": "VP제출",
+    "title": "APP2APP Indirect Mode (Signature+VP)",
+    "summary": "앱 간 전자서명 포함 전달",
+    "mermaidLite": "flowchart TD\n    A[사용자] -->|시작| B[CA앱]\n    B -->|처리| C[서버]\n    C -->|완료| D[결과 ✓]\n    style A fill:#e1f5fe\n    style D fill:#c8e6c9",
+    "mermaid": "sequenceDiagram\n    participant User as 👤 사용자\n    participant CA as 📱 CA앱\n    participant FW as 🔧 Framework\n    participant SP as 🏢 검증기관\n    participant BC as ⛓️ 블록체인\n    \n    Note over User,BC: P314-3: APP2APP Indirect Mode (Signature+VP)\n    \n    User->>CA: VP 제출 시작\n    CA->>FW: 제출 화면\n    FW->>User: 제출 정보 확인\n    User->>FW: 동의 + PIN 인증\n    FW->>FW: VP 생성\n    FW->>SP: VP 전송\n    SP->>BC: 서명 검증\n    BC-->>SP: 검증 완료\n    SP->>SP: 클레임 추출\n    SP-->>FW: 검증 결과\n    FW-->>CA: 제출 완료\n    CA->>User: 본인확인 완료 ✓"
+  },
+  {
+    "code": "P314-4",
+    "category": "VP제출",
+    "title": "APP2APP Direct Mode (Signature+VP)",
+    "summary": "앱 간 호출, 서명+VP 직접 전송",
+    "mermaidLite": "flowchart TD\n    A[사용자] -->|시작| B[CA앱]\n    B -->|처리| C[서버]\n    C -->|완료| D[결과 ✓]\n    style A fill:#e1f5fe\n    style D fill:#c8e6c9",
+    "mermaid": "sequenceDiagram\n    participant User as 👤 사용자\n    participant CA as 📱 CA앱\n    participant FW as 🔧 Framework\n    participant SP as 🏢 검증기관\n    participant BC as ⛓️ 블록체인\n    \n    Note over User,BC: P314-4: APP2APP Direct Mode (Signature+VP)\n    \n    User->>CA: VP 제출 시작\n    CA->>FW: 제출 화면\n    FW->>User: 제출 정보 확인\n    User->>FW: 동의 + PIN 인증\n    FW->>FW: VP 생성\n    FW->>SP: VP 전송\n    SP->>BC: 서명 검증\n    BC-->>SP: 검증 완료\n    SP->>SP: 클레임 추출\n    SP-->>FW: 검증 결과\n    FW-->>CA: 제출 완료\n    CA->>User: 본인확인 완료 ✓"
+  },
+  {
+    "code": "P315-1",
+    "category": "VP제출",
+    "title": "NFC Indirect Mode (VP)",
+    "summary": "NFC 태깅으로 VP 제출",
+    "mermaidLite": "flowchart TD\n    A[사용자] -->|시작| B[CA앱]\n    B -->|처리| C[서버]\n    C -->|완료| D[결과 ✓]\n    style A fill:#e1f5fe\n    style D fill:#c8e6c9",
+    "mermaid": "sequenceDiagram\n    participant User as 👤 사용자\n    participant CA as 📱 CA앱\n    participant FW as 🔧 Framework\n    participant SP as 🏢 검증기관\n    participant BC as ⛓️ 블록체인\n    \n    Note over User,BC: P315-1: NFC Indirect Mode (VP)\n    \n    User->>CA: VP 제출 시작\n    CA->>FW: 제출 화면\n    FW->>User: 제출 정보 확인\n    User->>FW: 동의 + PIN 인증\n    FW->>FW: VP 생성\n    FW->>SP: VP 전송\n    SP->>BC: 서명 검증\n    BC-->>SP: 검증 완료\n    SP->>SP: 클레임 추출\n    SP-->>FW: 검증 결과\n    FW-->>CA: 제출 완료\n    CA->>User: 본인확인 완료 ✓"
+  },
+  {
+    "code": "P410",
+    "category": "조회",
+    "title": "중계서버 주소 조회",
+    "summary": "VP 제출 시 사용할 중계서버 주소 조회",
+    "mermaidLite": "flowchart TD\n    A[사용자] -->|시작| B[CA앱]\n    B -->|처리| C[서버]\n    C -->|완료| D[결과 ✓]\n    style A fill:#e1f5fe\n    style D fill:#c8e6c9",
+    "mermaid": "sequenceDiagram\n    participant CA as 📱 CA앱\n    participant FW as 🔧 Framework\n    participant CAS as 🖥️ CAS서버\n    participant BC as ⛓️ 블록체인\n    \n    Note over CA,BC: P410: 중계서버 주소 조회\n    \n    CA->>FW: 조회 요청\n    FW->>CAS: API 호출\n    CAS->>BC: 상태 조회\n    BC-->>CAS: 상태 정보\n    CAS-->>FW: 결과 반환\n    FW-->>CA: 조회 완료 ✓"
+  },
+  {
+    "code": "P420",
+    "category": "조회",
+    "title": "VC 상태 상세사유 조회",
+    "summary": "VC 정지/폐기 사유 확인",
+    "mermaidLite": "flowchart TD\n    A[사용자] -->|시작| B[CA앱]\n    B -->|처리| C[서버]\n    C -->|완료| D[결과 ✓]\n    style A fill:#e1f5fe\n    style D fill:#c8e6c9",
+    "mermaid": "sequenceDiagram\n    participant CA as 📱 CA앱\n    participant FW as 🔧 Framework\n    participant CAS as 🖥️ CAS서버\n    participant BC as ⛓️ 블록체인\n    \n    Note over CA,BC: P420: VC 상태 상세사유 조회\n    \n    CA->>FW: 조회 요청\n    FW->>CAS: API 호출\n    CAS->>BC: 상태 조회\n    BC-->>CAS: 상태 정보\n    CAS-->>FW: 결과 반환\n    FW-->>CA: 조회 완료 ✓"
+  },
+  {
+    "code": "P430",
+    "category": "조회",
+    "title": "장애여부 조회",
+    "summary": "시스템 장애 상태 확인",
+    "mermaidLite": "flowchart TD\n    A[사용자] -->|시작| B[CA앱]\n    B -->|처리| C[서버]\n    C -->|완료| D[결과 ✓]\n    style A fill:#e1f5fe\n    style D fill:#c8e6c9",
+    "mermaid": "sequenceDiagram\n    participant CA as 📱 CA앱\n    participant FW as 🔧 Framework\n    participant CAS as 🖥️ CAS서버\n    participant BC as ⛓️ 블록체인\n    \n    Note over CA,BC: P430: 장애여부 조회\n    \n    CA->>FW: 조회 요청\n    FW->>CAS: API 호출\n    CAS->>BC: 상태 조회\n    BC-->>CAS: 상태 정보\n    CAS-->>FW: 결과 반환\n    FW-->>CA: 조회 완료 ✓"
+  }
 ]
