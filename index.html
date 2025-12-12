@@ -676,6 +676,46 @@
             margin-top: 4px
         }
 
+        .mobile-nav {
+            display: none;
+            flex-direction: column;
+            gap: 4px;
+            padding: 16px;
+            border-bottom: 1px solid #e0e0e0;
+            background: linear-gradient(135deg, #f8f9fa 0%, #e8f0fe 100%);
+        }
+
+        .mobile-nav-title {
+            font-size: 14px;
+            font-weight: 600;
+            color: #1a73e8;
+            margin-bottom: 8px;
+        }
+
+        .mobile-nav-item {
+            padding: 12px 16px;
+            background: #fff;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 14px;
+            color: #333;
+            transition: 0.2s;
+            border: 1px solid #e0e0e0;
+            text-decoration: none;
+            display: block;
+        }
+
+        .mobile-nav-item:hover {
+            background: #e8f0fe;
+            border-color: #1a73e8;
+        }
+
+        .mobile-nav-item.faq {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+        }
+
         @media(max-width:767px) {
             .main-content {
                 margin-left: 0;
@@ -692,6 +732,10 @@
 
             .header-tabs {
                 display: none
+            }
+
+            .mobile-nav {
+                display: flex
             }
         }
     </style>
@@ -720,7 +764,18 @@
     </div>
     <div class="overlay" id="overlay"></div>
     <aside class="sidebar" id="sidebar">
-        <div class="filter-section">
+        <div class="mobile-nav" id="mobileNav">
+            <div class="mobile-nav-title">📌 메뉴 선택</div>
+            <a href="https://notebooklm.google.com/notebook/cd97f2be-d103-4841-bd1e-9363325f4065" target="_blank"
+                class="mobile-nav-item faq">🤖 FAQ 챗봇</a>
+            <div class="mobile-nav-item" onclick="mobileSwitch('glossary')">📚 용어집</div>
+            <div class="mobile-nav-item" onclick="mobileSwitch('code')">📋 코드집</div>
+            <div class="mobile-nav-item" onclick="mobileSwitch('flowchart')">📊 도해</div>
+            <div class="mobile-nav-item" onclick="mobileSwitch('checklist')">✅ CA 체크리스트</div>
+            <div class="mobile-nav-item" onclick="mobileSwitch('screen')">📱 화면목록</div>
+            <div class="mobile-nav-item" onclick="mobileSwitch('law')">📜 관계법령</div>
+        </div>
+        <div class="filter-section" id="filterSection">
             <div class="search-box"><input type="text" class="search-input" id="searchInput" placeholder="검색..."></div>
             <div class="filter-chips" id="categoryFilters"></div>
         </div>
@@ -748,18 +803,23 @@
                         </div>
                     </div>
                 </div>
-                <table class="checklist-table">
-                    <thead>
-                        <tr>
-                            <th style="width:60px">순번</th>
-                            <th style="width:120px">화면ID</th>
-                            <th style="width:180px">화면명</th>
-                            <th>설명</th>
-                            <th style="width:100px">구분</th>
-                        </tr>
-                    </thead>
-                    <tbody id="screenBody"></tbody>
-                </table>
+                <div style="overflow-x:auto">
+                    <table class="checklist-table">
+                        <thead>
+                            <tr>
+                                <th style="width:40px">No</th>
+                                <th style="width:80px">1Depth</th>
+                                <th style="width:80px">2Depth</th>
+                                <th style="width:100px">3Depth</th>
+                                <th style="width:100px">4Depth</th>
+                                <th style="width:120px">화면ID</th>
+                                <th style="width:160px">화면명</th>
+                                <th>설명</th>
+                            </tr>
+                        </thead>
+                        <tbody id="screenBody"></tbody>
+                    </table>
+                </div>
             </div>
         </div>
         <div class="view-section" id="checklistView">
@@ -917,53 +977,49 @@
 
         ['glossaryTab', 'codeTab', 'flowchartTab', 'checklistTab', 'lawTab', 'screenTab'].forEach(id => { document.getElementById(id).addEventListener('click', () => switchView(id.replace('Tab', ''))); });
 
-        // 화면목록 데이터
+        // 화면목록 데이터 (1Depth~4Depth 포함)
         const screenData = [
-            // 발급 - VC 발급 플로우
-            { no: 1, id: "VC_ISS_000", name: "모바일 신분증 메인", desc: "신분증 발급 서비스 진입 화면", type: "발급" },
-            { no: 2, id: "VC_ISS_001", name: "신분증 발급 안내", desc: "서비스 소개 및 발급 안내", type: "발급" },
-            { no: 3, id: "VC_ISS_002", name: "약관 동의", desc: "서비스 이용 약관 동의", type: "발급" },
-            { no: 4, id: "VC_ISS_003", name: "본인 인증 선택", desc: "인증 방법 선택 화면", type: "발급" },
-            { no: 5, id: "VC_ISS_004", name: "간편인증", desc: "PASS, 카카오, 네이버 등 간편인증", type: "발급" },
-            { no: 6, id: "VC_ISS_005", name: "공동인증서", desc: "공동인증서 인증", type: "발급" },
-            { no: 7, id: "VC_ISS_006", name: "PIN 설정", desc: "6자리 보안 PIN 설정", type: "발급" },
-            { no: 8, id: "VC_ISS_007", name: "생체 인증 등록", desc: "Face ID / Touch ID 등록", type: "발급" },
-            { no: 9, id: "VC_ISS_008", name: "신분증 종류 선택", desc: "주민등록증 / 운전면허증 선택", type: "발급" },
-            { no: 10, id: "VC_ISS_009", name: "발급 진행", desc: "발급 처리 중 로딩 화면", type: "발급" },
-            { no: 11, id: "VC_ISS_010", name: "발급 완료", desc: "발급 완료 안내", type: "발급" },
-            // 발급 - 주민등록증
-            { no: 12, id: "VC_ISS_ID_001", name: "주민등록증 정보 확인", desc: "발급 정보 확인 화면", type: "발급" },
-            { no: 13, id: "VC_ISS_ID_002", name: "주민등록증 발급 완료", desc: "발급된 신분증 미리보기", type: "발급" },
-            // 발급 - 운전면허증
-            { no: 14, id: "VC_ISS_DL_001", name: "운전면허증 정보 입력", desc: "면허번호 등 정보 입력", type: "발급" },
-            { no: 15, id: "VC_ISS_DL_002", name: "운전면허증 정보 확인", desc: "발급 정보 확인 화면", type: "발급" },
-            { no: 16, id: "VC_ISS_DL_003", name: "운전면허증 발급 완료", desc: "발급된 신분증 미리보기", type: "발급" },
-            // 사용 - 메인
-            { no: 17, id: "VC_USE_000", name: "모바일 신분증 홈", desc: "발급된 신분증 목록 표시", type: "사용" },
-            { no: 18, id: "VC_USE_001", name: "신분증 상세", desc: "선택한 신분증 상세 정보", type: "사용" },
-            { no: 19, id: "VC_USE_002", name: "인증 요청", desc: "Face ID / PIN 인증", type: "사용" },
-            // 사용 - 제시
-            { no: 20, id: "VC_PRES_001", name: "제시 방법 선택", desc: "QR코드 / NFC 선택", type: "사용" },
-            { no: 21, id: "VC_PRES_002", name: "QR 코드 생성", desc: "동적 QR 코드 표시", type: "사용" },
-            { no: 22, id: "VC_PRES_003", name: "NFC 대기", desc: "NFC 태그 대기 화면", type: "사용" },
-            { no: 23, id: "VC_PRES_004", name: "제시 완료", desc: "제시 결과 안내", type: "사용" },
-            // 사용 - VP 제출
-            { no: 24, id: "VP_SUB_001", name: "VP 요청 수신", desc: "VP 요청 내용 표시", type: "사용" },
-            { no: 25, id: "VP_SUB_002", name: "제출 항목 선택", desc: "필수/선택 항목 체크", type: "사용" },
-            { no: 26, id: "VP_SUB_003", name: "제출 확인", desc: "제출 전 최종 확인", type: "사용" },
-            { no: 27, id: "VP_SUB_004", name: "제출 완료", desc: "VP 제출 완료 안내", type: "사용" },
+            // ========== 발급 ==========
+            { no: 1, d1: "발급", d2: "VC발급", d3: "공통", d4: "메인", id: "VC_ISS_000", name: "모바일 신분증 메인", desc: "신분증 발급 서비스 진입 화면", type: "발급" },
+            { no: 2, d1: "발급", d2: "VC발급", d3: "공통", d4: "안내", id: "VC_ISS_001", name: "신분증 발급 안내", desc: "서비스 소개 및 발급 안내", type: "발급" },
+            { no: 3, d1: "발급", d2: "VC발급", d3: "공통", d4: "약관", id: "VC_ISS_002", name: "약관 동의", desc: "서비스 이용 약관 동의", type: "발급" },
+            { no: 4, d1: "발급", d2: "VC발급", d3: "본인인증", d4: "선택", id: "VC_ISS_003", name: "본인 인증 선택", desc: "인증 방법 선택 화면", type: "발급" },
+            { no: 5, d1: "발급", d2: "VC발급", d3: "본인인증", d4: "간편인증", id: "VC_ISS_004", name: "간편인증", desc: "PASS, 카카오, 네이버 등", type: "발급" },
+            { no: 6, d1: "발급", d2: "VC발급", d3: "본인인증", d4: "공동인증서", id: "VC_ISS_005", name: "공동인증서", desc: "공동인증서 인증", type: "발급" },
+            { no: 7, d1: "발급", d2: "VC발급", d3: "보안설정", d4: "PIN", id: "VC_ISS_006", name: "PIN 설정", desc: "6자리 보안 PIN 설정", type: "발급" },
+            { no: 8, d1: "발급", d2: "VC발급", d3: "보안설정", d4: "생체인증", id: "VC_ISS_007", name: "생체 인증 등록", desc: "Face ID / Touch ID 등록", type: "발급" },
+            { no: 9, d1: "발급", d2: "VC발급", d3: "신분증선택", d4: "종류", id: "VC_ISS_008", name: "신분증 종류 선택", desc: "주민/운전면허 선택", type: "발급" },
+            { no: 10, d1: "발급", d2: "VC발급", d3: "발급처리", d4: "진행", id: "VC_ISS_009", name: "발급 진행", desc: "발급 처리 중 로딩", type: "발급" },
+            { no: 11, d1: "발급", d2: "VC발급", d3: "발급처리", d4: "완료", id: "VC_ISS_010", name: "발급 완료", desc: "발급 완료 안내", type: "발급" },
+            { no: 12, d1: "발급", d2: "주민등록증", d3: "정보확인", d4: "확인", id: "VC_ISS_ID_001", name: "주민등록증 정보 확인", desc: "발급 정보 확인 화면", type: "발급" },
+            { no: 13, d1: "발급", d2: "주민등록증", d3: "발급완료", d4: "미리보기", id: "VC_ISS_ID_002", name: "주민등록증 발급 완료", desc: "발급된 신분증 미리보기", type: "발급" },
+            { no: 14, d1: "발급", d2: "운전면허증", d3: "정보입력", d4: "입력", id: "VC_ISS_DL_001", name: "운전면허증 정보 입력", desc: "면허번호 등 정보 입력", type: "발급" },
+            { no: 15, d1: "발급", d2: "운전면허증", d3: "정보확인", d4: "확인", id: "VC_ISS_DL_002", name: "운전면허증 정보 확인", desc: "발급 정보 확인 화면", type: "발급" },
+            { no: 16, d1: "발급", d2: "운전면허증", d3: "발급완료", d4: "미리보기", id: "VC_ISS_DL_003", name: "운전면허증 발급 완료", desc: "발급된 신분증 미리보기", type: "발급" },
+            // ========== 사용 ==========
+            { no: 17, d1: "사용", d2: "메인", d3: "홈", d4: "목록", id: "VC_USE_000", name: "모바일 신분증 홈", desc: "발급된 신분증 목록 표시", type: "사용" },
+            { no: 18, d1: "사용", d2: "메인", d3: "상세", d4: "정보", id: "VC_USE_001", name: "신분증 상세", desc: "선택한 신분증 상세 정보", type: "사용" },
+            { no: 19, d1: "사용", d2: "메인", d3: "인증", d4: "요청", id: "VC_USE_002", name: "인증 요청", desc: "Face ID / PIN 인증", type: "사용" },
+            { no: 20, d1: "사용", d2: "제시", d3: "방법선택", d4: "선택", id: "VC_PRES_001", name: "제시 방법 선택", desc: "QR코드 / NFC 선택", type: "사용" },
+            { no: 21, d1: "사용", d2: "제시", d3: "QR", d4: "생성", id: "VC_PRES_002", name: "QR 코드 생성", desc: "동적 QR 코드 표시", type: "사용" },
+            { no: 22, d1: "사용", d2: "제시", d3: "NFC", d4: "대기", id: "VC_PRES_003", name: "NFC 대기", desc: "NFC 태그 대기 화면", type: "사용" },
+            { no: 23, d1: "사용", d2: "제시", d3: "완료", d4: "결과", id: "VC_PRES_004", name: "제시 완료", desc: "제시 결과 안내", type: "사용" },
+            { no: 24, d1: "사용", d2: "VP제출", d3: "요청수신", d4: "표시", id: "VP_SUB_001", name: "VP 요청 수신", desc: "VP 요청 내용 표시", type: "사용" },
+            { no: 25, d1: "사용", d2: "VP제출", d3: "항목선택", d4: "체크", id: "VP_SUB_002", name: "제출 항목 선택", desc: "필수/선택 항목 체크", type: "사용" },
+            { no: 26, d1: "사용", d2: "VP제출", d3: "확인", d4: "최종확인", id: "VP_SUB_003", name: "제출 확인", desc: "제출 전 최종 확인", type: "사용" },
+            { no: 27, d1: "사용", d2: "VP제출", d3: "완료", d4: "안내", id: "VP_SUB_004", name: "제출 완료", desc: "VP 제출 완료 안내", type: "사용" },
             // 사용 - 검증
-            { no: 28, id: "VC_VRF_001", name: "검증 모드 진입", desc: "QR 스캔 / NFC 인식 선택", type: "사용" },
-            { no: 29, id: "VC_VRF_002", name: "QR 스캔", desc: "카메라로 QR 코드 스캔", type: "사용" },
-            { no: 30, id: "VC_VRF_003", name: "NFC 인식", desc: "NFC 태그 인식", type: "사용" },
-            { no: 31, id: "VC_VRF_004", name: "검증 결과(유효)", desc: "유효한 신분증 정보 표시", type: "사용" },
-            { no: 32, id: "VC_VRF_005", name: "검증 결과(무효)", desc: "무효/만료 안내", type: "사용" },
+            { no: 28, d1: "사용", d2: "검증", d3: "진입", d4: "선택", id: "VC_VRF_001", name: "검증 모드 진입", desc: "QR 스캔 / NFC 인식 선택", type: "사용" },
+            { no: 29, d1: "사용", d2: "검증", d3: "QR", d4: "스캔", id: "VC_VRF_002", name: "QR 스캔", desc: "카메라로 QR 코드 스캔", type: "사용" },
+            { no: 30, d1: "사용", d2: "검증", d3: "NFC", d4: "인식", id: "VC_VRF_003", name: "NFC 인식", desc: "NFC 태그 인식", type: "사용" },
+            { no: 31, d1: "사용", d2: "검증", d3: "결과", d4: "유효", id: "VC_VRF_004", name: "검증 결과(유효)", desc: "유효한 신분증 정보 표시", type: "사용" },
+            { no: 32, d1: "사용", d2: "검증", d3: "결과", d4: "무효", id: "VC_VRF_005", name: "검증 결과(무효)", desc: "무효/만료 안내", type: "사용" },
             // 사용 - 설정
-            { no: 33, id: "VC_SET_001", name: "설정 메인", desc: "설정 메뉴 목록", type: "사용" },
-            { no: 34, id: "VC_SET_002", name: "보안 설정", desc: "PIN/생체인증 변경", type: "사용" },
-            { no: 35, id: "VC_SET_003", name: "신분증 관리", desc: "갱신/삭제 관리", type: "사용" },
-            { no: 36, id: "VC_SET_004", name: "이용 내역", desc: "제시/검증 이력 조회", type: "사용" },
-            { no: 37, id: "VC_SET_005", name: "알림 설정", desc: "푸시 알림 설정", type: "사용" }
+            { no: 33, d1: "사용", d2: "설정", d3: "메인", d4: "목록", id: "VC_SET_001", name: "설정 메인", desc: "설정 메뉴 목록", type: "사용" },
+            { no: 34, d1: "사용", d2: "설정", d3: "보안", d4: "변경", id: "VC_SET_002", name: "보안 설정", desc: "PIN/생체인증 변경", type: "사용" },
+            { no: 35, d1: "사용", d2: "설정", d3: "신분증", d4: "관리", id: "VC_SET_003", name: "신분증 관리", desc: "갱신/삭제 관리", type: "사용" },
+            { no: 36, d1: "사용", d2: "설정", d3: "이용내역", d4: "조회", id: "VC_SET_004", name: "이용 내역", desc: "제시/검증 이력 조회", type: "사용" },
+            { no: 37, d1: "사용", d2: "설정", d3: "알림", d4: "설정", id: "VC_SET_005", name: "알림 설정", desc: "푸시 알림 설정", type: "사용" }
         ];
         let screenTypeFilter = '전체';
 
@@ -984,12 +1040,15 @@
         function renderScreenList() {
             const tbody = document.getElementById('screenBody');
             const filtered = screenTypeFilter === '전체' ? screenData : screenData.filter(d => d.type === screenTypeFilter);
-            tbody.innerHTML = filtered.map((item, i) => `<tr>
-                <td style="text-align:center">${item.no}</td>
-                <td><code style="background:#e8f0fe;padding:4px 8px;border-radius:4px;font-size:12px;color:#1a73e8">${item.id}</code></td>
+            tbody.innerHTML = filtered.map((item, i) => `<tr style="background:${item.d1 === '발급' ? '#f8f9fa' : '#fff'}">
+                <td style="text-align:center;font-weight:600">${item.no}</td>
+                <td><span style="background:${item.d1 === '발급' ? '#e3f2fd' : '#fce4ec'};color:${item.d1 === '발급' ? '#1565c0' : '#c2185b'};padding:4px 8px;border-radius:12px;font-size:11px;font-weight:600">${item.d1}</span></td>
+                <td style="color:#1a73e8;font-weight:500">${item.d2}</td>
+                <td style="color:#666">${item.d3}</td>
+                <td style="color:#999;font-size:12px">${item.d4}</td>
+                <td><code style="background:#e8f0fe;padding:3px 6px;border-radius:4px;font-size:11px;color:#1a73e8">${item.id}</code></td>
                 <td><strong>${item.name}</strong></td>
-                <td>${item.desc}</td>
-                <td><span class="category-badge ${item.type}" style="background:${item.type === '발급' ? '#e3f2fd' : '#fce4ec'};color:${item.type === '발급' ? '#1565c0' : '#c2185b'}">${item.type}</span></td>
+                <td style="font-size:13px;color:#555">${item.desc}</td>
             </tr>`).join('');
         }
 
@@ -1042,7 +1101,18 @@
         function init() { renderCategoryFilters(); applyFilters(); }
         document.getElementById('searchInput').addEventListener('input', e => { searchQuery = e.target.value; applyFilters(); });
         document.getElementById('hamburger').addEventListener('click', () => { document.getElementById('hamburger').classList.toggle('active'); document.getElementById('sidebar').classList.toggle('active'); document.getElementById('overlay').classList.toggle('active'); });
-        document.getElementById('overlay').addEventListener('click', () => { document.getElementById('hamburger').classList.remove('active'); document.getElementById('sidebar').classList.remove('active'); document.getElementById('overlay').classList.remove('active'); });
+        document.getElementById('overlay').addEventListener('click', () => { closeMobileMenu(); });
+
+        function closeMobileMenu() {
+            document.getElementById('hamburger').classList.remove('active');
+            document.getElementById('sidebar').classList.remove('active');
+            document.getElementById('overlay').classList.remove('active');
+        }
+
+        function mobileSwitch(view) {
+            closeMobileMenu();
+            switchView(view);
+        }
         loadData();
     </script>
 </body>
