@@ -759,6 +759,9 @@
             <button class="tab-button" id="screenTab"
                 style="background:linear-gradient(135deg,#f093fb 0%,#f5576c 100%);color:white;border:none">📱
                 화면목록</button>
+            <button class="tab-button" id="screenMgmtTab"
+                style="background:linear-gradient(135deg,#11998e 0%,#38ef7d 100%);color:white;border:none">⚙️
+                화면목록 관리</button>
             <button class="tab-button law-btn" id="lawTab">📜 관계법령</button>
         </div>
     </div>
@@ -773,6 +776,7 @@
             <div class="mobile-nav-item" onclick="mobileSwitch('flowchart')">📊 도해</div>
             <div class="mobile-nav-item" onclick="mobileSwitch('checklist')">✅ CA 체크리스트</div>
             <div class="mobile-nav-item" onclick="mobileSwitch('screen')">📱 화면목록</div>
+            <div class="mobile-nav-item" onclick="mobileSwitch('screenMgmt')">⚙️ 화면목록 관리</div>
             <div class="mobile-nav-item" onclick="mobileSwitch('law')">📜 관계법령</div>
         </div>
         <div class="filter-section" id="filterSection">
@@ -820,6 +824,56 @@
                         <tbody id="screenBody"></tbody>
                     </table>
                 </div>
+            </div>
+        </div>
+        <div class="view-section" id="screenMgmtView">
+            <div class="checklist-container">
+                <div class="checklist-header">
+                    <div class="checklist-title">⚙️ 화면목록 관리 (Excel 기반)</div>
+                    <div class="checklist-actions">
+                        <button class="btn-excel" onclick="addScreenItem()" style="background:#4CAF50">➕ 항목 추가</button>
+                        <button class="btn-excel" onclick="exportScreenMgmtToExcel()">📥 엑셀 다운로드</button>
+                        <button class="btn-excel" onclick="saveScreenMgmtData()" style="background:#1a73e8">💾
+                            저장</button>
+                    </div>
+                </div>
+                <div class="filter-bar" id="screenMgmtFilters" style="margin-bottom:16px">
+                    <input type="text" id="screenMgmtSearch" placeholder="검색 (화면ID, 화면명...)"
+                        style="padding:8px 12px;border:1px solid #ddd;border-radius:4px;width:200px;margin-right:10px">
+                    <select id="screenMgmtL1Filter"
+                        style="padding:8px;border:1px solid #ddd;border-radius:4px;margin-right:10px">
+                        <option value="">전체 L1</option>
+                    </select>
+                    <select id="screenMgmtTypeFilter" style="padding:8px;border:1px solid #ddd;border-radius:4px">
+                        <option value="">전체 TYPE</option>
+                        <option value="HTML">HTML</option>
+                        <option value="NATIVE">NATIVE</option>
+                    </select>
+                </div>
+                <div style="overflow-x:auto;max-height:600px;overflow-y:auto">
+                    <table class="checklist-table" id="screenMgmtTable">
+                        <thead style="position:sticky;top:0;background:#f8f9fa;z-index:10">
+                            <tr>
+                                <th style="width:40px">No</th>
+                                <th style="width:80px">L1</th>
+                                <th style="width:60px">TYPE</th>
+                                <th style="width:120px">화면ID</th>
+                                <th style="width:160px">화면명</th>
+                                <th style="width:100px">1Depth</th>
+                                <th style="width:120px">2Depth</th>
+                                <th style="width:120px">3Depth</th>
+                                <th style="width:100px">4Depth</th>
+                                <th style="width:100px">5Depth</th>
+                                <th style="width:100px">6Depth</th>
+                                <th style="width:100px">요구사항ID</th>
+                                <th style="width:60px">작업</th>
+                            </tr>
+                        </thead>
+                        <tbody id="screenMgmtBody"></tbody>
+                    </table>
+                </div>
+                <div id="screenMgmtStats"
+                    style="margin-top:16px;padding:12px;background:#f0f0f0;border-radius:8px;font-size:13px"></div>
             </div>
         </div>
         <div class="view-section" id="checklistView">
@@ -975,7 +1029,13 @@
 
         async function loadData() { try { const [g, c, f] = await Promise.all([fetch('glossary.json'), fetch('code.json'), fetch('flowchart.json')]); glossaryData = await g.json(); codeData = await c.json(); flowchartData = await f.json(); document.getElementById('glossaryCount').textContent = `(${glossaryData.length})`; document.getElementById('codeCount').textContent = `(${codeData.length})`; document.getElementById('flowchartCount').textContent = `(${flowchartData.length})`; currentData = glossaryData; init(); initChecklist(); } catch (e) { console.error('데이터 로드 실패:', e); } }
 
-        ['glossaryTab', 'codeTab', 'flowchartTab', 'checklistTab', 'lawTab', 'screenTab'].forEach(id => { document.getElementById(id).addEventListener('click', () => switchView(id.replace('Tab', ''))); });
+        ['glossaryTab', 'codeTab', 'flowchartTab', 'checklistTab', 'lawTab', 'screenTab', 'screenMgmtTab'].forEach(id => { document.getElementById(id).addEventListener('click', () => switchView(id.replace('Tab', ''))); });
+
+        // 화면목록 관리 데이터 (Excel 기반)
+        let screenMgmtData = [];
+        let screenMgmtL1Filter = '';
+        let screenMgmtTypeFilter = '';
+        let screenMgmtSearchQuery = '';
 
         // 화면목록 데이터 (1Depth~4Depth 포함)
         const screenData = [
@@ -1023,7 +1083,7 @@
         ];
         let screenTypeFilter = '전체';
 
-        function switchView(view) { currentView = view; if (view === 'glossary') currentData = glossaryData; else if (view === 'code') currentData = codeData; else if (view === 'flowchart') currentData = flowchartData; else currentData = []; document.querySelectorAll('.tab-button:not(.faq-chatbot):not(.law-btn)').forEach(btn => btn.classList.remove('active')); document.querySelectorAll('.view-section').forEach(sec => sec.classList.remove('active')); const tabEl = document.getElementById(view + 'Tab'); if (tabEl) tabEl.classList.add('active'); document.getElementById(view + 'View').classList.add('active'); if (view === 'checklist' || view === 'law' || view === 'screen') { document.getElementById('sidebar').style.display = 'none'; if (view === 'screen') { initScreenList(); } } else { document.getElementById('sidebar').style.display = ''; searchQuery = ''; categoryFilter = ''; document.getElementById('searchInput').value = ''; renderCategoryFilters(); applyFilters(); } }
+        function switchView(view) { currentView = view; if (view === 'glossary') currentData = glossaryData; else if (view === 'code') currentData = codeData; else if (view === 'flowchart') currentData = flowchartData; else currentData = []; document.querySelectorAll('.tab-button:not(.faq-chatbot):not(.law-btn)').forEach(btn => btn.classList.remove('active')); document.querySelectorAll('.view-section').forEach(sec => sec.classList.remove('active')); const tabEl = document.getElementById(view + 'Tab'); if (tabEl) tabEl.classList.add('active'); document.getElementById(view + 'View').classList.add('active'); if (view === 'checklist' || view === 'law' || view === 'screen' || view === 'screenMgmt') { document.getElementById('sidebar').style.display = 'none'; if (view === 'screen') { initScreenList(); } else if (view === 'screenMgmt') { initScreenMgmt(); } } else { document.getElementById('sidebar').style.display = ''; searchQuery = ''; categoryFilter = ''; document.getElementById('searchInput').value = ''; renderCategoryFilters(); applyFilters(); } }
 
         function initScreenList() {
             renderScreenList();
@@ -1050,6 +1110,129 @@
                 <td><strong>${item.name}</strong></td>
                 <td style="font-size:13px;color:#555">${item.desc}</td>
             </tr>`).join('');
+        }
+
+        // ===== 화면목록 관리 함수들 =====
+        async function initScreenMgmt() {
+            // 로컬스토리지 또는 JSON 파일에서 데이터 로드
+            const savedData = localStorage.getItem('screenMgmtData');
+            if (savedData) {
+                screenMgmtData = JSON.parse(savedData);
+            } else {
+                try {
+                    const res = await fetch('screenlist_data.json');
+                    screenMgmtData = await res.json();
+                } catch (e) {
+                    console.error('screenlist_data.json 로드 실패:', e);
+                    screenMgmtData = [];
+                }
+            }
+            // L1 필터 옵션 설정
+            const l1Set = new Set(screenMgmtData.map(d => d.l1).filter(v => v));
+            const l1Select = document.getElementById('screenMgmtL1Filter');
+            l1Select.innerHTML = '<option value="">전체 L1</option>' +
+                [...l1Set].map(l1 => `<option value="${l1}">${l1}</option>`).join('');
+
+            // 이벤트 바인딩
+            document.getElementById('screenMgmtSearch').oninput = (e) => { screenMgmtSearchQuery = e.target.value; renderScreenMgmtList(); };
+            document.getElementById('screenMgmtL1Filter').onchange = (e) => { screenMgmtL1Filter = e.target.value; renderScreenMgmtList(); };
+            document.getElementById('screenMgmtTypeFilter').onchange = (e) => { screenMgmtTypeFilter = e.target.value; renderScreenMgmtList(); };
+
+            renderScreenMgmtList();
+        }
+
+        function renderScreenMgmtList() {
+            const tbody = document.getElementById('screenMgmtBody');
+            let filtered = screenMgmtData;
+
+            if (screenMgmtL1Filter) filtered = filtered.filter(d => d.l1 === screenMgmtL1Filter);
+            if (screenMgmtTypeFilter) filtered = filtered.filter(d => d.type === screenMgmtTypeFilter);
+            if (screenMgmtSearchQuery) {
+                const q = screenMgmtSearchQuery.toLowerCase();
+                filtered = filtered.filter(d =>
+                    d.screenId?.toLowerCase().includes(q) ||
+                    d.screenName?.toLowerCase().includes(q) ||
+                    d.d1?.toLowerCase().includes(q) ||
+                    d.d2?.toLowerCase().includes(q)
+                );
+            }
+
+            tbody.innerHTML = filtered.map((item, i) => {
+                const idx = screenMgmtData.indexOf(item);
+                return `<tr data-idx="${idx}">
+                    <td style="text-align:center;font-weight:600">${item.no}</td>
+                    <td><input type="text" value="${item.l1 || ''}" onchange="updateScreenMgmtField(${idx},'l1',this.value)" style="width:70px;padding:4px;border:1px solid #ddd;border-radius:3px"></td>
+                    <td><select onchange="updateScreenMgmtField(${idx},'type',this.value)" style="padding:4px;border:1px solid #ddd;border-radius:3px">
+                        <option value="HTML" ${item.type === 'HTML' ? 'selected' : ''}>HTML</option>
+                        <option value="NATIVE" ${item.type === 'NATIVE' ? 'selected' : ''}>NATIVE</option>
+                    </select></td>
+                    <td><input type="text" value="${item.screenId || ''}" onchange="updateScreenMgmtField(${idx},'screenId',this.value)" style="width:110px;padding:4px;border:1px solid #ddd;border-radius:3px;font-family:monospace;font-size:11px"></td>
+                    <td><input type="text" value="${item.screenName || ''}" onchange="updateScreenMgmtField(${idx},'screenName',this.value)" style="width:150px;padding:4px;border:1px solid #ddd;border-radius:3px"></td>
+                    <td><input type="text" value="${item.d1 || ''}" onchange="updateScreenMgmtField(${idx},'d1',this.value)" style="width:90px;padding:4px;border:1px solid #ddd;border-radius:3px;font-size:12px"></td>
+                    <td><input type="text" value="${item.d2 || ''}" onchange="updateScreenMgmtField(${idx},'d2',this.value)" style="width:110px;padding:4px;border:1px solid #ddd;border-radius:3px;font-size:12px"></td>
+                    <td><input type="text" value="${item.d3 || ''}" onchange="updateScreenMgmtField(${idx},'d3',this.value)" style="width:110px;padding:4px;border:1px solid #ddd;border-radius:3px;font-size:12px"></td>
+                    <td><input type="text" value="${item.d4 || ''}" onchange="updateScreenMgmtField(${idx},'d4',this.value)" style="width:90px;padding:4px;border:1px solid #ddd;border-radius:3px;font-size:12px"></td>
+                    <td><input type="text" value="${item.d5 || ''}" onchange="updateScreenMgmtField(${idx},'d5',this.value)" style="width:90px;padding:4px;border:1px solid #ddd;border-radius:3px;font-size:12px"></td>
+                    <td><input type="text" value="${item.d6 || ''}" onchange="updateScreenMgmtField(${idx},'d6',this.value)" style="width:90px;padding:4px;border:1px solid #ddd;border-radius:3px;font-size:12px"></td>
+                    <td><input type="text" value="${item.reqId || ''}" onchange="updateScreenMgmtField(${idx},'reqId',this.value)" style="width:90px;padding:4px;border:1px solid #ddd;border-radius:3px;font-size:11px"></td>
+                    <td><button onclick="deleteScreenItem(${idx})" style="background:#f44336;color:white;border:none;padding:4px 8px;border-radius:4px;cursor:pointer;font-size:11px">🗑️</button></td>
+                </tr>`;
+            }).join('');
+
+            // 통계 업데이트
+            const stats = document.getElementById('screenMgmtStats');
+            const htmlCount = screenMgmtData.filter(d => d.type === 'HTML').length;
+            const nativeCount = screenMgmtData.filter(d => d.type === 'NATIVE').length;
+            stats.innerHTML = `📊 <strong>전체:</strong> ${screenMgmtData.length}개 | <strong>HTML:</strong> ${htmlCount}개 | <strong>NATIVE:</strong> ${nativeCount}개 | <strong>필터 결과:</strong> ${filtered.length}개`;
+        }
+
+        function updateScreenMgmtField(idx, field, value) {
+            screenMgmtData[idx][field] = value;
+        }
+
+        function addScreenItem() {
+            const newNo = screenMgmtData.length > 0 ? Math.max(...screenMgmtData.map(d => d.no)) + 1 : 1;
+            screenMgmtData.push({
+                no: newNo, l1: "", l2: "", type: "HTML", screenId: "", screenName: "",
+                d1: "", d2: "", d3: "", d4: "", d5: "", d6: "", designType: "", note: "", reqId: ""
+            });
+            renderScreenMgmtList();
+        }
+
+        function deleteScreenItem(idx) {
+            if (confirm(`항목 #${screenMgmtData[idx].no}을(를) 삭제하시겠습니까?`)) {
+                screenMgmtData.splice(idx, 1);
+                // 번호 재정렬
+                screenMgmtData.forEach((item, i) => item.no = i + 1);
+                renderScreenMgmtList();
+            }
+        }
+
+        function saveScreenMgmtData() {
+            localStorage.setItem('screenMgmtData', JSON.stringify(screenMgmtData));
+            alert(`✅ ${screenMgmtData.length}개 항목이 저장되었습니다!`);
+        }
+
+        function exportScreenMgmtToExcel() {
+            const exportData = screenMgmtData.map(item => ({
+                'No': item.no,
+                'L1': item.l1,
+                'TYPE': item.type,
+                '화면ID': item.screenId,
+                '화면명': item.screenName,
+                '1Depth': item.d1,
+                '2Depth': item.d2,
+                '3Depth': item.d3,
+                '4Depth': item.d4,
+                '5Depth': item.d5,
+                '6Depth': item.d6,
+                '비고': item.note,
+                '요구사항ID': item.reqId
+            }));
+            const ws = XLSX.utils.json_to_sheet(exportData);
+            const wb = XLSX.utils.book_new();
+            XLSX.utils.book_append_sheet(wb, ws, '화면목록');
+            XLSX.writeFile(wb, 'SOL_D04_화면목록_export.xlsx');
         }
 
         function renderCategoryFilters() { const container = document.getElementById('categoryFilters'); let categories = []; if (currentView === 'flowchart') categories = ['전체', ...new Set(flowchartData.map(d => d.category))]; else if (currentView === 'glossary') categories = ['전체', ...new Set(glossaryData.map(d => d.구분))]; else categories = ['전체', ...new Set(codeData.map(d => d.구분))]; container.innerHTML = categories.map(cat => `<div class="filter-chip ${categoryFilter === cat || (categoryFilter === '' && cat === '전체') ? 'active' : ''}" data-cat="${cat}">${cat}</div>`).join(''); container.querySelectorAll('.filter-chip').forEach(chip => { chip.addEventListener('click', () => { categoryFilter = chip.dataset.cat === '전체' ? '' : chip.dataset.cat; container.querySelectorAll('.filter-chip').forEach(c => c.classList.remove('active')); chip.classList.add('active'); applyFilters(); }); }); }
