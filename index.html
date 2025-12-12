@@ -712,6 +712,9 @@
             <button class="tab-button" id="flowchartTab">도해 <span class="tab-count"
                     id="flowchartCount">(0)</span></button>
             <button class="tab-button" id="checklistTab">CA 체크리스트 <span class="tab-count">(31)</span></button>
+            <button class="tab-button" id="screenTab"
+                style="background:linear-gradient(135deg,#f093fb 0%,#f5576c 100%);color:white;border:none">📱
+                화면목록</button>
             <button class="tab-button law-btn" id="lawTab">📜 관계법령</button>
         </div>
     </div>
@@ -732,6 +735,32 @@
         </div>
         <div class="view-section" id="flowchartView">
             <div id="flowchartContent"></div>
+        </div>
+        <div class="view-section" id="screenView">
+            <div class="checklist-container">
+                <div class="checklist-header">
+                    <div class="checklist-title">📱 화면 목록 (발급/사용)</div>
+                    <div class="checklist-actions">
+                        <div class="filter-bar" id="screenFilters">
+                            <button class="filter-btn active" data-type="전체">전체</button>
+                            <button class="filter-btn" data-type="발급">발급</button>
+                            <button class="filter-btn" data-type="사용">사용</button>
+                        </div>
+                    </div>
+                </div>
+                <table class="checklist-table">
+                    <thead>
+                        <tr>
+                            <th style="width:60px">순번</th>
+                            <th style="width:120px">화면ID</th>
+                            <th style="width:180px">화면명</th>
+                            <th>설명</th>
+                            <th style="width:100px">구분</th>
+                        </tr>
+                    </thead>
+                    <tbody id="screenBody"></tbody>
+                </table>
+            </div>
         </div>
         <div class="view-section" id="checklistView">
             <div class="checklist-container">
@@ -886,9 +915,83 @@
 
         async function loadData() { try { const [g, c, f] = await Promise.all([fetch('glossary.json'), fetch('code.json'), fetch('flowchart.json')]); glossaryData = await g.json(); codeData = await c.json(); flowchartData = await f.json(); document.getElementById('glossaryCount').textContent = `(${glossaryData.length})`; document.getElementById('codeCount').textContent = `(${codeData.length})`; document.getElementById('flowchartCount').textContent = `(${flowchartData.length})`; currentData = glossaryData; init(); initChecklist(); } catch (e) { console.error('데이터 로드 실패:', e); } }
 
-        ['glossaryTab', 'codeTab', 'flowchartTab', 'checklistTab', 'lawTab'].forEach(id => { document.getElementById(id).addEventListener('click', () => switchView(id.replace('Tab', ''))); });
+        ['glossaryTab', 'codeTab', 'flowchartTab', 'checklistTab', 'lawTab', 'screenTab'].forEach(id => { document.getElementById(id).addEventListener('click', () => switchView(id.replace('Tab', ''))); });
 
-        function switchView(view) { currentView = view; if (view === 'glossary') currentData = glossaryData; else if (view === 'code') currentData = codeData; else if (view === 'flowchart') currentData = flowchartData; else currentData = []; document.querySelectorAll('.tab-button:not(.faq-chatbot):not(.law-btn)').forEach(btn => btn.classList.remove('active')); document.querySelectorAll('.view-section').forEach(sec => sec.classList.remove('active')); const tabEl = document.getElementById(view + 'Tab'); if (tabEl) tabEl.classList.add('active'); document.getElementById(view + 'View').classList.add('active'); if (view === 'checklist' || view === 'law') { document.getElementById('sidebar').style.display = 'none'; } else { document.getElementById('sidebar').style.display = ''; searchQuery = ''; categoryFilter = ''; document.getElementById('searchInput').value = ''; renderCategoryFilters(); applyFilters(); } }
+        // 화면목록 데이터
+        const screenData = [
+            // 발급 - VC 발급 플로우
+            { no: 1, id: "VC_ISS_000", name: "모바일 신분증 메인", desc: "신분증 발급 서비스 진입 화면", type: "발급" },
+            { no: 2, id: "VC_ISS_001", name: "신분증 발급 안내", desc: "서비스 소개 및 발급 안내", type: "발급" },
+            { no: 3, id: "VC_ISS_002", name: "약관 동의", desc: "서비스 이용 약관 동의", type: "발급" },
+            { no: 4, id: "VC_ISS_003", name: "본인 인증 선택", desc: "인증 방법 선택 화면", type: "발급" },
+            { no: 5, id: "VC_ISS_004", name: "간편인증", desc: "PASS, 카카오, 네이버 등 간편인증", type: "발급" },
+            { no: 6, id: "VC_ISS_005", name: "공동인증서", desc: "공동인증서 인증", type: "발급" },
+            { no: 7, id: "VC_ISS_006", name: "PIN 설정", desc: "6자리 보안 PIN 설정", type: "발급" },
+            { no: 8, id: "VC_ISS_007", name: "생체 인증 등록", desc: "Face ID / Touch ID 등록", type: "발급" },
+            { no: 9, id: "VC_ISS_008", name: "신분증 종류 선택", desc: "주민등록증 / 운전면허증 선택", type: "발급" },
+            { no: 10, id: "VC_ISS_009", name: "발급 진행", desc: "발급 처리 중 로딩 화면", type: "발급" },
+            { no: 11, id: "VC_ISS_010", name: "발급 완료", desc: "발급 완료 안내", type: "발급" },
+            // 발급 - 주민등록증
+            { no: 12, id: "VC_ISS_ID_001", name: "주민등록증 정보 확인", desc: "발급 정보 확인 화면", type: "발급" },
+            { no: 13, id: "VC_ISS_ID_002", name: "주민등록증 발급 완료", desc: "발급된 신분증 미리보기", type: "발급" },
+            // 발급 - 운전면허증
+            { no: 14, id: "VC_ISS_DL_001", name: "운전면허증 정보 입력", desc: "면허번호 등 정보 입력", type: "발급" },
+            { no: 15, id: "VC_ISS_DL_002", name: "운전면허증 정보 확인", desc: "발급 정보 확인 화면", type: "발급" },
+            { no: 16, id: "VC_ISS_DL_003", name: "운전면허증 발급 완료", desc: "발급된 신분증 미리보기", type: "발급" },
+            // 사용 - 메인
+            { no: 17, id: "VC_USE_000", name: "모바일 신분증 홈", desc: "발급된 신분증 목록 표시", type: "사용" },
+            { no: 18, id: "VC_USE_001", name: "신분증 상세", desc: "선택한 신분증 상세 정보", type: "사용" },
+            { no: 19, id: "VC_USE_002", name: "인증 요청", desc: "Face ID / PIN 인증", type: "사용" },
+            // 사용 - 제시
+            { no: 20, id: "VC_PRES_001", name: "제시 방법 선택", desc: "QR코드 / NFC 선택", type: "사용" },
+            { no: 21, id: "VC_PRES_002", name: "QR 코드 생성", desc: "동적 QR 코드 표시", type: "사용" },
+            { no: 22, id: "VC_PRES_003", name: "NFC 대기", desc: "NFC 태그 대기 화면", type: "사용" },
+            { no: 23, id: "VC_PRES_004", name: "제시 완료", desc: "제시 결과 안내", type: "사용" },
+            // 사용 - VP 제출
+            { no: 24, id: "VP_SUB_001", name: "VP 요청 수신", desc: "VP 요청 내용 표시", type: "사용" },
+            { no: 25, id: "VP_SUB_002", name: "제출 항목 선택", desc: "필수/선택 항목 체크", type: "사용" },
+            { no: 26, id: "VP_SUB_003", name: "제출 확인", desc: "제출 전 최종 확인", type: "사용" },
+            { no: 27, id: "VP_SUB_004", name: "제출 완료", desc: "VP 제출 완료 안내", type: "사용" },
+            // 사용 - 검증
+            { no: 28, id: "VC_VRF_001", name: "검증 모드 진입", desc: "QR 스캔 / NFC 인식 선택", type: "사용" },
+            { no: 29, id: "VC_VRF_002", name: "QR 스캔", desc: "카메라로 QR 코드 스캔", type: "사용" },
+            { no: 30, id: "VC_VRF_003", name: "NFC 인식", desc: "NFC 태그 인식", type: "사용" },
+            { no: 31, id: "VC_VRF_004", name: "검증 결과(유효)", desc: "유효한 신분증 정보 표시", type: "사용" },
+            { no: 32, id: "VC_VRF_005", name: "검증 결과(무효)", desc: "무효/만료 안내", type: "사용" },
+            // 사용 - 설정
+            { no: 33, id: "VC_SET_001", name: "설정 메인", desc: "설정 메뉴 목록", type: "사용" },
+            { no: 34, id: "VC_SET_002", name: "보안 설정", desc: "PIN/생체인증 변경", type: "사용" },
+            { no: 35, id: "VC_SET_003", name: "신분증 관리", desc: "갱신/삭제 관리", type: "사용" },
+            { no: 36, id: "VC_SET_004", name: "이용 내역", desc: "제시/검증 이력 조회", type: "사용" },
+            { no: 37, id: "VC_SET_005", name: "알림 설정", desc: "푸시 알림 설정", type: "사용" }
+        ];
+        let screenTypeFilter = '전체';
+
+        function switchView(view) { currentView = view; if (view === 'glossary') currentData = glossaryData; else if (view === 'code') currentData = codeData; else if (view === 'flowchart') currentData = flowchartData; else currentData = []; document.querySelectorAll('.tab-button:not(.faq-chatbot):not(.law-btn)').forEach(btn => btn.classList.remove('active')); document.querySelectorAll('.view-section').forEach(sec => sec.classList.remove('active')); const tabEl = document.getElementById(view + 'Tab'); if (tabEl) tabEl.classList.add('active'); document.getElementById(view + 'View').classList.add('active'); if (view === 'checklist' || view === 'law' || view === 'screen') { document.getElementById('sidebar').style.display = 'none'; if (view === 'screen') { initScreenList(); } } else { document.getElementById('sidebar').style.display = ''; searchQuery = ''; categoryFilter = ''; document.getElementById('searchInput').value = ''; renderCategoryFilters(); applyFilters(); } }
+
+        function initScreenList() {
+            renderScreenList();
+            document.getElementById('screenFilters').querySelectorAll('.filter-btn').forEach(btn => {
+                btn.addEventListener('click', () => {
+                    document.querySelectorAll('#screenFilters .filter-btn').forEach(b => b.classList.remove('active'));
+                    btn.classList.add('active');
+                    screenTypeFilter = btn.dataset.type;
+                    renderScreenList();
+                });
+            });
+        }
+
+        function renderScreenList() {
+            const tbody = document.getElementById('screenBody');
+            const filtered = screenTypeFilter === '전체' ? screenData : screenData.filter(d => d.type === screenTypeFilter);
+            tbody.innerHTML = filtered.map((item, i) => `<tr>
+                <td style="text-align:center">${item.no}</td>
+                <td><code style="background:#e8f0fe;padding:4px 8px;border-radius:4px;font-size:12px;color:#1a73e8">${item.id}</code></td>
+                <td><strong>${item.name}</strong></td>
+                <td>${item.desc}</td>
+                <td><span class="category-badge ${item.type}" style="background:${item.type === '발급' ? '#e3f2fd' : '#fce4ec'};color:${item.type === '발급' ? '#1565c0' : '#c2185b'}">${item.type}</span></td>
+            </tr>`).join('');
+        }
 
         function renderCategoryFilters() { const container = document.getElementById('categoryFilters'); let categories = []; if (currentView === 'flowchart') categories = ['전체', ...new Set(flowchartData.map(d => d.category))]; else if (currentView === 'glossary') categories = ['전체', ...new Set(glossaryData.map(d => d.구분))]; else categories = ['전체', ...new Set(codeData.map(d => d.구분))]; container.innerHTML = categories.map(cat => `<div class="filter-chip ${categoryFilter === cat || (categoryFilter === '' && cat === '전체') ? 'active' : ''}" data-cat="${cat}">${cat}</div>`).join(''); container.querySelectorAll('.filter-chip').forEach(chip => { chip.addEventListener('click', () => { categoryFilter = chip.dataset.cat === '전체' ? '' : chip.dataset.cat; container.querySelectorAll('.filter-chip').forEach(c => c.classList.remove('active')); chip.classList.add('active'); applyFilters(); }); }); }
 
