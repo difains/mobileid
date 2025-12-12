@@ -6,17 +6,18 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>모바일 신분증 - 용어집 & 코드집 & 도해</title>
     <script src="https://cdn.jsdelivr.net/npm/mermaid/dist/mermaid.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
     <style>
         * {
             margin: 0;
             padding: 0;
-            box-sizing: border-box;
+            box-sizing: border-box
         }
 
         body {
             font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto';
             background: #f5f5f5;
-            color: #333;
+            color: #333
         }
 
         .header {
@@ -31,87 +32,75 @@
             height: 56px;
             padding: 0 16px;
             z-index: 100;
-            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05)
         }
 
         .header-left {
             display: flex;
             align-items: center;
-            gap: 16px;
+            gap: 16px
         }
 
         .hamburger {
             display: none;
             flex-direction: column;
             cursor: pointer;
-            gap: 5px;
+            gap: 5px
         }
 
         .hamburger span {
             width: 24px;
             height: 2px;
             background: #333;
-            border-radius: 2px;
-            transition: 0.3s;
+            border-radius: 2px
         }
 
         .header h1 {
             font-size: 18px;
             font-weight: 600;
-            color: #1a73e8;
+            color: #1a73e8
         }
 
         .header-tabs {
             display: flex;
             gap: 4px;
-            flex-wrap: wrap;
+            flex-wrap: wrap
         }
 
         .tab-button {
-            padding: 8px 16px;
+            padding: 8px 14px;
             background: transparent;
             border: 1px solid #ddd;
             border-radius: 4px;
             cursor: pointer;
-            font-size: 13px;
+            font-size: 12px;
             font-weight: 500;
             color: #666;
             transition: 0.2s;
+            white-space: nowrap
         }
 
         .tab-button.active {
             background: #1a73e8;
             color: white;
-            border-color: #1a73e8;
+            border-color: #1a73e8
         }
 
         .tab-button.faq-chatbot {
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             color: white;
-            border: none;
-            animation: pulse 2s infinite;
+            border: none
         }
 
-        .tab-button.faq-chatbot:hover {
-            transform: scale(1.05);
-            box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4);
-        }
-
-        @keyframes pulse {
-
-            0%,
-            100% {
-                box-shadow: 0 0 0 0 rgba(102, 126, 234, 0.4);
-            }
-
-            50% {
-                box-shadow: 0 0 0 8px rgba(102, 126, 234, 0);
-            }
+        .tab-button.law-btn {
+            background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%);
+            color: white;
+            border: none
         }
 
         .tab-count {
-            font-size: 12px;
-            margin-left: 4px;
+            font-size: 11px;
+            margin-left: 2px
         }
 
         .sidebar {
@@ -125,16 +114,16 @@
             overflow-y: auto;
             transform: translateX(-100%);
             transition: 0.3s;
-            z-index: 99;
+            z-index: 99
         }
 
         .sidebar.active {
-            transform: translateX(0);
+            transform: translateX(0)
         }
 
         .filter-section {
             padding: 12px;
-            border-bottom: 1px solid #e0e0e0;
+            border-bottom: 1px solid #e0e0e0
         }
 
         .search-box {
@@ -142,21 +131,21 @@
             display: flex;
             border: 1px solid #ddd;
             border-radius: 6px;
-            overflow: hidden;
+            overflow: hidden
         }
 
         .search-input {
             flex: 1;
             padding: 10px 12px;
             border: none;
-            font-size: 13px;
+            font-size: 13px
         }
 
         .filter-chips {
             display: flex;
             flex-wrap: wrap;
             gap: 4px;
-            margin-bottom: 8px;
+            margin-bottom: 8px
         }
 
         .filter-chip {
@@ -167,22 +156,22 @@
             font-size: 12px;
             color: #5f6368;
             cursor: pointer;
-            transition: 0.2s;
+            transition: 0.2s
         }
 
         .filter-chip:hover {
-            background: #e8eaed;
+            background: #e8eaed
         }
 
         .filter-chip.active {
             background: #1a73e8;
             color: white;
-            border-color: #1a73e8;
+            border-color: #1a73e8
         }
 
         .term-list {
             list-style: none;
-            padding: 8px 0;
+            padding: 8px 0
         }
 
         .term-item {
@@ -194,12 +183,12 @@
             transition: 0.2s;
             overflow: hidden;
             text-overflow: ellipsis;
-            white-space: nowrap;
+            white-space: nowrap
         }
 
         .term-item:hover {
             background: #f9f9f9;
-            color: #1a73e8;
+            color: #1a73e8
         }
 
         .term-item.active {
@@ -207,35 +196,29 @@
             color: #1a73e8;
             font-weight: 600;
             border-left: 4px solid #1a73e8;
-            padding-left: 8px;
-        }
-
-        .term-code {
-            font-size: 11px;
-            color: #999;
-            margin-right: 6px;
+            padding-left: 8px
         }
 
         .main-content {
             margin-top: 56px;
-            padding: 20px;
+            padding: 20px
         }
 
-        @media (min-width: 768px) {
+        @media(min-width:768px) {
             .main-content {
-                margin-left: 280px;
+                margin-left: 280px
             }
 
             .hamburger {
-                display: none !important;
+                display: none !important
             }
 
             .sidebar {
-                transform: translateX(0);
+                transform: translateX(0)
             }
 
             .overlay {
-                display: none !important;
+                display: none !important
             }
         }
 
@@ -247,30 +230,30 @@
             right: 0;
             bottom: 0;
             background: rgba(0, 0, 0, 0.5);
-            z-index: 98;
+            z-index: 98
         }
 
         .overlay.active {
-            display: block;
+            display: block
         }
 
         .view-section {
-            display: none;
+            display: none
         }
 
         .view-section.active {
-            display: block;
+            display: block
         }
 
         .items-container {
             display: grid;
             grid-template-columns: repeat(auto-fill, minmax(400px, 1fr));
-            gap: 20px;
+            gap: 20px
         }
 
-        @media (max-width: 900px) {
+        @media(max-width:900px) {
             .items-container {
-                grid-template-columns: 1fr;
+                grid-template-columns: 1fr
             }
         }
 
@@ -280,19 +263,18 @@
             padding: 20px;
             box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
             border-left: 4px solid #1a73e8;
-            transition: 0.2s;
+            transition: 0.2s
         }
 
         .item-card:hover {
-            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.12);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.12)
         }
 
         .item-title {
             font-size: 18px;
             font-weight: 600;
             color: #1a73e8;
-            margin-bottom: 12px;
-            word-break: break-word;
+            margin-bottom: 12px
         }
 
         .item-meta {
@@ -300,7 +282,7 @@
             gap: 8px;
             margin-bottom: 12px;
             flex-wrap: wrap;
-            font-size: 11px;
+            font-size: 11px
         }
 
         .meta-badge {
@@ -309,7 +291,7 @@
             padding: 4px 8px;
             background: #f0f0f0;
             border-radius: 4px;
-            color: #666;
+            color: #666
         }
 
         .item-description {
@@ -321,8 +303,7 @@
             border-radius: 4px;
             max-height: 300px;
             overflow-y: auto;
-            white-space: pre-wrap;
-            word-break: break-word;
+            white-space: pre-wrap
         }
 
         .easy-explanation {
@@ -330,31 +311,27 @@
             padding: 12px;
             background: linear-gradient(135deg, #fff3e0 0%, #ffe0b2 100%);
             border-radius: 8px;
-            border-left: 4px solid #ff9800;
+            border-left: 4px solid #ff9800
         }
 
         .easy-explanation-title {
             font-size: 12px;
             font-weight: 600;
             color: #e65100;
-            margin-bottom: 8px;
-            display: flex;
-            align-items: center;
-            gap: 6px;
+            margin-bottom: 8px
         }
 
         .easy-explanation-content {
             font-size: 13px;
             line-height: 1.7;
-            color: #5d4037;
+            color: #5d4037
         }
 
-        /* 도해 전용 스타일 */
         .flowchart-card {
             background: #fff;
             border-radius: 12px;
             padding: 24px;
-            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1)
         }
 
         .flowchart-title {
@@ -364,7 +341,7 @@
             margin-bottom: 8px;
             display: flex;
             align-items: center;
-            gap: 10px;
+            gap: 10px
         }
 
         .flowchart-code {
@@ -372,7 +349,7 @@
             color: #666;
             background: #f0f0f0;
             padding: 4px 10px;
-            border-radius: 4px;
+            border-radius: 4px
         }
 
         .flowchart-category {
@@ -383,7 +360,7 @@
             border-radius: 12px;
             font-size: 12px;
             font-weight: 600;
-            margin-bottom: 16px;
+            margin-bottom: 16px
         }
 
         .flowchart-summary {
@@ -394,7 +371,7 @@
             padding: 16px;
             border-radius: 8px;
             margin-bottom: 20px;
-            border-left: 4px solid #1a73e8;
+            border-left: 4px solid #1a73e8
         }
 
         .flowchart-diagram {
@@ -403,20 +380,19 @@
             border-radius: 8px;
             padding: 20px;
             margin-bottom: 16px;
-            overflow-x: auto;
+            overflow-x: auto
         }
 
         .mermaid {
             display: flex;
-            justify-content: center;
+            justify-content: center
         }
 
-        /* CA 평가 체크리스트 스타일 */
         .checklist-container {
             background: #fff;
             border-radius: 12px;
             padding: 24px;
-            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1)
         }
 
         .checklist-header {
@@ -425,185 +401,297 @@
             align-items: center;
             margin-bottom: 20px;
             flex-wrap: wrap;
-            gap: 12px;
+            gap: 12px
         }
 
         .checklist-title {
             font-size: 24px;
             font-weight: 700;
-            color: #1a73e8;
+            color: #1a73e8
+        }
+
+        .checklist-actions {
+            display: flex;
+            gap: 12px;
+            align-items: center;
+            flex-wrap: wrap
         }
 
         .checklist-stats {
             display: flex;
-            gap: 16px;
-            font-size: 14px;
+            gap: 12px;
+            font-size: 13px
         }
 
         .stat-item {
-            padding: 8px 16px;
+            padding: 6px 14px;
             border-radius: 20px;
-            font-weight: 600;
+            font-weight: 600
         }
 
         .stat-complete {
             background: #e8f5e9;
-            color: #2e7d32;
+            color: #2e7d32
         }
 
         .stat-incomplete {
             background: #ffebee;
-            color: #c62828;
+            color: #c62828
+        }
+
+        .btn-excel {
+            padding: 8px 16px;
+            background: linear-gradient(135deg, #217346 0%, #185c37 100%);
+            color: white;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 13px;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 6px
+        }
+
+        .btn-excel:hover {
+            transform: scale(1.02)
+        }
+
+        .filter-bar {
+            display: flex;
+            gap: 8px;
+            margin-bottom: 16px;
+            flex-wrap: wrap
+        }
+
+        .filter-btn {
+            padding: 6px 14px;
+            background: #f5f5f5;
+            border: 1px solid #ddd;
+            border-radius: 20px;
+            cursor: pointer;
+            font-size: 12px;
+            transition: 0.2s
+        }
+
+        .filter-btn.active {
+            background: #1a73e8;
+            color: white;
+            border-color: #1a73e8
         }
 
         .checklist-table {
             width: 100%;
             border-collapse: collapse;
-            font-size: 14px;
+            font-size: 13px
         }
 
         .checklist-table th {
             background: linear-gradient(135deg, #1a73e8 0%, #0d47a1 100%);
             color: white;
-            padding: 14px 12px;
+            padding: 12px 10px;
             text-align: left;
             font-weight: 600;
             position: sticky;
-            top: 0;
+            top: 0
         }
 
         .checklist-table th:first-child {
-            width: 60px;
-            text-align: center;
+            width: 50px;
+            text-align: center
         }
 
         .checklist-table th:nth-child(2) {
-            width: 140px;
+            width: 100px
         }
 
         .checklist-table td {
-            padding: 14px 12px;
+            padding: 12px 10px;
             border-bottom: 1px solid #e0e0e0;
-            vertical-align: top;
+            vertical-align: top
         }
 
         .checklist-table tr:hover {
-            background: #f5f5f5;
+            background: #f5f5f5
         }
 
         .checklist-table tr.checked {
-            background: #e8f5e9;
+            background: #e8f5e9
         }
 
         .checklist-table tr.checked td {
-            color: #2e7d32;
+            color: #2e7d32
         }
 
         .category-badge {
             display: inline-block;
             padding: 4px 10px;
             border-radius: 12px;
-            font-size: 12px;
-            font-weight: 600;
-            white-space: nowrap;
+            font-size: 11px;
+            font-weight: 600
         }
 
         .category-badge.규격 {
             background: #e3f2fd;
-            color: #1565c0;
+            color: #1565c0
         }
 
         .category-badge.보안 {
             background: #fce4ec;
-            color: #c2185b;
+            color: #c2185b
         }
 
         .category-badge.관리 {
             background: #e8f5e9;
-            color: #2e7d32;
+            color: #2e7d32
         }
 
         .category-badge.통신 {
             background: #fff3e0;
-            color: #ef6c00;
+            color: #ef6c00
         }
 
-        .toggle-switch {
-            position: relative;
-            width: 50px;
-            height: 26px;
-            cursor: pointer;
-        }
-
-        .toggle-switch input {
-            opacity: 0;
-            width: 0;
-            height: 0;
-        }
-
-        .toggle-slider {
-            position: absolute;
-            cursor: pointer;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            background-color: #ccc;
-            transition: .3s;
-            border-radius: 26px;
-        }
-
-        .toggle-slider:before {
-            position: absolute;
-            content: "";
-            height: 20px;
+        .custom-checkbox {
             width: 20px;
-            left: 3px;
-            bottom: 3px;
-            background-color: white;
-            transition: .3s;
-            border-radius: 50%;
+            height: 20px;
+            cursor: pointer;
+            accent-color: #4caf50
         }
 
-        .toggle-switch input:checked+.toggle-slider {
-            background-color: #4caf50;
+        .law-container {
+            background: #fff;
+            border-radius: 12px;
+            padding: 24px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1)
         }
 
-        .toggle-switch input:checked+.toggle-slider:before {
-            transform: translateX(24px);
-        }
-
-        .empty-state {
+        .law-header {
             text-align: center;
-            padding: 60px 20px;
-            color: #999;
+            margin-bottom: 30px;
+            padding-bottom: 20px;
+            border-bottom: 2px solid #e0e0e0
         }
 
-        @media (max-width: 767px) {
+        .law-header h2 {
+            font-size: 28px;
+            color: #1a73e8;
+            margin-bottom: 10px
+        }
+
+        .law-header p {
+            color: #666;
+            font-size: 14px
+        }
+
+        .law-section {
+            margin-bottom: 30px
+        }
+
+        .law-section h3 {
+            font-size: 18px;
+            color: #333;
+            margin-bottom: 16px;
+            padding: 12px;
+            background: linear-gradient(135deg, #e8f0fe 0%, #f5f5f5 100%);
+            border-radius: 8px;
+            border-left: 4px solid #1a73e8
+        }
+
+        .law-card {
+            background: #fafafa;
+            border-radius: 8px;
+            padding: 16px;
+            margin-bottom: 12px;
+            border-left: 3px solid #4caf50
+        }
+
+        .law-card h4 {
+            font-size: 15px;
+            color: #1a73e8;
+            margin-bottom: 8px
+        }
+
+        .law-card p {
+            font-size: 13px;
+            line-height: 1.7;
+            color: #555
+        }
+
+        .law-link {
+            display: inline-block;
+            margin-top: 8px;
+            color: #1a73e8;
+            font-size: 12px;
+            text-decoration: none
+        }
+
+        .law-link:hover {
+            text-decoration: underline
+        }
+
+        .timeline {
+            position: relative;
+            padding-left: 30px
+        }
+
+        .timeline::before {
+            content: '';
+            position: absolute;
+            left: 10px;
+            top: 0;
+            bottom: 0;
+            width: 2px;
+            background: #1a73e8
+        }
+
+        .timeline-item {
+            position: relative;
+            margin-bottom: 16px;
+            padding: 12px;
+            background: #fff;
+            border-radius: 8px;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08)
+        }
+
+        .timeline-item::before {
+            content: '';
+            position: absolute;
+            left: -24px;
+            top: 16px;
+            width: 10px;
+            height: 10px;
+            background: #1a73e8;
+            border-radius: 50%
+        }
+
+        .timeline-item .date {
+            font-size: 12px;
+            color: #1a73e8;
+            font-weight: 600
+        }
+
+        .timeline-item .content {
+            font-size: 13px;
+            color: #555;
+            margin-top: 4px
+        }
+
+        @media(max-width:767px) {
             .main-content {
                 margin-left: 0;
-                padding: 12px;
+                padding: 12px
             }
 
             .hamburger {
-                display: flex;
+                display: flex
             }
 
             .items-container {
-                grid-template-columns: 1fr;
+                grid-template-columns: 1fr
             }
 
             .header-tabs {
-                display: none;
-            }
-
-            .checklist-table {
-                font-size: 12px;
-            }
-
-            .checklist-table th,
-            .checklist-table td {
-                padding: 10px 8px;
+                display: none
             }
         }
     </style>
@@ -617,31 +705,24 @@
         </div>
         <div class="header-tabs">
             <a href="https://notebooklm.google.com/notebook/cd97f2be-d103-4841-bd1e-9363325f4065" target="_blank"
-                class="tab-button faq-chatbot">
-                🤖 FAQ 챗봇
-            </a>
+                class="tab-button faq-chatbot">🤖 FAQ 챗봇</a>
             <button class="tab-button active" id="glossaryTab">용어집 <span class="tab-count"
                     id="glossaryCount">(0)</span></button>
             <button class="tab-button" id="codeTab">코드집 <span class="tab-count" id="codeCount">(0)</span></button>
-            <button class="tab-button" id="flowchartTab">프로세스 도해 <span class="tab-count"
+            <button class="tab-button" id="flowchartTab">도해 <span class="tab-count"
                     id="flowchartCount">(0)</span></button>
-            <button class="tab-button" id="checklistTab">CA 평가체크리스트 <span class="tab-count"
-                    id="checklistCount">(31)</span></button>
+            <button class="tab-button" id="checklistTab">CA 체크리스트 <span class="tab-count">(31)</span></button>
+            <button class="tab-button law-btn" id="lawTab">📜 관계법령</button>
         </div>
     </div>
-
     <div class="overlay" id="overlay"></div>
-
     <aside class="sidebar" id="sidebar">
         <div class="filter-section">
-            <div class="search-box">
-                <input type="text" class="search-input" id="searchInput" placeholder="검색...">
-            </div>
+            <div class="search-box"><input type="text" class="search-input" id="searchInput" placeholder="검색..."></div>
             <div class="filter-chips" id="categoryFilters"></div>
         </div>
         <ul class="term-list" id="itemList"></ul>
     </aside>
-
     <main class="main-content">
         <div class="view-section active" id="glossaryView">
             <div class="items-container" id="glossaryContent"></div>
@@ -656,10 +737,20 @@
             <div class="checklist-container">
                 <div class="checklist-header">
                     <div class="checklist-title">📋 CA 평가 체크리스트</div>
-                    <div class="checklist-stats">
-                        <div class="stat-item stat-complete">✓ 완료: <span id="completeCount">0</span></div>
-                        <div class="stat-item stat-incomplete">○ 미완료: <span id="incompleteCount">31</span></div>
+                    <div class="checklist-actions">
+                        <div class="checklist-stats">
+                            <div class="stat-item stat-complete">✓ 완료: <span id="completeCount">0</span></div>
+                            <div class="stat-item stat-incomplete">○ 미완료: <span id="incompleteCount">31</span></div>
+                        </div>
+                        <button class="btn-excel" onclick="exportToExcel()">📥 엑셀 다운로드</button>
                     </div>
+                </div>
+                <div class="filter-bar" id="checklistFilters">
+                    <button class="filter-btn active" data-cat="전체">전체</button>
+                    <button class="filter-btn" data-cat="규격">규격</button>
+                    <button class="filter-btn" data-cat="보안">보안</button>
+                    <button class="filter-btn" data-cat="관리">관리</button>
+                    <button class="filter-btn" data-cat="통신">통신</button>
                 </div>
                 <table class="checklist-table">
                     <thead>
@@ -674,362 +765,157 @@
                 </table>
             </div>
         </div>
-    </main>
-
-    <script>
-        mermaid.initialize({ startOnLoad: false, theme: 'default', securityLevel: 'loose' });
-
-        let glossaryData = [], codeData = [], flowchartData = [];
-        let currentView = 'glossary';
-        let currentData = [];
-        let searchQuery = '';
-        let categoryFilter = '';
-
-        // 쉬운 해설 데이터
-        const easyExplanations = {
-            // 용어 - 쉬운 해설
-            "모바일신분증신원관리 플랫폼": "휴대폰으로 신분증을 발급받고 사용할 수 있게 해주는 전체 시스템이에요. 마치 놀이공원의 입장권 시스템처럼, 신분증을 만들고 보여줄 수 있게 해주는 모든 것을 말해요! 🎢",
-            "모바일신분증서버": "정부에서 운영하는 큰 컴퓨터예요. 여러분의 모바일 신분증을 만들어주고 관리해주는 역할을 해요. 선생님처럼 학생증을 발급해주는 역할이죠! 👨‍🏫",
-            "클레임 (Claim)": "신분증에 적혀 있는 정보 하나하나를 말해요. 예를 들어 '이름: 홍길동', '나이: 15세' 같은 것들이에요. 퍼즐 조각 하나하나라고 생각하면 돼요! 🧩",
-            "크리덴셜 (Credential)": "여러 개의 클레임(정보 조각)을 모아놓은 것이에요. 신분증 전체라고 생각하면 돼요. 퍼즐 조각들을 다 모으면 완성된 그림이 되는 것처럼요! 🖼️",
-            "프레젠테이션 (Presentation)": "내 신분증에서 필요한 정보만 골라서 보여주는 거예요. 편의점에서 음료수 살 때 '성인입니다'만 보여주면 되는 것처럼, 필요한 정보만 선택해서 제출해요! 🎁",
-            "VC (Verified Credential)": "진짜인지 확인된 디지털 신분증이에요. 선생님이 '이 학생증은 진짜야!'라고 도장을 찍어준 것과 같아요! ✅",
-            "VP (Verified Presentation)": "확인된 신분증에서 필요한 정보만 보여주는 거예요. 시험지에서 선생님이 '이 부분만 보여줘도 돼'라고 하신 것처럼요! 📝",
-            "사용자(Holder)": "신분증을 가지고 있는 사람, 바로 여러분이에요! 지갑에 학생증을 넣고 다니는 것처럼요! 👤",
-            "발급자 (Issuer)": "신분증을 만들어주는 곳이에요. 학교에서 학생증을 만들어주는 것처럼, 경찰청이나 행정안전부에서 신분증을 만들어줘요! 🏛️",
-            "분산ID (DID)": "인터넷에서 쓰는 특별한 이름표예요. 한 곳에서만 관리하는 게 아니라 여러 곳에서 함께 관리해서 더 안전해요. 반 전체가 함께 출석부를 관리하는 것과 비슷해요! 🌐",
-            "이용기관, SP (Service Provider)": "여러분의 신분증을 확인하고 서비스를 제공하는 곳이에요. 편의점, 은행 같은 곳들이죠! 🏪",
-            "월렛(Wallet)": "디지털 신분증을 안전하게 보관하는 전자 지갑이에요. 진짜 지갑에 카드를 넣듯이, 휴대폰 안에 신분증을 안전하게 보관해요! 👛",
-            "CA (Certified App)": "모바일 신분증을 보여주고 사용할 수 있는 앱이에요. 삼성 페이나 카카오페이 같은 앱처럼, 신분증을 꺼내서 보여줄 수 있어요! 📱",
-            "TEE (신뢰실행환경)": "휴대폰 안에 있는 아주 안전한 금고 같은 곳이에요. 중요한 정보를 여기에 보관하면 해커도 훔쳐갈 수 없어요! 🔐",
-            "QR-CPM": "내가 QR코드를 보여주면 상대방이 스캔하는 방식이에요. 카페에서 내 멤버십 QR을 보여주는 것처럼요! 📲",
-            "QR-MPM": "상대방이 보여주는 QR코드를 내가 스캔하는 방식이에요. 음식점에서 메뉴판 QR을 스캔하는 것처럼요! 📷",
-            "App2App": "앱끼리 직접 대화하는 방식이에요. 게임 앱에서 카카오톡으로 친구 초대할 때처럼, 앱끼리 정보를 주고받아요! 🔄",
-            "NFC": "휴대폰을 가까이 대면 정보가 전달되는 기술이에요. 교통카드 찍듯이 휴대폰을 대면 신분증 정보가 전달돼요! 💳",
-            "ZKP": "비밀을 지키면서 증명하는 마법 같은 기술이에요. '나는 성인이야'라고 증명하면서 실제 나이는 안 알려주는 거예요! 🎩✨",
-            "mDL": "모바일 운전면허증이에요. 종이 면허증 대신 휴대폰으로 보여주는 디지털 면허증이에요! 🚗",
-            "HSM": "아주 특별하고 안전한 금고 컴퓨터예요. 중요한 암호 열쇠를 보관하는 최고급 금고라고 생각하면 돼요! 🔒",
-
-            // 오류코드 - 쉬운 해설
-            "10001": "보내온 메시지 형식이 잘못됐어요. 마치 한글로 보내야 하는데 이상한 기호로 보낸 것 같아요! 📝",
-            "10002": "필요한 정보가 빠졌어요. 시험지에 이름을 안 쓴 것처럼요! ✏️",
-            "10003": "암호를 풀 수 없어요. 비밀 편지를 읽으려는데 해독 방법이 틀린 거예요! 🔍",
-            "10100": "잘못된 정보가 들어왔어요. 수학 문제에 글자를 쓴 것처럼 맞지 않는 정보예요! ❌",
-            "10201": "순서가 틀렸어요. 밥 먹기 전에 양치질하려는 것처럼 순서가 바뀌었어요! 🔢",
-            "10202": "시간이 너무 오래 걸렸어요. 시험 시간이 끝난 것처럼요! ⏰",
-            "99999": "뭔가 잘못됐는데 정확히 뭔지 모르겠어요. 선생님께 물어보세요! ❓",
-            "PIN": "비밀번호로 확인하는 거예요. ATM에서 비밀번호 누르는 것처럼요! 🔢",
-            "BIO": "지문으로 확인하는 거예요. 스마트폰 잠금 풀 때 손가락 대는 것처럼요! 👆",
-            "FACE": "얼굴로 확인하는 거예요. 아이폰 페이스ID처럼 얼굴을 보여주면 돼요! 😊"
-        };
-
-        // CA 평가 체크리스트 데이터
-        const checklistData = [
-            { category: "규격", item: "CAS 서버, SP 서버, Proxy 서버 연계 구축", detail: "기존 시스템과 독립적인 구성 및 행정안전부 서버와의 통신 인터페이스 구현." },
-            { category: "규격", item: "모바일 신분증 서버 기능 구현", detail: "인가 토큰/월렛 토큰 생성, 발급 요청, 본인확인 및 실명확인 처리 등의 핵심 기능 구현." },
-            { category: "규격", item: "모바일 신분증 앱 구현", detail: "VC(Verifiable Credential) 발급, 삭제, 상태 조회, 목록 조회 기능." },
-            { category: "규격", item: "2nd CA 등록 및 2nd VC 발급 기능 구현", detail: "월렛에 추가 모바일 신분증을 발급하기 위한 절차 및 기존 모바일 신분증 제출을 통한 신규 신분증 발급 구현." },
-            { category: "규격", item: "월렛 연결, 해제, 삭제 기능 구현", detail: "CA 앱 로그인 시 월렛 연결 필요, CA 앱 로그인 사용자 변경 시 월렛 연결 해제, 월렛 삭제 시 연결 카운트 확인 등의 로직 포함." },
-            { category: "규격", item: "VP 제출 기능 구현", detail: "QR-CPM, QR-MPM, App2App, Push 등 다양한 제출 방식 지원." },
-            { category: "규격", item: "삼성전자 월렛 연결·이용 기능 구현", detail: "로컬 기반 정부 안면인증, DID 발급, IC카드 인증 기능 프로세스 구현." },
-            { category: "규격", item: "신분증 선택 및 발급기관 약관 동의 구현", detail: "발급 가능한 신분증 목록을 사용자에게 제공하고, 각 발급기관의 이용약관 동의 절차 구현." },
-            { category: "규격", item: "IC카드 PIN 입력 및 인증", detail: "IC카드 신분증을 휴대폰에 태깅하고 PIN을 입력하여 인증하는 기능 구현." },
-            { category: "규격", item: "신분증 발급 및 발급 완료 프로세스 구현", detail: "안면인증 성공 후 모바일 신분증(VC) 발급 및 월렛 접근을 위한 사용자 비밀번호 입력 구현." },
-            { category: "규격", item: "OS 지문 정보 변경 대응", detail: "사용자 단말의 OS 지문 등록 정보 변경 시 지문 인증 상태 변경 및 PIN/BIO 인증 구현." },
-            { category: "규격", item: "CA-신분증 조회 및 갱신 기능", detail: "VC 상태 확인(정상, 중지, 폐기, 갱신), 주소 갱신, 개인키 만료 알림 및 갱신, VC 삭제 기능 구현." },
-            { category: "규격", item: "CA 처리 모니터링 인터페이스 설계", detail: "CA 처리 내역을 수집하고 모니터링하기 위한 시스템 구현." },
-            { category: "보안", item: "독립적인 시스템 구축", detail: "모바일 신분증 CA 사업자 평가기준을 충족하기 위한 독립적인 시스템 구축." },
-            { category: "보안", item: "암호화 알고리즘 및 행정안전부 규격 준수", detail: "안전한 암호화 알고리즘 사용 및 행정안전부의 기술 규격 준수." },
-            { category: "보안", item: "통신 구간 보호", detail: "모든 클라이언트-서버, 서버-행안부 API 구간 통신에 TLS 1.2 이상 암호화 적용." },
-            { category: "보안", item: "클라이언트(앱) 보안", detail: "루팅/탈옥 기기 탐지 및 차단, 앱 코드 난독화, 인증 정보 입력/표시 화면의 스크린샷 방지 기능 적용." },
-            { category: "보안", item: "서버 보안", detail: "CSRF 공격 방지, SQL Injection 등 웹 취약점 방어 조치, 행안부 API 호출 서버의 접근 제어 적용." },
-            { category: "보안", item: "데이터 관리", detail: "인증 과정에서 획득한 고객 신원 정보를 서버에 저장 시 개인정보보호법에 따른 암호화 및 파기 정책 준수." },
-            { category: "보안", item: "이상거래탐지시스템(FDS) 연동", detail: "모바일 신분증 인증 관련 이상 행위를 탐지하는 FDS 룰 추가." },
-            { category: "보안", item: "데이터 최소화 원칙", detail: "거래 목적에 필요한 최소한의 정보만 요구하고 처리." },
-            { category: "관리", item: "안정적인 서비스 운영 시스템 구축", detail: "24/365 서비스 제공 및 장애 상황 대비를 위한 재해복구시스템(DR) 구축." },
-            { category: "관리", item: "은행 표준 개발방법론 및 프로세스 적용", detail: "IT 표준절차, 표준 개발방법론 및 프로젝트 관리 도구 적용." },
-            { category: "관리", item: "품질 관리 활동 수행", detail: "프로젝트 품질 관리 조직 구성, 품질 보증 계획 수립, 소스코드 인스펙션 도구 적용." },
-            { category: "관리", item: "모니터링 및 로깅", detail: "모바일 신분증 인증 성공률, 실패 건수, 오류 코드별 현황을 실시간으로 모니터링할 수 있는 대시보드 구축." },
-            { category: "관리", item: "장애 대응 계획", detail: "행안부 API 서버 장애, 네트워크 장애 등 외부 요인 및 은행 내부 시스템 장애 시의 대응 시나리오 수립." },
-            { category: "관리", item: "고객 지원 체계", detail: "콜센터 상담원 및 영업점 직원을 대상으로 모바일 신분증 관련 응대 교육 및 매뉴얼 배포." },
-            { category: "관리", item: "CMS(콘텐츠 관리 시스템) 활용", detail: "고객 안내 페이지, UI 텍스트, 이용약관, 내부 직원용 매뉴얼 등의 신규 등록 및 관리." },
-            { category: "관리", item: "그룹웨어/지식관리시스템(KMS) 연계", detail: "변경된 업무 절차와 매뉴얼을 전 직원이 숙지할 수 있도록 게시 및 공지." },
-            { category: "통신", item: "모든 통신 구간의 암호화", detail: "클라이언트(앱)와 서버, 은행 서버와 행정안전부 API 서버 간의 모든 통신은 TLS 1.2 이상으로 암호화." },
-            { category: "통신", item: "보안 채널 구축", detail: "행정안전부 또는 금융결제원 등 중계기관의 신분증 진위확인 API 서버와 통신하는 연동 전문 개발 및 방화벽 정책 설정." }
-        ];
-
-        async function loadData() {
-            try {
-                const [glossaryRes, codeRes, flowchartRes] = await Promise.all([
-                    fetch('glossary.json'), fetch('code.json'), fetch('flowchart.json')
-                ]);
-                glossaryData = await glossaryRes.json();
-                codeData = await codeRes.json();
-                flowchartData = await flowchartRes.json();
-
-                document.getElementById('glossaryCount').textContent = `(${glossaryData.length})`;
-                document.getElementById('codeCount').textContent = `(${codeData.length})`;
-                document.getElementById('flowchartCount').textContent = `(${flowchartData.length})`;
-
-                currentData = glossaryData;
-                init();
-                initChecklist();
-            } catch (error) {
-                console.error('데이터 로드 실패:', error);
-            }
-        }
-
-        document.getElementById('glossaryTab').addEventListener('click', () => switchView('glossary'));
-        document.getElementById('codeTab').addEventListener('click', () => switchView('code'));
-        document.getElementById('flowchartTab').addEventListener('click', () => switchView('flowchart'));
-        document.getElementById('checklistTab').addEventListener('click', () => switchView('checklist'));
-
-        function switchView(view) {
-            currentView = view;
-            if (view === 'glossary') currentData = glossaryData;
-            else if (view === 'code') currentData = codeData;
-            else if (view === 'flowchart') currentData = flowchartData;
-            else currentData = [];
-
-            document.querySelectorAll('.tab-button:not(.faq-chatbot)').forEach(btn => btn.classList.remove('active'));
-            document.querySelectorAll('.view-section').forEach(sec => sec.classList.remove('active'));
-
-            document.getElementById(view + 'Tab').classList.add('active');
-            document.getElementById(view + 'View').classList.add('active');
-
-            if (view === 'checklist') {
-                document.getElementById('sidebar').style.display = 'none';
-            } else {
-                document.getElementById('sidebar').style.display = '';
-                searchQuery = '';
-                categoryFilter = '';
-                document.getElementById('searchInput').value = '';
-                renderCategoryFilters();
-                applyFilters();
-            }
-        }
-
-        function renderCategoryFilters() {
-            const container = document.getElementById('categoryFilters');
-            let categories = [];
-
-            if (currentView === 'flowchart') {
-                categories = ['전체', ...new Set(flowchartData.map(d => d.category))];
-            } else if (currentView === 'glossary') {
-                categories = ['전체', ...new Set(glossaryData.map(d => d.구분))];
-            } else {
-                categories = ['전체', ...new Set(codeData.map(d => d.구분))];
-            }
-
-            container.innerHTML = categories.map(cat =>
-                `<div class="filter-chip ${categoryFilter === cat || (categoryFilter === '' && cat === '전체') ? 'active' : ''}" data-cat="${cat}">${cat}</div>`
-            ).join('');
-
-            container.querySelectorAll('.filter-chip').forEach(chip => {
-                chip.addEventListener('click', () => {
-                    categoryFilter = chip.dataset.cat === '전체' ? '' : chip.dataset.cat;
-                    container.querySelectorAll('.filter-chip').forEach(c => c.classList.remove('active'));
-                    chip.classList.add('active');
-                    applyFilters();
-                });
-            });
-        }
-
-        function applyFilters() {
-            let filtered = currentData.filter(item => {
-                if (currentView === 'flowchart') {
-                    if (categoryFilter && item.category !== categoryFilter) return false;
-                    if (searchQuery && !item.title.toLowerCase().includes(searchQuery.toLowerCase()) &&
-                        !item.code.toLowerCase().includes(searchQuery.toLowerCase())) return false;
-                } else {
-                    const catKey = currentView === 'glossary' ? '구분' : '구분';
-                    if (categoryFilter && item[catKey] !== categoryFilter) return false;
-                    if (searchQuery) {
-                        const searchField = currentView === 'glossary' ? '용어' : '코드이명';
-                        if (!item[searchField]?.toLowerCase().includes(searchQuery.toLowerCase())) return false;
-                    }
-                }
-                return true;
-            });
-
-            renderItemList(filtered);
-            if (filtered.length > 0) selectItem(0, filtered);
-        }
-
-        function renderItemList(items) {
-            const list = document.getElementById('itemList');
-            list.innerHTML = items.map((item, idx) => {
-                if (currentView === 'flowchart') {
-                    return `<li class="term-item" onclick="selectItem(${idx})" title="${item.title}">
-                        <span class="term-code">${item.code}</span>${item.title}
-                    </li>`;
-                } else {
-                    const title = currentView === 'glossary' ? item.용어 : (item.코드이명 || item.코드);
-                    return `<li class="term-item" onclick="selectItem(${idx})" title="${title}">${title}</li>`;
-                }
-            }).join('');
-        }
-
-        function selectItem(idx, items = null) {
-            if (!items) {
-                items = currentData.filter(item => {
-                    if (currentView === 'flowchart') {
-                        if (categoryFilter && item.category !== categoryFilter) return false;
-                        if (searchQuery && !item.title.toLowerCase().includes(searchQuery.toLowerCase())) return false;
-                    }
-                    return true;
-                });
-            }
-
-            if (idx >= items.length) return;
-            const item = items[idx];
-
-            document.querySelectorAll('.term-item').forEach((el, i) => el.classList.toggle('active', i === idx));
-
-            if (currentView === 'flowchart') {
-                renderFlowchart(item);
-            } else {
-                renderCard(item);
-            }
-
-            document.getElementById('hamburger').classList.remove('active');
-            document.getElementById('sidebar').classList.remove('active');
-            document.getElementById('overlay').classList.remove('active');
-        }
-
-        function getEasyExplanation(term, code = null) {
-            if (easyExplanations[term]) return easyExplanations[term];
-            if (code && easyExplanations[code]) return easyExplanations[code];
-            return null;
-        }
-
-        function renderFlowchart(item) {
-            const container = document.getElementById('flowchartContent');
-            container.innerHTML = `
-                <div class="flowchart-card">
-                    <div class="flowchart-title">
-                        <span class="flowchart-code">${item.code}</span>
-                        ${item.title}
+        <div class="view-section" id="lawView">
+            <div class="law-container">
+                <div class="law-header">
+                    <h2>📜 모바일 신분증 관계법령</h2>
+                    <p>모바일 신분증의 법적 근거 및 관련 법령을 안내합니다</p>
+                </div>
+                <div class="law-section">
+                    <h3>🔹 주요 관계법령</h3>
+                    <div class="law-card">
+                        <h4>전자정부법 제10조 (민원인 등의 본인 확인)</h4>
+                        <p>행정기관등의 장은 민원인 등이 민원을 신청하거나 행정정보를 열람ㆍ발급받을 때 본인 확인이 필요한 경우 전자적 방법으로 본인 확인을 할 수 있습니다.</p>
+                        <a class="law-link" href="https://www.law.go.kr/법령/전자정부법/제10조" target="_blank">🔗 법령 원문 보기</a>
                     </div>
-                    <div class="flowchart-category">${item.category}</div>
-                    <div class="flowchart-summary">📌 ${item.summary}</div>
-                    <div class="flowchart-diagram">
-                        <div class="mermaid">${item.mermaid}</div>
+                    <div class="law-card">
+                        <h4>전자정부법 제34조 (업무담당자의 신원 확인 등)</h4>
+                        <p>행정전자서명의 관리와 관련된 내용을 담고 있으며, 인증기관이 행정전자서명생성키를 안전하게 보관하고 관리해야 함을 규정합니다.</p>
+                        <a class="law-link" href="https://www.law.go.kr/법령/전자정부법/제34조" target="_blank">🔗 법령 원문 보기</a>
+                    </div>
+                    <div class="law-card">
+                        <h4>전자정부법 제36조 (행정정보의 효율적 관리 및 이용)</h4>
+                        <p>행정기관등의 장이 수집ㆍ보유하고 있는 행정정보를 다른 행정기관등과 공동으로 이용하여야 하며, 같은 내용의 정보를 따로 수집해서는 안 됩니다.</p>
+                        <a class="law-link" href="https://www.law.go.kr/법령/전자정부법/제36조" target="_blank">🔗 법령 원문 보기</a>
+                    </div>
+                    <div class="law-card">
+                        <h4>주민등록법 제24조의2 (모바일 주민등록증)</h4>
+                        <p>모바일 주민등록증의 발급, 효력, 사용에 관한 사항을 규정합니다. 모바일 주민등록증은 실물 주민등록증과 동일한 법적 효력을 가집니다.</p>
+                        <a class="law-link" href="https://www.law.go.kr/법령/주민등록법/제24조의2" target="_blank">🔗 법령 원문 보기</a>
+                    </div>
+                    <div class="law-card">
+                        <h4>도로교통법 시행규칙 제78조의2 (모바일운전면허증의 신청 등)</h4>
+                        <p>모바일 운전면허증의 발급 신청, 관리, 효력에 관한 세부 사항을 규정합니다.</p>
+                        <a class="law-link" href="https://www.law.go.kr/법령/도로교통법시행규칙/제78조의2" target="_blank">🔗 법령 원문
+                            보기</a>
+                    </div>
+                    <div class="law-card">
+                        <h4>국가유공자법 시행령 제101조 (국가보훈등록증의 발급 등)</h4>
+                        <p>모바일 국가보훈등록증의 발급 및 사용에 관한 사항을 규정합니다.</p>
+                        <a class="law-link" href="https://www.law.go.kr/법령/국가유공자등예우및지원에관한법률시행령/제101조" target="_blank">🔗
+                            법령 원문 보기</a>
                     </div>
                 </div>
-            `;
-            mermaid.run({ nodes: container.querySelectorAll('.mermaid') });
-        }
-
-        function renderCard(item) {
-            const area = currentView === 'glossary' ? document.getElementById('glossaryContent') : document.getElementById('codeContent');
-
-            if (currentView === 'glossary') {
-                const easyExp = getEasyExplanation(item.용어);
-                const easySection = easyExp ? `
-                    <div class="easy-explanation">
-                        <div class="easy-explanation-title">🎈 쉬운 해설 (초등학생도 알 수 있어요!)</div>
-                        <div class="easy-explanation-content">${easyExp}</div>
+                <div class="law-section">
+                    <h3>🔹 추진 경과</h3>
+                    <div class="timeline">
+                        <div class="timeline-item">
+                            <div class="date">2019.10</div>
+                            <div class="content">'디지털 정부혁신 추진계획' 수립 - 스마트폰 기반 모바일 신분증 단계적 도입 추진</div>
+                        </div>
+                        <div class="timeline-item">
+                            <div class="date">2020.06</div>
+                            <div class="content">'디지털 정부혁신 발전계획' 수립 - 모바일 공무원증 우선 도입 결정</div>
+                        </div>
+                        <div class="timeline-item">
+                            <div class="date">2021.01</div>
+                            <div class="content">중앙부처 공무원 대상 '모바일 공무원증' 발급 개시</div>
+                        </div>
+                        <div class="timeline-item">
+                            <div class="date">2022.01</div>
+                            <div class="content">'모바일 운전면허증' 시범발급 (서울서부, 대전 운전면허시험장)</div>
+                        </div>
+                        <div class="timeline-item">
+                            <div class="date">2022.07</div>
+                            <div class="content">'모바일 운전면허증' 전국 확대 발급</div>
+                        </div>
+                        <div class="timeline-item">
+                            <div class="date">2023.08</div>
+                            <div class="content">'모바일 국가보훈등록증' 발급 개시</div>
+                        </div>
+                        <div class="timeline-item">
+                            <div class="date">2024.07</div>
+                            <div class="content">'모바일 재외국민 신원확인증' 1차 개시</div>
+                        </div>
+                        <div class="timeline-item">
+                            <div class="date">2024.12</div>
+                            <div class="content">'모바일 주민등록증' 시범발급</div>
+                        </div>
+                        <div class="timeline-item">
+                            <div class="date">2025.01</div>
+                            <div class="content">'모바일 외국인등록증' 발급</div>
+                        </div>
+                        <div class="timeline-item">
+                            <div class="date">2025.03</div>
+                            <div class="content">'모바일 주민등록증' 정식발급 예정</div>
+                        </div>
                     </div>
-                ` : '';
-
-                area.innerHTML = `<div class="item-card">
-                    <div class="item-title">${item.용어}</div>
-                    <div class="item-meta">
-                        <div class="meta-badge"><strong>수정일:</strong> ${item.수정일}</div>
-                        <div class="meta-badge"><strong>구분:</strong> ${item.구분}</div>
+                </div>
+                <div class="law-section">
+                    <h3>🔹 기대효과</h3>
+                    <div class="law-card">
+                        <h4>생활불편 해소</h4>
+                        <p>현행 플라스틱 신분증과 동일한 법적 효력을 가져 공공·금융기관 등 모든 곳에서 사용 가능</p>
                     </div>
-                    <div class="item-description">${item.설명}</div>
-                    ${easySection}
-                </div>`;
-            } else {
-                const easyExp = getEasyExplanation(item.코드이명, item.코드);
-                const easySection = easyExp ? `
-                    <div class="easy-explanation">
-                        <div class="easy-explanation-title">🎈 쉬운 해설 (초등학생도 알 수 있어요!)</div>
-                        <div class="easy-explanation-content">${easyExp}</div>
+                    <div class="law-card">
+                        <h4>온·오프라인 통합</h4>
+                        <p>오프라인은 물론, 온라인·비대면 환경에서도 사용 가능한 혁신적 신원확인 방식</p>
                     </div>
-                ` : '';
-
-                area.innerHTML = `<div class="item-card">
-                    <div class="item-title">${item.코드이명 || item.코드}(${item.코드})</div>
-                    <div class="item-meta">
-                        <div class="meta-badge"><strong>수정일:</strong> ${item.수정일}</div>
-                        <div class="meta-badge"><strong>구분:</strong> ${item.구분}</div>
-                        <div class="meta-badge"><strong>그룹명:</strong> ${item.그룹명}</div>
+                    <div class="law-card">
+                        <h4>개인정보보호 강화</h4>
+                        <p>상대방이 필요로 하는 정보만을 제공할 수 있어 과도한 개인정보 노출 방지</p>
                     </div>
-                    <div class="item-description">${item.설명}</div>
-                    ${easySection}
-                </div>`;
-            }
-        }
+                    <div class="law-card">
+                        <h4>안전성 확보</h4>
+                        <p>블록체인, 암호화 등 다양한 보안기술 적용으로 최고 수준의 보안성 확보</p>
+                    </div>
+                </div>
+                <div style="text-align:center;margin-top:30px;padding-top:20px;border-top:1px solid #e0e0e0">
+                    <a href="https://www.mois.go.kr/frt/sub/a06/b04/mobileId/screen.do" target="_blank" class="law-link"
+                        style="font-size:14px">🔗 행정안전부 모바일 신분증 페이지 바로가기</a>
+                </div>
+            </div>
+        </div>
+    </main>
+    <script>
+        mermaid.initialize({ startOnLoad: false, theme: 'default', securityLevel: 'loose' });
+        let glossaryData = [], codeData = [], flowchartData = [];
+        let currentView = 'glossary', currentData = [], searchQuery = '', categoryFilter = '', checklistCatFilter = '전체';
+        const easyExplanations = { "모바일신분증신원관리 플랫폼": "휴대폰으로 신분증을 발급받고 사용할 수 있게 해주는 전체 시스템이에요. 🎢", "모바일신분증서버": "정부에서 운영하는 큰 컴퓨터예요. 여러분의 모바일 신분증을 만들어주고 관리해줘요. 👨‍🏫", "클레임 (Claim)": "신분증에 적혀있는 정보 하나하나예요. '이름: 홍길동' 같은 것들이죠! 🧩", "크리덴셜 (Credential)": "여러 개의 정보를 모아놓은 것이에요. 신분증 전체라고 생각하면 돼요! 🖼️", "VC (Verified Credential)": "진짜인지 확인된 디지털 신분증이에요. 선생님이 도장 찍어준 학생증 같아요! ✅", "VP (Verified Presentation)": "확인된 신분증에서 필요한 정보만 보여주는 거예요. 📝", "분산ID (DID)": "인터넷에서 쓰는 특별한 이름표예요. 여러곳에서 함께 관리해서 더 안전해요! 🌐", "월렛(Wallet)": "디지털 신분증을 안전하게 보관하는 전자 지갑이에요! 👛", "CA (Certified App)": "모바일 신분증을 보여주고 사용할 수 있는 앱이에요! 📱", "TEE (신뢰실행환경)": "휴대폰 안에 있는 아주 안전한 금고 같은 곳이에요! 🔐", "QR-CPM": "내가 QR코드를 보여주면 상대방이 스캔하는 방식이에요! 📲", "QR-MPM": "상대방 QR코드를 내가 스캔하는 방식이에요! 📷", "NFC": "휴대폰을 가까이 대면 정보가 전달되는 기술이에요! 💳", "ZKP": "비밀을 지키면서 증명하는 마법 같은 기술이에요! 🎩✨" };
+        const checklistData = [{ category: "규격", item: "CAS 서버, SP 서버, Proxy 서버 연계 구축", detail: "기존 시스템과 독립적인 구성 및 행정안전부 서버와의 통신 인터페이스 구현." }, { category: "규격", item: "모바일 신분증 서버 기능 구현", detail: "인가 토큰/월렛 토큰 생성, 발급 요청, 본인확인 및 실명확인 처리." }, { category: "규격", item: "모바일 신분증 앱 구현", detail: "VC 발급, 삭제, 상태 조회, 목록 조회 기능." }, { category: "규격", item: "2nd CA 등록 및 2nd VC 발급", detail: "월렛에 추가 모바일 신분증 발급을 위한 절차 구현." }, { category: "규격", item: "월렛 연결/해제/삭제 기능", detail: "CA 앱 로그인 시 월렛 연결, 사용자 변경 시 해제 로직." }, { category: "규격", item: "VP 제출 기능 구현", detail: "QR-CPM, QR-MPM, App2App, Push 등 다양한 제출 방식 지원." }, { category: "규격", item: "삼성전자 월렛 연결 기능", detail: "로컬 기반 정부 안면인증, DID 발급, IC카드 인증 구현." }, { category: "규격", item: "신분증 선택 및 약관 동의", detail: "발급 가능한 신분증 목록 제공, 이용약관 동의 절차." }, { category: "규격", item: "IC카드 PIN 입력 및 인증", detail: "IC카드 신분증 태깅 후 PIN 입력 인증 구현." }, { category: "규격", item: "신분증 발급 완료 프로세스", detail: "안면인증 성공 후 VC 발급 및 월렛 비밀번호 입력." }, { category: "규격", item: "OS 지문 정보 변경 대응", detail: "지문 등록 정보 변경 시 인증 상태 변경." }, { category: "규격", item: "CA-신분증 조회 및 갱신", detail: "VC 상태 확인, 주소 갱신, 개인키 만료 알림." }, { category: "규격", item: "CA 처리 모니터링 인터페이스", detail: "CA 처리 내역 수집 및 모니터링 시스템." }, { category: "보안", item: "독립적인 시스템 구축", detail: "CA 사업자 평가기준 충족을 위한 독립 시스템." }, { category: "보안", item: "암호화 알고리즘 및 규격 준수", detail: "안전한 암호화 및 행정안전부 기술 규격 준수." }, { category: "보안", item: "통신 구간 보호", detail: "모든 통신에 TLS 1.2 이상 암호화 적용." }, { category: "보안", item: "클라이언트(앱) 보안", detail: "루팅/탈옥 탐지, 앱 난독화, 스크린샷 방지." }, { category: "보안", item: "서버 보안", detail: "CSRF 방지, SQL Injection 방어, IP 접근 제어." }, { category: "보안", item: "데이터 관리", detail: "개인정보보호법에 따른 암호화 및 파기 정책." }, { category: "보안", item: "FDS 연동", detail: "이상 행위 탐지 FDS 룰 추가." }, { category: "보안", item: "데이터 최소화 원칙", detail: "필요한 최소한의 정보만 요구하고 처리." }, { category: "관리", item: "안정적 서비스 운영", detail: "24/365 서비스 및 재해복구시스템(DR) 구축." }, { category: "관리", item: "표준 개발방법론 적용", detail: "IT 표준절차, 개발방법론, 프로젝트 관리 도구." }, { category: "관리", item: "품질 관리 활동", detail: "품질 관리 조직, 품질 보증, 소스코드 인스펙션." }, { category: "관리", item: "모니터링 및 로깅", detail: "성공률, 실패 건수 실시간 대시보드." }, { category: "관리", item: "장애 대응 계획", detail: "API 서버, 네트워크 장애 대응 시나리오." }, { category: "관리", item: "고객 지원 체계", detail: "콜센터, 영업점 직원 교육 및 매뉴얼." }, { category: "관리", item: "CMS 활용", detail: "안내 페이지, UI 텍스트, 이용약관 관리." }, { category: "관리", item: "그룹웨어/KMS 연계", detail: "업무 절차, 매뉴얼 게시 및 공지." }, { category: "통신", item: "모든 통신 구간 암호화", detail: "클라이언트-서버, 서버-행안부 TLS 1.2 이상." }, { category: "통신", item: "보안 채널 구축", detail: "진위확인 API 연동 전문 개발, 방화벽 정책." }];
 
-        function initChecklist() {
-            const tbody = document.getElementById('checklistBody');
-            const savedState = JSON.parse(localStorage.getItem('checklistState') || '{}');
+        async function loadData() { try { const [g, c, f] = await Promise.all([fetch('glossary.json'), fetch('code.json'), fetch('flowchart.json')]); glossaryData = await g.json(); codeData = await c.json(); flowchartData = await f.json(); document.getElementById('glossaryCount').textContent = `(${glossaryData.length})`; document.getElementById('codeCount').textContent = `(${codeData.length})`; document.getElementById('flowchartCount').textContent = `(${flowchartData.length})`; currentData = glossaryData; init(); initChecklist(); } catch (e) { console.error('데이터 로드 실패:', e); } }
 
-            tbody.innerHTML = checklistData.map((item, idx) => {
-                const isChecked = savedState[idx] || false;
-                return `
-                    <tr class="${isChecked ? 'checked' : ''}" data-idx="${idx}">
-                        <td style="text-align: center;">
-                            <label class="toggle-switch">
-                                <input type="checkbox" ${isChecked ? 'checked' : ''} onchange="toggleCheck(${idx}, this)">
-                                <span class="toggle-slider"></span>
-                            </label>
-                        </td>
-                        <td><span class="category-badge ${item.category}">${item.category}</span></td>
-                        <td><strong>${item.item}</strong></td>
-                        <td>${item.detail}</td>
-                    </tr>
-                `;
-            }).join('');
+        ['glossaryTab', 'codeTab', 'flowchartTab', 'checklistTab', 'lawTab'].forEach(id => { document.getElementById(id).addEventListener('click', () => switchView(id.replace('Tab', ''))); });
 
-            updateChecklistStats();
-        }
+        function switchView(view) { currentView = view; if (view === 'glossary') currentData = glossaryData; else if (view === 'code') currentData = codeData; else if (view === 'flowchart') currentData = flowchartData; else currentData = []; document.querySelectorAll('.tab-button:not(.faq-chatbot):not(.law-btn)').forEach(btn => btn.classList.remove('active')); document.querySelectorAll('.view-section').forEach(sec => sec.classList.remove('active')); const tabEl = document.getElementById(view + 'Tab'); if (tabEl) tabEl.classList.add('active'); document.getElementById(view + 'View').classList.add('active'); if (view === 'checklist' || view === 'law') { document.getElementById('sidebar').style.display = 'none'; } else { document.getElementById('sidebar').style.display = ''; searchQuery = ''; categoryFilter = ''; document.getElementById('searchInput').value = ''; renderCategoryFilters(); applyFilters(); } }
 
-        function toggleCheck(idx, checkbox) {
-            const savedState = JSON.parse(localStorage.getItem('checklistState') || '{}');
-            savedState[idx] = checkbox.checked;
-            localStorage.setItem('checklistState', JSON.stringify(savedState));
+        function renderCategoryFilters() { const container = document.getElementById('categoryFilters'); let categories = []; if (currentView === 'flowchart') categories = ['전체', ...new Set(flowchartData.map(d => d.category))]; else if (currentView === 'glossary') categories = ['전체', ...new Set(glossaryData.map(d => d.구분))]; else categories = ['전체', ...new Set(codeData.map(d => d.구분))]; container.innerHTML = categories.map(cat => `<div class="filter-chip ${categoryFilter === cat || (categoryFilter === '' && cat === '전체') ? 'active' : ''}" data-cat="${cat}">${cat}</div>`).join(''); container.querySelectorAll('.filter-chip').forEach(chip => { chip.addEventListener('click', () => { categoryFilter = chip.dataset.cat === '전체' ? '' : chip.dataset.cat; container.querySelectorAll('.filter-chip').forEach(c => c.classList.remove('active')); chip.classList.add('active'); applyFilters(); }); }); }
 
-            const row = checkbox.closest('tr');
-            row.classList.toggle('checked', checkbox.checked);
+        function applyFilters() { let filtered = currentData.filter(item => { if (currentView === 'flowchart') { if (categoryFilter && item.category !== categoryFilter) return false; if (searchQuery && !item.title.toLowerCase().includes(searchQuery.toLowerCase()) && !item.code.toLowerCase().includes(searchQuery.toLowerCase())) return false; } else { const catKey = '구분'; if (categoryFilter && item[catKey] !== categoryFilter) return false; if (searchQuery) { const searchField = currentView === 'glossary' ? '용어' : '코드이명'; if (!item[searchField]?.toLowerCase().includes(searchQuery.toLowerCase())) return false; } } return true; }); renderItemList(filtered); if (filtered.length > 0) selectItem(0, filtered); }
 
-            updateChecklistStats();
-        }
+        function renderItemList(items) { const list = document.getElementById('itemList'); list.innerHTML = items.map((item, idx) => { if (currentView === 'flowchart') { return `<li class="term-item" onclick="selectItem(${idx})" title="${item.title}"><span class="term-code">${item.code}</span>${item.title}</li>`; } else { const title = currentView === 'glossary' ? item.용어 : (item.코드이명 || item.코드); return `<li class="term-item" onclick="selectItem(${idx})" title="${title}">${title}</li>`; } }).join(''); }
 
-        function updateChecklistStats() {
-            const savedState = JSON.parse(localStorage.getItem('checklistState') || '{}');
-            const complete = Object.values(savedState).filter(v => v).length;
-            const incomplete = checklistData.length - complete;
+        function selectItem(idx, items = null) { if (!items) items = currentData.filter(item => { if (currentView === 'flowchart') { if (categoryFilter && item.category !== categoryFilter) return false; if (searchQuery && !item.title.toLowerCase().includes(searchQuery.toLowerCase())) return false; } return true; }); if (idx >= items.length) return; const item = items[idx]; document.querySelectorAll('.term-item').forEach((el, i) => el.classList.toggle('active', i === idx)); if (currentView === 'flowchart') renderFlowchart(item); else renderCard(item); }
 
-            document.getElementById('completeCount').textContent = complete;
-            document.getElementById('incompleteCount').textContent = incomplete;
-        }
+        function renderFlowchart(item) { const container = document.getElementById('flowchartContent'); container.innerHTML = `<div class="flowchart-card"><div class="flowchart-title"><span class="flowchart-code">${item.code}</span>${item.title}</div><div class="flowchart-category">${item.category}</div><div class="flowchart-summary">📌 ${item.summary}</div><div class="flowchart-diagram"><div class="mermaid">${item.mermaid}</div></div></div>`; mermaid.run({ nodes: container.querySelectorAll('.mermaid') }); }
 
-        function init() {
-            renderCategoryFilters();
-            applyFilters();
-        }
+        function renderCard(item) { const area = currentView === 'glossary' ? document.getElementById('glossaryContent') : document.getElementById('codeContent'); const term = currentView === 'glossary' ? item.용어 : item.코드이명; const easyExp = easyExplanations[term] || easyExplanations[item.용어]; const easySection = easyExp ? `<div class="easy-explanation"><div class="easy-explanation-title">🎈 쉬운 해설</div><div class="easy-explanation-content">${easyExp}</div></div>` : ''; if (currentView === 'glossary') { area.innerHTML = `<div class="item-card"><div class="item-title">${item.용어}</div><div class="item-meta"><div class="meta-badge"><strong>수정일:</strong> ${item.수정일}</div><div class="meta-badge"><strong>구분:</strong> ${item.구분}</div></div><div class="item-description">${item.설명}</div>${easySection}</div>`; } else { area.innerHTML = `<div class="item-card"><div class="item-title">${item.코드이명 || item.코드}(${item.코드})</div><div class="item-meta"><div class="meta-badge"><strong>수정일:</strong> ${item.수정일}</div><div class="meta-badge"><strong>구분:</strong> ${item.구분}</div><div class="meta-badge"><strong>그룹명:</strong> ${item.그룹명}</div></div><div class="item-description">${item.설명}</div>${easySection}</div>`; } }
 
-        document.getElementById('searchInput').addEventListener('input', e => {
-            searchQuery = e.target.value;
-            applyFilters();
-        });
+        function initChecklist() { renderChecklist(); document.getElementById('checklistFilters').querySelectorAll('.filter-btn').forEach(btn => { btn.addEventListener('click', () => { document.querySelectorAll('#checklistFilters .filter-btn').forEach(b => b.classList.remove('active')); btn.classList.add('active'); checklistCatFilter = btn.dataset.cat; renderChecklist(); }); }); }
 
-        document.getElementById('hamburger').addEventListener('click', () => {
-            document.getElementById('hamburger').classList.toggle('active');
-            document.getElementById('sidebar').classList.toggle('active');
-            document.getElementById('overlay').classList.toggle('active');
-        });
+        function renderChecklist() { const tbody = document.getElementById('checklistBody'); const savedState = JSON.parse(localStorage.getItem('checklistState') || '{}'); const filtered = checklistCatFilter === '전체' ? checklistData : checklistData.filter(d => d.category === checklistCatFilter); tbody.innerHTML = filtered.map((item, i) => { const origIdx = checklistData.indexOf(item); const isChecked = savedState[origIdx] || false; return `<tr class="${isChecked ? 'checked' : ''}" data-idx="${origIdx}"><td style="text-align:center"><input type="checkbox" class="custom-checkbox" ${isChecked ? 'checked' : ''} onchange="toggleCheck(${origIdx},this)"></td><td><span class="category-badge ${item.category}">${item.category}</span></td><td><strong>${item.item}</strong></td><td>${item.detail}</td></tr>`; }).join(''); updateChecklistStats(); }
 
-        document.getElementById('overlay').addEventListener('click', () => {
-            document.getElementById('hamburger').classList.remove('active');
-            document.getElementById('sidebar').classList.remove('active');
-            document.getElementById('overlay').classList.remove('active');
-        });
+        function toggleCheck(idx, cb) { const savedState = JSON.parse(localStorage.getItem('checklistState') || '{}'); savedState[idx] = cb.checked; localStorage.setItem('checklistState', JSON.stringify(savedState)); const row = cb.closest('tr'); row.classList.toggle('checked', cb.checked); updateChecklistStats(); }
 
+        function updateChecklistStats() { const savedState = JSON.parse(localStorage.getItem('checklistState') || '{}'); const complete = Object.values(savedState).filter(v => v).length; document.getElementById('completeCount').textContent = complete; document.getElementById('incompleteCount').textContent = checklistData.length - complete; }
+
+        function exportToExcel() { const savedState = JSON.parse(localStorage.getItem('checklistState') || '{}'); const data = checklistData.map((item, i) => ({ 구분: item.category, 체크리스트: item.item, 주요사항: item.detail, 완료여부: savedState[i] ? '완료' : '미완료' })); const ws = XLSX.utils.json_to_sheet(data); const wb = XLSX.utils.book_new(); XLSX.utils.book_append_sheet(wb, ws, 'CA평가체크리스트'); XLSX.writeFile(wb, 'CA평가체크리스트.xlsx'); }
+
+        function init() { renderCategoryFilters(); applyFilters(); }
+        document.getElementById('searchInput').addEventListener('input', e => { searchQuery = e.target.value; applyFilters(); });
+        document.getElementById('hamburger').addEventListener('click', () => { document.getElementById('hamburger').classList.toggle('active'); document.getElementById('sidebar').classList.toggle('active'); document.getElementById('overlay').classList.toggle('active'); });
+        document.getElementById('overlay').addEventListener('click', () => { document.getElementById('hamburger').classList.remove('active'); document.getElementById('sidebar').classList.remove('active'); document.getElementById('overlay').classList.remove('active'); });
         loadData();
     </script>
 </body>

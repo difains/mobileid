@@ -1,89 +1,157 @@
-# 모바일 신분증 (Mobile ID)
+# 📱 모바일 신분증 통합 가이드
 
-> 모바일 신분증 월렛 시스템 연동 개발 가이드
+> 모바일 신분증 연동을 위한 용어집, 코드집, 프로세스 도해, CA 평가 체크리스트, 관계법령을 한 곳에서 확인할 수 있는 통합 가이드입니다.
 
-[![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE.txt)
-[![GitHub Pages](https://img.shields.io/badge/demo-live-green.svg)](https://difains.github.io/mobileid/)
-
----
-
-## 📌 프로젝트 개요
-
-우리은행 모바일 신분증 CA(Credential Agent) 앱 개발을 위한 종합 가이드입니다.
-
-- **용어집**: 모바일 신분증 관련 표준 용어 정의
-- **코드집**: API 코드 및 상태 코드 정의
-- **프로세스 도해**: 56개 연동 프로세스 플로우차트
+![License](https://img.shields.io/badge/license-MIT-blue.svg)
+![Version](https://img.shields.io/badge/version-2.0.0-green.svg)
+![Updated](https://img.shields.io/badge/updated-2024.12-orange.svg)
 
 ---
 
-## 🌐 웹 뷰어
+## 🚀 주요 기능
 
-**[https://difains.github.io/mobileid/](https://difains.github.io/mobileid/)**
-
-| 탭 | 내용 |
-|---|---|
-| 용어집 | DID, VC, VP 등 표준 용어 정의 |
-| 코드집 | API 요청/응답 코드 정의 |
-| 프로세스 도해 | 56개 연동 프로세스 플로우차트 |
+| 기능 | 설명 |
+|------|------|
+| 🤖 **FAQ 챗봇** | NotebookLM 기반 AI 챗봇으로 모바일 신분증 관련 질문에 즉시 답변 |
+| 📖 **용어집** | 모바일 신분증 관련 핵심 용어 60여개 + 초등학생도 이해할 수 있는 쉬운 해설 |
+| 🔢 **코드집** | 오류 코드, 인증 타입, VC 상태 등 개발에 필요한 코드 정의 |
+| 📊 **프로세스 도해** | Mermaid 기반 플로우차트로 주요 프로세스 시각화 |
+| ✅ **CA 평가 체크리스트** | 31개 항목 체크리스트 + 구분별 필터 + 엑셀 다운로드 |
+| 📜 **관계법령** | 전자정부법, 주민등록법 등 주요 법령 및 추진경과 타임라인 |
 
 ---
 
-## 📂 문서 구조
+## 📂 파일 구조
 
 ```
 mobileid/
-├── index.html               # 웹 뷰어 (메인 페이지)
-├── glossary.json            # 용어집 데이터
-├── code.json                # 코드집 데이터
-├── README.md                # 프로젝트 설명
-├── LICENSE.txt              # MIT 라이센스
-│
-└── docs/                    # 📁 프로세스 도해화 문서
-    ├── README.md            # 목차 및 전체 개요
-    ├── flowcharts_part1_common.md   # Part 1: 공통 프로세스 (18개)
-    ├── flowcharts_part2_auth.md     # Part 2: 신원 인증 (12개)
-    ├── flowcharts_part3_vc.md       # Part 3: VC 관리 (10개)
-    ├── flowcharts_part4_vp.md       # Part 4: VP 제출 (13개)
-    └── flowcharts_part5_query.md    # Part 5: 조회 서비스 (3개)
+├── 📄 index.html              # 메인 웹 페이지 (통합 가이드)
+├── 📄 glossary.json           # 용어집 데이터 (60여개)
+├── 📄 code.json               # 코드집 데이터
+├── 📄 flowchart.json          # 프로세스 도해 데이터
+├── 📄 README.md               # 프로젝트 설명서
+├── 📄 LICENSE.txt             # 라이선스
+├── 📁 docs/                   # 상세 문서
+│   ├── flowcharts_index.md
+│   ├── flowcharts_part1_common.md
+│   ├── flowcharts_part2_auth.md
+│   ├── flowcharts_part3_vc.md
+│   ├── flowcharts_part4_vp.md
+│   └── flowcharts_part5_query.md
+├── 📊 CA평가체크리스트.xlsx    # 원본 체크리스트
+└── 📊 모바일신분증 용어집_20251031.xlsx  # 원본 용어집
 ```
 
 ---
 
-## 📊 프로세스 요약 (총 56개)
+## 🎯 사용 방법
 
-| 카테고리 | 프로세스 수 | 주요 내용 |
-|----------|:---:|------|
-| **공통 프로세스** | 18개 | 월렛 접근(walletToken), PIN 인증, 연결 해제, 삭제, 심카드 검증 등 |
-| **신원 인증** | 12개 | 실명인증(도관/직접), IC카드 인증, 안면인증(로컬/서버), 지문인증 등 |
-| **VC 관리** | 10개 | DID 발급, VC 발급/조회/삭제, 개인키 갱신, 월렛 이관 등 |
-| **VP 제출** | 13개 | QR-MPM/CPM, PUSH, App2App, NFC 방식 (Direct/Indirect/Proxy) |
-| **조회 서비스** | 3개 | 중계서버 주소, VC 상태, 장애 여부 조회 |
+### 1. 웹 브라우저에서 열기
+```bash
+# index.html 파일을 브라우저에서 직접 열기
+start index.html
+```
 
----
+### 2. 로컬 서버로 실행 (권장)
+```bash
+# Python 3
+python -m http.server 8000
 
-## 🔗 바로가기
-
-- 📖 [프로세스 도해 문서](./docs/README.md)
-- 🌐 [웹 뷰어 (GitHub Pages)](https://difains.github.io/mobileid/)
-- 📋 [용어집 JSON](./glossary.json)
-- 📋 [코드집 JSON](./code.json)
-
----
-
-## 📝 라이센스
-
-이 프로젝트는 [MIT License](LICENSE.txt)를 따릅니다.
+# Node.js
+npx serve .
+```
+→ http://localhost:8000 접속
 
 ---
 
-## 📅 업데이트 이력
+## 📜 관계법령
 
-| 날짜 | 내용 |
+| 법령 | 조항 | 내용 |
+|------|------|------|
+| 전자정부법 | 제10조 | 민원인 등의 본인 확인 |
+| 전자정부법 | 제34조 | 업무담당자의 신원 확인 등 |
+| 전자정부법 | 제36조 | 행정정보의 효율적 관리 및 이용 |
+| 주민등록법 | 제24조의2 | 모바일 주민등록증 |
+| 도로교통법 시행규칙 | 제78조의2 | 모바일운전면허증의 신청 등 |
+| 국가유공자법 시행령 | 제101조 | 국가보훈등록증의 발급 등 |
+
+---
+
+## 📅 추진 경과
+
+| 연도 | 내용 |
 |------|------|
-| 2025-12-10 | 프로세스 도해 문서 56개 추가 (우리은행 CA 앱 개발 관점) |
-| 2025-12-10 | index.html에 프로세스 도해 탭 추가 |
+| 2019.10 | '디지털 정부혁신 추진계획' 수립 |
+| 2021.01 | 모바일 공무원증 발급 개시 |
+| 2022.01 | 모바일 운전면허증 시범발급 |
+| 2022.07 | 모바일 운전면허증 전국 확대 |
+| 2023.08 | 모바일 국가보훈등록증 발급 |
+| 2024.07 | 모바일 재외국민 신원확인증 개시 |
+| 2024.12 | 모바일 주민등록증 시범발급 |
+| 2025.01 | 모바일 외국인등록증 발급 |
+| 2025.03 | 모바일 주민등록증 정식발급 예정 |
 
 ---
 
-*© 2025 Mobile ID Project*
+## ✅ CA 평가 체크리스트
+
+### 구분별 항목 수
+
+| 구분 | 항목 수 | 주요 내용 |
+|------|---------|----------|
+| 규격 | 13개 | 서버 구축, 앱 구현, VC/VP 기능 |
+| 보안 | 8개 | 암호화, 앱/서버 보안, 데이터 관리 |
+| 관리 | 8개 | 운영 시스템, 품질 관리, 고객 지원 |
+| 통신 | 2개 | 통신 구간 암호화, 보안 채널 |
+
+### 엑셀 다운로드
+체크리스트 페이지에서 **📥 엑셀 다운로드** 버튼 클릭 시 체크 상태가 포함된 엑셀 파일 다운로드
+
+---
+
+## 🔗 관련 링크
+
+| 링크 | 설명 |
+|------|------|
+| [행정안전부 모바일 신분증](https://www.mois.go.kr/frt/sub/a06/b04/mobileId/screen.do) | 공식 안내 페이지 |
+| [모바일 신분증 개발지원센터](https://dev.mobileid.go.kr) | 개발자 지원 포털 |
+| [국가법령정보센터 - 전자정부법](https://www.law.go.kr/법령/전자정부법) | 관계법령 원문 |
+| [FAQ 챗봇](https://notebooklm.google.com/notebook/cd97f2be-d103-4841-bd1e-9363325f4065) | AI 기반 FAQ 챗봇 |
+
+---
+
+## 📝 업데이트 내역
+
+### v2.0.0 (2024.12.12)
+- ✨ FAQ 챗봇 버튼 추가 (NotebookLM 연동)
+- ✨ 관계법령 탭 추가 (전자정부법, 주민등록법 등)
+- ✨ CA 평가 체크리스트 기능 개선
+  - 구분별 필터 (규격/보안/관리/통신)
+  - 체크박스 UI 개선
+  - 엑셀 다운로드 기능
+- ✨ 용어집/코드집 쉬운 해설 추가
+
+### v1.0.0 (2024.10.31)
+- 🎉 초기 버전 릴리즈
+- 용어집, 코드집, 프로세스 도해 기능
+
+---
+
+## 📄 라이선스
+
+MIT License - 자유롭게 사용, 수정, 배포할 수 있습니다.
+
+---
+
+## 📞 문의
+
+- **모바일 신분증 고객센터**: 1688-0990
+- **개발지원센터**: mobileid@komsco.com
+
+---
+
+<div align="center">
+
+**Made with ❤️ for Mobile ID Developers**
+
+</div>
