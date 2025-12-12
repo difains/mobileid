@@ -64,6 +64,7 @@
         .header-tabs {
             display: flex;
             gap: 4px;
+            flex-wrap: wrap;
         }
 
         .tab-button {
@@ -82,6 +83,30 @@
             background: #1a73e8;
             color: white;
             border-color: #1a73e8;
+        }
+
+        .tab-button.faq-chatbot {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            animation: pulse 2s infinite;
+        }
+
+        .tab-button.faq-chatbot:hover {
+            transform: scale(1.05);
+            box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4);
+        }
+
+        @keyframes pulse {
+
+            0%,
+            100% {
+                box-shadow: 0 0 0 0 rgba(102, 126, 234, 0.4);
+            }
+
+            50% {
+                box-shadow: 0 0 0 8px rgba(102, 126, 234, 0);
+            }
         }
 
         .tab-count {
@@ -300,6 +325,30 @@
             word-break: break-word;
         }
 
+        .easy-explanation {
+            margin-top: 12px;
+            padding: 12px;
+            background: linear-gradient(135deg, #fff3e0 0%, #ffe0b2 100%);
+            border-radius: 8px;
+            border-left: 4px solid #ff9800;
+        }
+
+        .easy-explanation-title {
+            font-size: 12px;
+            font-weight: 600;
+            color: #e65100;
+            margin-bottom: 8px;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .easy-explanation-content {
+            font-size: 13px;
+            line-height: 1.7;
+            color: #5d4037;
+        }
+
         /* 도해 전용 스타일 */
         .flowchart-card {
             background: #fff;
@@ -362,6 +411,168 @@
             justify-content: center;
         }
 
+        /* CA 평가 체크리스트 스타일 */
+        .checklist-container {
+            background: #fff;
+            border-radius: 12px;
+            padding: 24px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+        }
+
+        .checklist-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+            gap: 12px;
+        }
+
+        .checklist-title {
+            font-size: 24px;
+            font-weight: 700;
+            color: #1a73e8;
+        }
+
+        .checklist-stats {
+            display: flex;
+            gap: 16px;
+            font-size: 14px;
+        }
+
+        .stat-item {
+            padding: 8px 16px;
+            border-radius: 20px;
+            font-weight: 600;
+        }
+
+        .stat-complete {
+            background: #e8f5e9;
+            color: #2e7d32;
+        }
+
+        .stat-incomplete {
+            background: #ffebee;
+            color: #c62828;
+        }
+
+        .checklist-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 14px;
+        }
+
+        .checklist-table th {
+            background: linear-gradient(135deg, #1a73e8 0%, #0d47a1 100%);
+            color: white;
+            padding: 14px 12px;
+            text-align: left;
+            font-weight: 600;
+            position: sticky;
+            top: 0;
+        }
+
+        .checklist-table th:first-child {
+            width: 60px;
+            text-align: center;
+        }
+
+        .checklist-table th:nth-child(2) {
+            width: 140px;
+        }
+
+        .checklist-table td {
+            padding: 14px 12px;
+            border-bottom: 1px solid #e0e0e0;
+            vertical-align: top;
+        }
+
+        .checklist-table tr:hover {
+            background: #f5f5f5;
+        }
+
+        .checklist-table tr.checked {
+            background: #e8f5e9;
+        }
+
+        .checklist-table tr.checked td {
+            color: #2e7d32;
+        }
+
+        .category-badge {
+            display: inline-block;
+            padding: 4px 10px;
+            border-radius: 12px;
+            font-size: 12px;
+            font-weight: 600;
+            white-space: nowrap;
+        }
+
+        .category-badge.규격 {
+            background: #e3f2fd;
+            color: #1565c0;
+        }
+
+        .category-badge.보안 {
+            background: #fce4ec;
+            color: #c2185b;
+        }
+
+        .category-badge.관리 {
+            background: #e8f5e9;
+            color: #2e7d32;
+        }
+
+        .category-badge.통신 {
+            background: #fff3e0;
+            color: #ef6c00;
+        }
+
+        .toggle-switch {
+            position: relative;
+            width: 50px;
+            height: 26px;
+            cursor: pointer;
+        }
+
+        .toggle-switch input {
+            opacity: 0;
+            width: 0;
+            height: 0;
+        }
+
+        .toggle-slider {
+            position: absolute;
+            cursor: pointer;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: #ccc;
+            transition: .3s;
+            border-radius: 26px;
+        }
+
+        .toggle-slider:before {
+            position: absolute;
+            content: "";
+            height: 20px;
+            width: 20px;
+            left: 3px;
+            bottom: 3px;
+            background-color: white;
+            transition: .3s;
+            border-radius: 50%;
+        }
+
+        .toggle-switch input:checked+.toggle-slider {
+            background-color: #4caf50;
+        }
+
+        .toggle-switch input:checked+.toggle-slider:before {
+            transform: translateX(24px);
+        }
+
         .empty-state {
             text-align: center;
             padding: 60px 20px;
@@ -381,6 +592,19 @@
             .items-container {
                 grid-template-columns: 1fr;
             }
+
+            .header-tabs {
+                display: none;
+            }
+
+            .checklist-table {
+                font-size: 12px;
+            }
+
+            .checklist-table th,
+            .checklist-table td {
+                padding: 10px 8px;
+            }
         }
     </style>
 </head>
@@ -392,11 +616,17 @@
             <h1>모바일 신분증</h1>
         </div>
         <div class="header-tabs">
+            <a href="https://notebooklm.google.com/notebook/cd97f2be-d103-4841-bd1e-9363325f4065" target="_blank"
+                class="tab-button faq-chatbot">
+                🤖 FAQ 챗봇
+            </a>
             <button class="tab-button active" id="glossaryTab">용어집 <span class="tab-count"
                     id="glossaryCount">(0)</span></button>
             <button class="tab-button" id="codeTab">코드집 <span class="tab-count" id="codeCount">(0)</span></button>
             <button class="tab-button" id="flowchartTab">프로세스 도해 <span class="tab-count"
                     id="flowchartCount">(0)</span></button>
+            <button class="tab-button" id="checklistTab">CA 평가체크리스트 <span class="tab-count"
+                    id="checklistCount">(31)</span></button>
         </div>
     </div>
 
@@ -422,6 +652,28 @@
         <div class="view-section" id="flowchartView">
             <div id="flowchartContent"></div>
         </div>
+        <div class="view-section" id="checklistView">
+            <div class="checklist-container">
+                <div class="checklist-header">
+                    <div class="checklist-title">📋 CA 평가 체크리스트</div>
+                    <div class="checklist-stats">
+                        <div class="stat-item stat-complete">✓ 완료: <span id="completeCount">0</span></div>
+                        <div class="stat-item stat-incomplete">○ 미완료: <span id="incompleteCount">31</span></div>
+                    </div>
+                </div>
+                <table class="checklist-table">
+                    <thead>
+                        <tr>
+                            <th>체크</th>
+                            <th>구분</th>
+                            <th>체크리스트</th>
+                            <th>주요 사항</th>
+                        </tr>
+                    </thead>
+                    <tbody id="checklistBody"></tbody>
+                </table>
+            </div>
+        </div>
     </main>
 
     <script>
@@ -432,6 +684,79 @@
         let currentData = [];
         let searchQuery = '';
         let categoryFilter = '';
+
+        // 쉬운 해설 데이터
+        const easyExplanations = {
+            // 용어 - 쉬운 해설
+            "모바일신분증신원관리 플랫폼": "휴대폰으로 신분증을 발급받고 사용할 수 있게 해주는 전체 시스템이에요. 마치 놀이공원의 입장권 시스템처럼, 신분증을 만들고 보여줄 수 있게 해주는 모든 것을 말해요! 🎢",
+            "모바일신분증서버": "정부에서 운영하는 큰 컴퓨터예요. 여러분의 모바일 신분증을 만들어주고 관리해주는 역할을 해요. 선생님처럼 학생증을 발급해주는 역할이죠! 👨‍🏫",
+            "클레임 (Claim)": "신분증에 적혀 있는 정보 하나하나를 말해요. 예를 들어 '이름: 홍길동', '나이: 15세' 같은 것들이에요. 퍼즐 조각 하나하나라고 생각하면 돼요! 🧩",
+            "크리덴셜 (Credential)": "여러 개의 클레임(정보 조각)을 모아놓은 것이에요. 신분증 전체라고 생각하면 돼요. 퍼즐 조각들을 다 모으면 완성된 그림이 되는 것처럼요! 🖼️",
+            "프레젠테이션 (Presentation)": "내 신분증에서 필요한 정보만 골라서 보여주는 거예요. 편의점에서 음료수 살 때 '성인입니다'만 보여주면 되는 것처럼, 필요한 정보만 선택해서 제출해요! 🎁",
+            "VC (Verified Credential)": "진짜인지 확인된 디지털 신분증이에요. 선생님이 '이 학생증은 진짜야!'라고 도장을 찍어준 것과 같아요! ✅",
+            "VP (Verified Presentation)": "확인된 신분증에서 필요한 정보만 보여주는 거예요. 시험지에서 선생님이 '이 부분만 보여줘도 돼'라고 하신 것처럼요! 📝",
+            "사용자(Holder)": "신분증을 가지고 있는 사람, 바로 여러분이에요! 지갑에 학생증을 넣고 다니는 것처럼요! 👤",
+            "발급자 (Issuer)": "신분증을 만들어주는 곳이에요. 학교에서 학생증을 만들어주는 것처럼, 경찰청이나 행정안전부에서 신분증을 만들어줘요! 🏛️",
+            "분산ID (DID)": "인터넷에서 쓰는 특별한 이름표예요. 한 곳에서만 관리하는 게 아니라 여러 곳에서 함께 관리해서 더 안전해요. 반 전체가 함께 출석부를 관리하는 것과 비슷해요! 🌐",
+            "이용기관, SP (Service Provider)": "여러분의 신분증을 확인하고 서비스를 제공하는 곳이에요. 편의점, 은행 같은 곳들이죠! 🏪",
+            "월렛(Wallet)": "디지털 신분증을 안전하게 보관하는 전자 지갑이에요. 진짜 지갑에 카드를 넣듯이, 휴대폰 안에 신분증을 안전하게 보관해요! 👛",
+            "CA (Certified App)": "모바일 신분증을 보여주고 사용할 수 있는 앱이에요. 삼성 페이나 카카오페이 같은 앱처럼, 신분증을 꺼내서 보여줄 수 있어요! 📱",
+            "TEE (신뢰실행환경)": "휴대폰 안에 있는 아주 안전한 금고 같은 곳이에요. 중요한 정보를 여기에 보관하면 해커도 훔쳐갈 수 없어요! 🔐",
+            "QR-CPM": "내가 QR코드를 보여주면 상대방이 스캔하는 방식이에요. 카페에서 내 멤버십 QR을 보여주는 것처럼요! 📲",
+            "QR-MPM": "상대방이 보여주는 QR코드를 내가 스캔하는 방식이에요. 음식점에서 메뉴판 QR을 스캔하는 것처럼요! 📷",
+            "App2App": "앱끼리 직접 대화하는 방식이에요. 게임 앱에서 카카오톡으로 친구 초대할 때처럼, 앱끼리 정보를 주고받아요! 🔄",
+            "NFC": "휴대폰을 가까이 대면 정보가 전달되는 기술이에요. 교통카드 찍듯이 휴대폰을 대면 신분증 정보가 전달돼요! 💳",
+            "ZKP": "비밀을 지키면서 증명하는 마법 같은 기술이에요. '나는 성인이야'라고 증명하면서 실제 나이는 안 알려주는 거예요! 🎩✨",
+            "mDL": "모바일 운전면허증이에요. 종이 면허증 대신 휴대폰으로 보여주는 디지털 면허증이에요! 🚗",
+            "HSM": "아주 특별하고 안전한 금고 컴퓨터예요. 중요한 암호 열쇠를 보관하는 최고급 금고라고 생각하면 돼요! 🔒",
+
+            // 오류코드 - 쉬운 해설
+            "10001": "보내온 메시지 형식이 잘못됐어요. 마치 한글로 보내야 하는데 이상한 기호로 보낸 것 같아요! 📝",
+            "10002": "필요한 정보가 빠졌어요. 시험지에 이름을 안 쓴 것처럼요! ✏️",
+            "10003": "암호를 풀 수 없어요. 비밀 편지를 읽으려는데 해독 방법이 틀린 거예요! 🔍",
+            "10100": "잘못된 정보가 들어왔어요. 수학 문제에 글자를 쓴 것처럼 맞지 않는 정보예요! ❌",
+            "10201": "순서가 틀렸어요. 밥 먹기 전에 양치질하려는 것처럼 순서가 바뀌었어요! 🔢",
+            "10202": "시간이 너무 오래 걸렸어요. 시험 시간이 끝난 것처럼요! ⏰",
+            "99999": "뭔가 잘못됐는데 정확히 뭔지 모르겠어요. 선생님께 물어보세요! ❓",
+            "PIN": "비밀번호로 확인하는 거예요. ATM에서 비밀번호 누르는 것처럼요! 🔢",
+            "BIO": "지문으로 확인하는 거예요. 스마트폰 잠금 풀 때 손가락 대는 것처럼요! 👆",
+            "FACE": "얼굴로 확인하는 거예요. 아이폰 페이스ID처럼 얼굴을 보여주면 돼요! 😊"
+        };
+
+        // CA 평가 체크리스트 데이터
+        const checklistData = [
+            { category: "규격", item: "CAS 서버, SP 서버, Proxy 서버 연계 구축", detail: "기존 시스템과 독립적인 구성 및 행정안전부 서버와의 통신 인터페이스 구현." },
+            { category: "규격", item: "모바일 신분증 서버 기능 구현", detail: "인가 토큰/월렛 토큰 생성, 발급 요청, 본인확인 및 실명확인 처리 등의 핵심 기능 구현." },
+            { category: "규격", item: "모바일 신분증 앱 구현", detail: "VC(Verifiable Credential) 발급, 삭제, 상태 조회, 목록 조회 기능." },
+            { category: "규격", item: "2nd CA 등록 및 2nd VC 발급 기능 구현", detail: "월렛에 추가 모바일 신분증을 발급하기 위한 절차 및 기존 모바일 신분증 제출을 통한 신규 신분증 발급 구현." },
+            { category: "규격", item: "월렛 연결, 해제, 삭제 기능 구현", detail: "CA 앱 로그인 시 월렛 연결 필요, CA 앱 로그인 사용자 변경 시 월렛 연결 해제, 월렛 삭제 시 연결 카운트 확인 등의 로직 포함." },
+            { category: "규격", item: "VP 제출 기능 구현", detail: "QR-CPM, QR-MPM, App2App, Push 등 다양한 제출 방식 지원." },
+            { category: "규격", item: "삼성전자 월렛 연결·이용 기능 구현", detail: "로컬 기반 정부 안면인증, DID 발급, IC카드 인증 기능 프로세스 구현." },
+            { category: "규격", item: "신분증 선택 및 발급기관 약관 동의 구현", detail: "발급 가능한 신분증 목록을 사용자에게 제공하고, 각 발급기관의 이용약관 동의 절차 구현." },
+            { category: "규격", item: "IC카드 PIN 입력 및 인증", detail: "IC카드 신분증을 휴대폰에 태깅하고 PIN을 입력하여 인증하는 기능 구현." },
+            { category: "규격", item: "신분증 발급 및 발급 완료 프로세스 구현", detail: "안면인증 성공 후 모바일 신분증(VC) 발급 및 월렛 접근을 위한 사용자 비밀번호 입력 구현." },
+            { category: "규격", item: "OS 지문 정보 변경 대응", detail: "사용자 단말의 OS 지문 등록 정보 변경 시 지문 인증 상태 변경 및 PIN/BIO 인증 구현." },
+            { category: "규격", item: "CA-신분증 조회 및 갱신 기능", detail: "VC 상태 확인(정상, 중지, 폐기, 갱신), 주소 갱신, 개인키 만료 알림 및 갱신, VC 삭제 기능 구현." },
+            { category: "규격", item: "CA 처리 모니터링 인터페이스 설계", detail: "CA 처리 내역을 수집하고 모니터링하기 위한 시스템 구현." },
+            { category: "보안", item: "독립적인 시스템 구축", detail: "모바일 신분증 CA 사업자 평가기준을 충족하기 위한 독립적인 시스템 구축." },
+            { category: "보안", item: "암호화 알고리즘 및 행정안전부 규격 준수", detail: "안전한 암호화 알고리즘 사용 및 행정안전부의 기술 규격 준수." },
+            { category: "보안", item: "통신 구간 보호", detail: "모든 클라이언트-서버, 서버-행안부 API 구간 통신에 TLS 1.2 이상 암호화 적용." },
+            { category: "보안", item: "클라이언트(앱) 보안", detail: "루팅/탈옥 기기 탐지 및 차단, 앱 코드 난독화, 인증 정보 입력/표시 화면의 스크린샷 방지 기능 적용." },
+            { category: "보안", item: "서버 보안", detail: "CSRF 공격 방지, SQL Injection 등 웹 취약점 방어 조치, 행안부 API 호출 서버의 접근 제어 적용." },
+            { category: "보안", item: "데이터 관리", detail: "인증 과정에서 획득한 고객 신원 정보를 서버에 저장 시 개인정보보호법에 따른 암호화 및 파기 정책 준수." },
+            { category: "보안", item: "이상거래탐지시스템(FDS) 연동", detail: "모바일 신분증 인증 관련 이상 행위를 탐지하는 FDS 룰 추가." },
+            { category: "보안", item: "데이터 최소화 원칙", detail: "거래 목적에 필요한 최소한의 정보만 요구하고 처리." },
+            { category: "관리", item: "안정적인 서비스 운영 시스템 구축", detail: "24/365 서비스 제공 및 장애 상황 대비를 위한 재해복구시스템(DR) 구축." },
+            { category: "관리", item: "은행 표준 개발방법론 및 프로세스 적용", detail: "IT 표준절차, 표준 개발방법론 및 프로젝트 관리 도구 적용." },
+            { category: "관리", item: "품질 관리 활동 수행", detail: "프로젝트 품질 관리 조직 구성, 품질 보증 계획 수립, 소스코드 인스펙션 도구 적용." },
+            { category: "관리", item: "모니터링 및 로깅", detail: "모바일 신분증 인증 성공률, 실패 건수, 오류 코드별 현황을 실시간으로 모니터링할 수 있는 대시보드 구축." },
+            { category: "관리", item: "장애 대응 계획", detail: "행안부 API 서버 장애, 네트워크 장애 등 외부 요인 및 은행 내부 시스템 장애 시의 대응 시나리오 수립." },
+            { category: "관리", item: "고객 지원 체계", detail: "콜센터 상담원 및 영업점 직원을 대상으로 모바일 신분증 관련 응대 교육 및 매뉴얼 배포." },
+            { category: "관리", item: "CMS(콘텐츠 관리 시스템) 활용", detail: "고객 안내 페이지, UI 텍스트, 이용약관, 내부 직원용 매뉴얼 등의 신규 등록 및 관리." },
+            { category: "관리", item: "그룹웨어/지식관리시스템(KMS) 연계", detail: "변경된 업무 절차와 매뉴얼을 전 직원이 숙지할 수 있도록 게시 및 공지." },
+            { category: "통신", item: "모든 통신 구간의 암호화", detail: "클라이언트(앱)와 서버, 은행 서버와 행정안전부 API 서버 간의 모든 통신은 TLS 1.2 이상으로 암호화." },
+            { category: "통신", item: "보안 채널 구축", detail: "행정안전부 또는 금융결제원 등 중계기관의 신분증 진위확인 API 서버와 통신하는 연동 전문 개발 및 방화벽 정책 설정." }
+        ];
 
         async function loadData() {
             try {
@@ -448,6 +773,7 @@
 
                 currentData = glossaryData;
                 init();
+                initChecklist();
             } catch (error) {
                 console.error('데이터 로드 실패:', error);
             }
@@ -456,24 +782,31 @@
         document.getElementById('glossaryTab').addEventListener('click', () => switchView('glossary'));
         document.getElementById('codeTab').addEventListener('click', () => switchView('code'));
         document.getElementById('flowchartTab').addEventListener('click', () => switchView('flowchart'));
+        document.getElementById('checklistTab').addEventListener('click', () => switchView('checklist'));
 
         function switchView(view) {
             currentView = view;
             if (view === 'glossary') currentData = glossaryData;
             else if (view === 'code') currentData = codeData;
-            else currentData = flowchartData;
+            else if (view === 'flowchart') currentData = flowchartData;
+            else currentData = [];
 
-            document.querySelectorAll('.tab-button').forEach(btn => btn.classList.remove('active'));
+            document.querySelectorAll('.tab-button:not(.faq-chatbot)').forEach(btn => btn.classList.remove('active'));
             document.querySelectorAll('.view-section').forEach(sec => sec.classList.remove('active'));
 
             document.getElementById(view + 'Tab').classList.add('active');
             document.getElementById(view + 'View').classList.add('active');
 
-            searchQuery = '';
-            categoryFilter = '';
-            document.getElementById('searchInput').value = '';
-            renderCategoryFilters();
-            applyFilters();
+            if (view === 'checklist') {
+                document.getElementById('sidebar').style.display = 'none';
+            } else {
+                document.getElementById('sidebar').style.display = '';
+                searchQuery = '';
+                categoryFilter = '';
+                document.getElementById('searchInput').value = '';
+                renderCategoryFilters();
+                applyFilters();
+            }
         }
 
         function renderCategoryFilters() {
@@ -564,6 +897,12 @@
             document.getElementById('overlay').classList.remove('active');
         }
 
+        function getEasyExplanation(term, code = null) {
+            if (easyExplanations[term]) return easyExplanations[term];
+            if (code && easyExplanations[code]) return easyExplanations[code];
+            return null;
+        }
+
         function renderFlowchart(item) {
             const container = document.getElementById('flowchartContent');
             container.innerHTML = `
@@ -584,7 +923,16 @@
 
         function renderCard(item) {
             const area = currentView === 'glossary' ? document.getElementById('glossaryContent') : document.getElementById('codeContent');
+
             if (currentView === 'glossary') {
+                const easyExp = getEasyExplanation(item.용어);
+                const easySection = easyExp ? `
+                    <div class="easy-explanation">
+                        <div class="easy-explanation-title">🎈 쉬운 해설 (초등학생도 알 수 있어요!)</div>
+                        <div class="easy-explanation-content">${easyExp}</div>
+                    </div>
+                ` : '';
+
                 area.innerHTML = `<div class="item-card">
                     <div class="item-title">${item.용어}</div>
                     <div class="item-meta">
@@ -592,8 +940,17 @@
                         <div class="meta-badge"><strong>구분:</strong> ${item.구분}</div>
                     </div>
                     <div class="item-description">${item.설명}</div>
+                    ${easySection}
                 </div>`;
             } else {
+                const easyExp = getEasyExplanation(item.코드이명, item.코드);
+                const easySection = easyExp ? `
+                    <div class="easy-explanation">
+                        <div class="easy-explanation-title">🎈 쉬운 해설 (초등학생도 알 수 있어요!)</div>
+                        <div class="easy-explanation-content">${easyExp}</div>
+                    </div>
+                ` : '';
+
                 area.innerHTML = `<div class="item-card">
                     <div class="item-title">${item.코드이명 || item.코드}(${item.코드})</div>
                     <div class="item-meta">
@@ -602,8 +959,53 @@
                         <div class="meta-badge"><strong>그룹명:</strong> ${item.그룹명}</div>
                     </div>
                     <div class="item-description">${item.설명}</div>
+                    ${easySection}
                 </div>`;
             }
+        }
+
+        function initChecklist() {
+            const tbody = document.getElementById('checklistBody');
+            const savedState = JSON.parse(localStorage.getItem('checklistState') || '{}');
+
+            tbody.innerHTML = checklistData.map((item, idx) => {
+                const isChecked = savedState[idx] || false;
+                return `
+                    <tr class="${isChecked ? 'checked' : ''}" data-idx="${idx}">
+                        <td style="text-align: center;">
+                            <label class="toggle-switch">
+                                <input type="checkbox" ${isChecked ? 'checked' : ''} onchange="toggleCheck(${idx}, this)">
+                                <span class="toggle-slider"></span>
+                            </label>
+                        </td>
+                        <td><span class="category-badge ${item.category}">${item.category}</span></td>
+                        <td><strong>${item.item}</strong></td>
+                        <td>${item.detail}</td>
+                    </tr>
+                `;
+            }).join('');
+
+            updateChecklistStats();
+        }
+
+        function toggleCheck(idx, checkbox) {
+            const savedState = JSON.parse(localStorage.getItem('checklistState') || '{}');
+            savedState[idx] = checkbox.checked;
+            localStorage.setItem('checklistState', JSON.stringify(savedState));
+
+            const row = checkbox.closest('tr');
+            row.classList.toggle('checked', checkbox.checked);
+
+            updateChecklistStats();
+        }
+
+        function updateChecklistStats() {
+            const savedState = JSON.parse(localStorage.getItem('checklistState') || '{}');
+            const complete = Object.values(savedState).filter(v => v).length;
+            const incomplete = checklistData.length - complete;
+
+            document.getElementById('completeCount').textContent = complete;
+            document.getElementById('incompleteCount').textContent = incomplete;
         }
 
         function init() {
