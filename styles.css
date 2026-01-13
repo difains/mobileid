@@ -1,0 +1,757 @@
+/* ========================================
+   모바일 신분증 - 통합 가이드 스타일시트
+   ======================================== */
+
+/* === Reset & Base === */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box
+}
+
+body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto';
+    background: #f5f5f5;
+    color: #333
+}
+
+/* === Header === */
+.header {
+    position: fixed;
+    top: 0;
+    width: 100%;
+    background: #fff;
+    border-bottom: 1px solid #e0e0e0;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    height: 56px;
+    padding: 0 16px;
+    z-index: 100;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05)
+}
+
+.header-left {
+    display: flex;
+    align-items: center;
+    gap: 16px
+}
+
+.hamburger {
+    display: none;
+    flex-direction: column;
+    cursor: pointer;
+    gap: 5px
+}
+
+.hamburger span {
+    width: 24px;
+    height: 2px;
+    background: #333;
+    border-radius: 2px
+}
+
+.header h1 {
+    font-size: 18px;
+    font-weight: 600;
+    color: #1a73e8
+}
+
+.header-tabs {
+    display: flex;
+    gap: 4px;
+    flex-wrap: wrap
+}
+
+/* === Tab Buttons === */
+.tab-button {
+    padding: 8px 14px;
+    background: transparent;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 12px;
+    font-weight: 500;
+    color: #666;
+    transition: 0.2s;
+    white-space: nowrap
+}
+
+.tab-button.active {
+    background: #1a73e8;
+    color: white;
+    border-color: #1a73e8
+}
+
+.tab-button.faq-chatbot {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    border: none
+}
+
+.tab-button.law-btn {
+    background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%);
+    color: white;
+    border: none
+}
+
+.tab-count {
+    font-size: 11px;
+    margin-left: 2px
+}
+
+/* === Sidebar === */
+.sidebar {
+    position: fixed;
+    left: 0;
+    top: 56px;
+    bottom: 0;
+    width: 280px;
+    background: #fff;
+    border-right: 1px solid #e0e0e0;
+    overflow-y: auto;
+    transform: translateX(-100%);
+    transition: 0.3s;
+    z-index: 99
+}
+
+.sidebar.active {
+    transform: translateX(0)
+}
+
+.filter-section {
+    padding: 12px;
+    border-bottom: 1px solid #e0e0e0
+}
+
+/* === Search Box === */
+.search-box {
+    margin-bottom: 12px;
+    display: flex;
+    border: 1px solid #ddd;
+    border-radius: 6px;
+    overflow: hidden
+}
+
+.search-input {
+    flex: 1;
+    padding: 10px 12px;
+    border: none;
+    font-size: 13px
+}
+
+/* === Filter Chips === */
+.filter-chips {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 4px;
+    margin-bottom: 8px
+}
+
+.filter-chip {
+    padding: 5px 10px;
+    background: #f1f3f4;
+    border: 1px solid #dadce0;
+    border-radius: 14px;
+    font-size: 12px;
+    color: #5f6368;
+    cursor: pointer;
+    transition: 0.2s
+}
+
+.filter-chip:hover {
+    background: #e8eaed
+}
+
+.filter-chip.active {
+    background: #1a73e8;
+    color: white;
+    border-color: #1a73e8
+}
+
+/* === Term List === */
+.term-list {
+    list-style: none;
+    padding: 8px 0
+}
+
+.term-item {
+    padding: 10px 12px;
+    cursor: pointer;
+    border-bottom: 1px solid #f0f0f0;
+    font-size: 13px;
+    color: #555;
+    transition: 0.2s;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap
+}
+
+.term-item:hover {
+    background: #f9f9f9;
+    color: #1a73e8
+}
+
+.term-item.active {
+    background: #e8f0fe;
+    color: #1a73e8;
+    font-weight: 600;
+    border-left: 4px solid #1a73e8;
+    padding-left: 8px
+}
+
+/* === Main Content === */
+.main-content {
+    margin-top: 56px;
+    padding: 20px
+}
+
+/* === View Section === */
+.view-section {
+    display: none
+}
+
+.view-section.active {
+    display: block
+}
+
+/* === Items Container (Grid) === */
+.items-container {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(400px, 1fr));
+    gap: 20px
+}
+
+/* === Item Card === */
+.item-card {
+    background: #fff;
+    border-radius: 8px;
+    padding: 20px;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
+    border-left: 4px solid #1a73e8;
+    transition: 0.2s
+}
+
+.item-card:hover {
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.12)
+}
+
+.item-title {
+    font-size: 18px;
+    font-weight: 600;
+    color: #1a73e8;
+    margin-bottom: 12px
+}
+
+.item-meta {
+    display: flex;
+    gap: 8px;
+    margin-bottom: 12px;
+    flex-wrap: wrap;
+    font-size: 11px
+}
+
+.meta-badge {
+    display: inline-flex;
+    gap: 3px;
+    padding: 4px 8px;
+    background: #f0f0f0;
+    border-radius: 4px;
+    color: #666
+}
+
+.item-description {
+    font-size: 13px;
+    line-height: 1.6;
+    color: #555;
+    background: #fafafa;
+    padding: 12px;
+    border-radius: 4px;
+    max-height: 300px;
+    overflow-y: auto;
+    white-space: pre-wrap
+}
+
+/* === Easy Explanation === */
+.easy-explanation {
+    margin-top: 12px;
+    padding: 12px;
+    background: linear-gradient(135deg, #fff3e0 0%, #ffe0b2 100%);
+    border-radius: 8px;
+    border-left: 4px solid #ff9800
+}
+
+.easy-explanation-title {
+    font-size: 12px;
+    font-weight: 600;
+    color: #e65100;
+    margin-bottom: 8px
+}
+
+.easy-explanation-content {
+    font-size: 13px;
+    line-height: 1.7;
+    color: #5d4037
+}
+
+/* === Flowchart Card === */
+.flowchart-card {
+    background: #fff;
+    border-radius: 12px;
+    padding: 24px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1)
+}
+
+.flowchart-title {
+    font-size: 22px;
+    font-weight: 700;
+    color: #1a73e8;
+    margin-bottom: 8px;
+    display: flex;
+    align-items: center;
+    gap: 10px
+}
+
+.flowchart-code {
+    font-size: 14px;
+    color: #666;
+    background: #f0f0f0;
+    padding: 4px 10px;
+    border-radius: 4px
+}
+
+.flowchart-category {
+    display: inline-block;
+    padding: 4px 12px;
+    background: #e8f0fe;
+    color: #1a73e8;
+    border-radius: 12px;
+    font-size: 12px;
+    font-weight: 600;
+    margin-bottom: 16px
+}
+
+.flowchart-summary {
+    font-size: 15px;
+    line-height: 1.7;
+    color: #333;
+    background: linear-gradient(135deg, #f8f9fa 0%, #e8f0fe 100%);
+    padding: 16px;
+    border-radius: 8px;
+    margin-bottom: 20px;
+    border-left: 4px solid #1a73e8
+}
+
+.flowchart-diagram {
+    background: #fff;
+    border: 1px solid #e0e0e0;
+    border-radius: 8px;
+    padding: 20px;
+    margin-bottom: 16px;
+    overflow-x: auto
+}
+
+.mermaid {
+    display: flex;
+    justify-content: center
+}
+
+/* === Checklist === */
+.checklist-container {
+    background: #fff;
+    border-radius: 12px;
+    padding: 24px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1)
+}
+
+.checklist-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+    flex-wrap: wrap;
+    gap: 12px
+}
+
+.checklist-title {
+    font-size: 24px;
+    font-weight: 700;
+    color: #1a73e8
+}
+
+.checklist-actions {
+    display: flex;
+    gap: 12px;
+    align-items: center;
+    flex-wrap: wrap
+}
+
+.checklist-stats {
+    display: flex;
+    gap: 12px;
+    font-size: 13px
+}
+
+.stat-item {
+    padding: 6px 14px;
+    border-radius: 20px;
+    font-weight: 600
+}
+
+.stat-complete {
+    background: #e8f5e9;
+    color: #2e7d32
+}
+
+.stat-incomplete {
+    background: #ffebee;
+    color: #c62828
+}
+
+/* === Excel Button === */
+.btn-excel {
+    padding: 8px 16px;
+    background: linear-gradient(135deg, #217346 0%, #185c37 100%);
+    color: white;
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 13px;
+    font-weight: 600;
+    display: flex;
+    align-items: center;
+    gap: 6px
+}
+
+.btn-excel:hover {
+    transform: scale(1.02)
+}
+
+/* === Filter Bar === */
+.filter-bar {
+    display: flex;
+    gap: 8px;
+    margin-bottom: 16px;
+    flex-wrap: wrap
+}
+
+.filter-btn {
+    padding: 6px 14px;
+    background: #f5f5f5;
+    border: 1px solid #ddd;
+    border-radius: 20px;
+    cursor: pointer;
+    font-size: 12px;
+    transition: 0.2s
+}
+
+.filter-btn.active {
+    background: #1a73e8;
+    color: white;
+    border-color: #1a73e8
+}
+
+/* === Checklist Table === */
+.checklist-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 13px
+}
+
+.checklist-table th {
+    background: linear-gradient(135deg, #1a73e8 0%, #0d47a1 100%);
+    color: white;
+    padding: 12px 10px;
+    text-align: left;
+    font-weight: 600;
+    position: sticky;
+    top: 0
+}
+
+.checklist-table th:first-child {
+    width: 50px;
+    text-align: center
+}
+
+.checklist-table th:nth-child(2) {
+    width: 100px
+}
+
+.checklist-table td {
+    padding: 12px 10px;
+    border-bottom: 1px solid #e0e0e0;
+    vertical-align: top
+}
+
+.checklist-table tr:hover {
+    background: #f5f5f5
+}
+
+.checklist-table tr.checked {
+    background: #e8f5e9
+}
+
+.checklist-table tr.checked td {
+    color: #2e7d32
+}
+
+/* === Category Badge === */
+.category-badge {
+    display: inline-block;
+    padding: 4px 10px;
+    border-radius: 12px;
+    font-size: 11px;
+    font-weight: 600
+}
+
+.category-badge.규격 {
+    background: #e3f2fd;
+    color: #1565c0
+}
+
+.category-badge.보안 {
+    background: #fce4ec;
+    color: #c2185b
+}
+
+.category-badge.관리 {
+    background: #e8f5e9;
+    color: #2e7d32
+}
+
+.category-badge.통신 {
+    background: #fff3e0;
+    color: #ef6c00
+}
+
+.custom-checkbox {
+    width: 20px;
+    height: 20px;
+    cursor: pointer;
+    accent-color: #4caf50
+}
+
+/* === Law Section === */
+.law-container {
+    background: #fff;
+    border-radius: 12px;
+    padding: 24px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1)
+}
+
+.law-header {
+    text-align: center;
+    margin-bottom: 30px;
+    padding-bottom: 20px;
+    border-bottom: 2px solid #e0e0e0
+}
+
+.law-header h2 {
+    font-size: 28px;
+    color: #1a73e8;
+    margin-bottom: 10px
+}
+
+.law-header p {
+    color: #666;
+    font-size: 14px
+}
+
+.law-section {
+    margin-bottom: 30px
+}
+
+.law-section h3 {
+    font-size: 18px;
+    color: #333;
+    margin-bottom: 16px;
+    padding: 12px;
+    background: linear-gradient(135deg, #e8f0fe 0%, #f5f5f5 100%);
+    border-radius: 8px;
+    border-left: 4px solid #1a73e8
+}
+
+.law-card {
+    background: #fafafa;
+    border-radius: 8px;
+    padding: 16px;
+    margin-bottom: 12px;
+    border-left: 3px solid #4caf50
+}
+
+.law-card h4 {
+    font-size: 15px;
+    color: #1a73e8;
+    margin-bottom: 8px
+}
+
+.law-card p {
+    font-size: 13px;
+    line-height: 1.7;
+    color: #555
+}
+
+.law-link {
+    display: inline-block;
+    margin-top: 8px;
+    color: #1a73e8;
+    font-size: 12px;
+    text-decoration: none
+}
+
+.law-link:hover {
+    text-decoration: underline
+}
+
+/* === Timeline === */
+.timeline {
+    position: relative;
+    padding-left: 30px
+}
+
+.timeline::before {
+    content: '';
+    position: absolute;
+    left: 10px;
+    top: 0;
+    bottom: 0;
+    width: 2px;
+    background: #1a73e8
+}
+
+.timeline-item {
+    position: relative;
+    margin-bottom: 16px;
+    padding: 12px;
+    background: #fff;
+    border-radius: 8px;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08)
+}
+
+.timeline-item::before {
+    content: '';
+    position: absolute;
+    left: -24px;
+    top: 16px;
+    width: 10px;
+    height: 10px;
+    background: #1a73e8;
+    border-radius: 50%
+}
+
+.timeline-item .date {
+    font-size: 12px;
+    color: #1a73e8;
+    font-weight: 600
+}
+
+.timeline-item .content {
+    font-size: 13px;
+    color: #555;
+    margin-top: 4px
+}
+
+/* === Mobile Nav === */
+.mobile-nav {
+    display: none;
+    flex-direction: column;
+    gap: 4px;
+    padding: 16px;
+    border-bottom: 1px solid #e0e0e0;
+    background: linear-gradient(135deg, #f8f9fa 0%, #e8f0fe 100%);
+}
+
+.mobile-nav-title {
+    font-size: 14px;
+    font-weight: 600;
+    color: #1a73e8;
+    margin-bottom: 8px;
+}
+
+.mobile-nav-item {
+    padding: 12px 16px;
+    background: #fff;
+    border-radius: 8px;
+    cursor: pointer;
+    font-size: 14px;
+    color: #333;
+    transition: 0.2s;
+    border: 1px solid #e0e0e0;
+    text-decoration: none;
+    display: block;
+}
+
+.mobile-nav-item:hover {
+    background: #e8f0fe;
+    border-color: #1a73e8;
+}
+
+.mobile-nav-item.faq {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    border: none;
+}
+
+/* === Overlay === */
+.overlay {
+    display: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.5);
+    z-index: 98
+}
+
+.overlay.active {
+    display: block
+}
+
+/* === Responsive Design === */
+@media(min-width:768px) {
+    .main-content {
+        margin-left: 280px
+    }
+
+    .hamburger {
+        display: none !important
+    }
+
+    .sidebar {
+        transform: translateX(0)
+    }
+
+    .overlay {
+        display: none !important
+    }
+}
+
+@media(max-width:900px) {
+    .items-container {
+        grid-template-columns: 1fr
+    }
+}
+
+@media(max-width:767px) {
+    .main-content {
+        margin-left: 0;
+        padding: 12px
+    }
+
+    .hamburger {
+        display: flex
+    }
+
+    .items-container {
+        grid-template-columns: 1fr
+    }
+
+    .header-tabs {
+        display: none
+    }
+
+    .mobile-nav {
+        display: flex
+    }
+}
