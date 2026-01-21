@@ -312,12 +312,36 @@ function selectItem(idx, items = null) {
 function renderFlowchart(item) {
     const container = document.getElementById('flowchartContent');
     const hasBothVersions = item.mermaidLite && item.mermaid;
+    const hasPng = item.pngPath;
+
+    // PNG 이미지 뷰 모드인 경우
+    if (AppState.flowchartVersion === 'png' && hasPng) {
+        const versionToggle = `
+            <div style="display:flex;gap:8px;margin-bottom:16px;flex-wrap:wrap;">
+                <button onclick="setFlowchartVersion('lite','${item.code}')" class="filter-btn" style="padding:8px 16px;border-radius:20px;cursor:pointer;font-size:13px;border:1px solid #ddd;background:#f5f5f5;color:#333">📊 라이트 모드</button>
+                <button onclick="setFlowchartVersion('full','${item.code}')" class="filter-btn" style="padding:8px 16px;border-radius:20px;cursor:pointer;font-size:13px;border:1px solid #ddd;background:#f5f5f5;color:#333">📋 상세 모드</button>
+                <button onclick="setFlowchartVersion('png','${item.code}')" class="filter-btn active" style="padding:8px 16px;border-radius:20px;cursor:pointer;font-size:13px;border:1px solid #ddd;background:#ff6b35;color:white">🖼️ 원본 UML</button>
+            </div>`;
+
+        container.innerHTML = `<div class="flowchart-card">
+            <div class="flowchart-title"><span class="flowchart-code">${item.code}</span>${item.title}</div>
+            <div class="flowchart-category">${item.category}</div>
+            ${versionToggle}
+            <div class="flowchart-summary">📌 ${item.summary}</div>
+            <div class="flowchart-diagram" style="overflow:auto;max-height:70vh;background:#fff;border-radius:8px;padding:16px;">
+                <img src="${item.pngPath}" alt="${item.title} UML 다이어그램" style="max-width:100%;height:auto;display:block;margin:0 auto;" loading="lazy" />
+            </div>
+        </div>`;
+        return;
+    }
+
     const currentMermaid = AppState.flowchartVersion === 'lite' && item.mermaidLite ? item.mermaidLite : item.mermaid;
 
-    const versionToggle = hasBothVersions ? `
-        <div style="display:flex;gap:8px;margin-bottom:16px;">
-            <button onclick="setFlowchartVersion('lite','${item.code}')" class="filter-btn ${AppState.flowchartVersion === 'lite' ? 'active' : ''}" style="padding:8px 16px;border-radius:20px;cursor:pointer;font-size:13px;border:1px solid #ddd;background:${AppState.flowchartVersion === 'lite' ? '#1a73e8' : '#f5f5f5'};color:${AppState.flowchartVersion === 'lite' ? 'white' : '#333'}">📊 라이트 버전</button>
-            <button onclick="setFlowchartVersion('full','${item.code}')" class="filter-btn ${AppState.flowchartVersion === 'full' ? 'active' : ''}" style="padding:8px 16px;border-radius:20px;cursor:pointer;font-size:13px;border:1px solid #ddd;background:${AppState.flowchartVersion === 'full' ? '#1a73e8' : '#f5f5f5'};color:${AppState.flowchartVersion === 'full' ? 'white' : '#333'}">📋 상세 버전</button>
+    const versionToggle = hasBothVersions || hasPng ? `
+        <div style="display:flex;gap:8px;margin-bottom:16px;flex-wrap:wrap;">
+            <button onclick="setFlowchartVersion('lite','${item.code}')" class="filter-btn ${AppState.flowchartVersion === 'lite' ? 'active' : ''}" style="padding:8px 16px;border-radius:20px;cursor:pointer;font-size:13px;border:1px solid #ddd;background:${AppState.flowchartVersion === 'lite' ? '#1a73e8' : '#f5f5f5'};color:${AppState.flowchartVersion === 'lite' ? 'white' : '#333'}">📊 라이트 모드</button>
+            <button onclick="setFlowchartVersion('full','${item.code}')" class="filter-btn ${AppState.flowchartVersion === 'full' ? 'active' : ''}" style="padding:8px 16px;border-radius:20px;cursor:pointer;font-size:13px;border:1px solid #ddd;background:${AppState.flowchartVersion === 'full' ? '#1a73e8' : '#f5f5f5'};color:${AppState.flowchartVersion === 'full' ? 'white' : '#333'}">📋 상세 모드</button>
+            ${hasPng ? `<button onclick="setFlowchartVersion('png','${item.code}')" class="filter-btn" style="padding:8px 16px;border-radius:20px;cursor:pointer;font-size:13px;border:1px solid #ddd;background:#f5f5f5;color:#333">🖼️ 원본 UML</button>` : ''}
         </div>` : '';
 
     container.innerHTML = `<div class="flowchart-card">
