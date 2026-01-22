@@ -20,7 +20,8 @@ const AppState = {
     screenMgmtL1Filter: '',
     screenMgmtTypeFilter: '',
     screenMgmtSearchQuery: '',
-    flowchartVersion: 'full'
+    flowchartVersion: 'full',
+    umlVersion: '1.5.0'  // 기본 UML 버전 (1.4.2 또는 1.5.0)
 };
 
 // ========================================
@@ -312,15 +313,34 @@ function selectItem(idx, items = null) {
 function renderFlowchart(item) {
     const container = document.getElementById('flowchartContent');
     const hasBothVersions = item.mermaidLite && item.mermaid;
-    const hasPng = item.pngPath;
+
+    // 버전별 PNG 경로 결정
+    const getPngPath = () => {
+        if (AppState.umlVersion === '1.5.0' && item.pngPath_v150) {
+            return item.pngPath_v150;
+        }
+        return item.pngPath; // 기본 (v1.4.2)
+    };
+
+    const currentPngPath = getPngPath();
+    const hasPng = currentPngPath;
 
     // PNG 이미지 뷰 모드인 경우
     if (AppState.flowchartVersion === 'png' && hasPng) {
+        const versionDropdown = `
+            <div style="display:flex;align-items:center;gap:8px;margin-left:auto;">
+                <label style="font-size:13px;color:#666;">📦 UML 버전:</label>
+                <select onchange="setUmlVersion(this.value,'${item.code}')" style="padding:6px 12px;border:1px solid #ddd;border-radius:8px;font-size:13px;background:#fff;cursor:pointer;">
+                    <option value="1.4.2" ${AppState.umlVersion === '1.4.2' ? 'selected' : ''}>v1.4.2</option>
+                    <option value="1.5.0" ${AppState.umlVersion === '1.5.0' ? 'selected' : ''}>v1.5.0 (최신)</option>
+                </select>
+            </div>`;
         const versionToggle = `
-            <div style="display:flex;gap:8px;margin-bottom:16px;flex-wrap:wrap;">
+            <div style="display:flex;gap:8px;margin-bottom:16px;flex-wrap:wrap;align-items:center;">
                 <button onclick="setFlowchartVersion('lite','${item.code}')" class="filter-btn" style="padding:8px 16px;border-radius:20px;cursor:pointer;font-size:13px;border:1px solid #ddd;background:#f5f5f5;color:#333">📊 라이트 모드</button>
                 <button onclick="setFlowchartVersion('full','${item.code}')" class="filter-btn" style="padding:8px 16px;border-radius:20px;cursor:pointer;font-size:13px;border:1px solid #ddd;background:#f5f5f5;color:#333">📋 상세 모드</button>
                 <button onclick="setFlowchartVersion('png','${item.code}')" class="filter-btn active" style="padding:8px 16px;border-radius:20px;cursor:pointer;font-size:13px;border:1px solid #ddd;background:#ff6b35;color:white">🖼️ 원본 UML</button>
+                ${versionDropdown}
             </div>`;
 
         container.innerHTML = `<div class="flowchart-card">
@@ -329,7 +349,7 @@ function renderFlowchart(item) {
             ${versionToggle}
             <div class="flowchart-summary">📌 ${item.summary}</div>
             <div class="flowchart-diagram" style="overflow:auto;max-height:70vh;background:#fff;border-radius:8px;padding:16px;">
-                <img src="${item.pngPath}" alt="${item.title} UML 다이어그램" style="max-width:100%;height:auto;display:block;margin:0 auto;" loading="lazy" />
+                <img src="${currentPngPath}" alt="${item.title} UML 다이어그램 (v${AppState.umlVersion})" style="max-width:100%;height:auto;display:block;margin:0 auto;" loading="lazy" />
             </div>
         </div>`;
         return;
@@ -357,6 +377,12 @@ function renderFlowchart(item) {
 
 function setFlowchartVersion(ver, code) {
     AppState.flowchartVersion = ver;
+    const item = AppState.flowchartData.find(f => f.code === code);
+    if (item) renderFlowchart(item);
+}
+
+function setUmlVersion(ver, code) {
+    AppState.umlVersion = ver;
     const item = AppState.flowchartData.find(f => f.code === code);
     if (item) renderFlowchart(item);
 }
